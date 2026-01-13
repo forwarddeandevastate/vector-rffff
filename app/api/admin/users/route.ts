@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-api";
 import bcrypt from "bcryptjs";
+import { writeAudit } from "@/lib/audit";
 
 export async function GET() {
   try {
@@ -20,17 +21,10 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-await writeAudit({
-  actorId,
-  actorEmail,
-  action: "user.create",
-  entity: "User",
-  entityId: user.id,
-  details: { email: user.email, role: user.role, isActive: user.isActive },
-});
-
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
+    const actorId = Number(admin.sub);
+    const actorEmail = admin.email;
 
     const body = await req.json().catch(() => null);
     const email = body?.email?.toString().trim().toLowerCase();
@@ -48,16 +42,24 @@ await writeAudit({
       data: {
         email,
         name,
-        password: passwordHash, // поле password хранит ХЭШ
+        password: passwordHash,
         role: "DISPATCHER",
         isActive,
       },
       select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
     });
 
+    await writeAudit({
+      actorId: Number.isFinite(actorId) ? actorId : null,
+      actorEmail,
+      action: "user.create",
+      entity: "User",
+      entityId: user.id,
+      details: { email: user.email, role: user.role, isActive: user.isActive },
+    });
+
     return NextResponse.json({ ok: true, user });
   } catch (e: any) {
-    // уникальный email
     if (e?.code === "P2002") {
       return NextResponse.json({ ok: false, error: "email already exists" }, { status: 409 });
     }
