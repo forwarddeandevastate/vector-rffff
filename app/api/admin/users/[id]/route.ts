@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-api";
+import { writeAudit } from "@/lib/audit";
 
-export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
-await writeAudit({
-  actorId,
-  actorEmail,
-  action: "user.update",
-  entity: "User",
-  entityId: userId,
-  details: { data },
-});
-
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
+    const actorId = Number(admin.sub);
+    const actorEmail = admin.email;
 
     const { id } = await ctx.params;
     const userId = Number(id);
@@ -26,11 +23,23 @@ await writeAudit({
 
     if (typeof body.isActive === "boolean") data.isActive = body.isActive;
 
-    // на всякий: запрещаем менять роль/пароль тут
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ ok: false, error: "no fields to update" }, { status: 400 });
+    }
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data,
       select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+    });
+
+    await writeAudit({
+      actorId: Number.isFinite(actorId) ? actorId : null,
+      actorEmail,
+      action: "user.update",
+      entity: "User",
+      entityId: userId,
+      details: { changed: data, result: updated },
     });
 
     return NextResponse.json({ ok: true, user: updated });
