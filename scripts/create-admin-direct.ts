@@ -12,9 +12,8 @@ async function main() {
   }
 
   const prisma = new PrismaClient({
-    datasourceUrl: process.env.DATABASE_URL,
-    log: ["error", "warn"],
-  });
+  log: ["error", "warn"],
+});
 
   const hash = await bcrypt.hash(password, 10);
 
