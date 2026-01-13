@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+enum UserRole {
+  ADMIN
+  DISPATCHER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(DISPATCHER)
+  isActive  Boolean  @default(true)
+
+  leads     Lead[]   @relation("AssignedLeads")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Lead {
+  id            Int      @id @default(autoincrement())
+
+  name          String
+  phone         String
+
+  fromText      String
+  toText        String
+
+  pickupAddress String?
+  dropoffAddress String?
+  datetime      String?
+
+  carClass      String
+  roundTrip     Boolean  @default(false)
+  price         Int?
+
+  comment       String?
+
+  status        String   @default("new") // new | in_progress | done | canceled
+
+  assignedToId  Int?
+  assignedTo    User?    @relation("AssignedLeads", fields: [assignedToId], references: [id])
+
+  isDuplicate   Boolean  @default(false)
+  duplicateOfId Int?
+
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([assignedToId])
+  @@map("leads")
+}
+
+model SiteSettings {
+  id            Int      @id @default(autoincrement())
+
+  brandName     String   @default("Вектор РФ")
+  brandTagline  String   @default("трансферы и поездки по России")
+
+  phone         String?
+  whatsapp      String?
+  telegram      String?
+  email         String?
+
+  workHours     String?
+  regionNote    String?
+
+  companyName   String?
+  inn           String?
+  ogrn          String?
+  address       String?
+  notes         String?
+
+  updatedAt     DateTime @updatedAt
+
+  @@map("site_settings")
+}
+model AdminLoginAttempt {
+  id            Int      @id @default(autoincrement())
+  key           String   @unique  // email+ip
+  email         String
+  ip            String
+  attempts      Int      @default(0)
+  firstAttempt  DateTime @default(now())
+  blockedUntil  DateTime?
+  updatedAt     DateTime @updatedAt
+
+  @@map("admin_login_attempts")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+
+  actorId   Int?
+  actorEmail String?
+
+  action    String   // например: "lead.update", "settings.update", "user.create"
+  entity    String?  // "Lead", "SiteSettings", "User"
+  entityId  Int?     // id сущности
+
+  details   Json?    // что поменяли
+
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([action, createdAt])
+  @@index([entity, entityId])
+  @@map("audit_log")
+}
