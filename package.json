@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "vercel-build": "prisma generate && prisma migrate deploy && next build"
+}
+,
   "prisma": {
     "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
