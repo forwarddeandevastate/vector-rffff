@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type CarClass = "standard" | "comfort" | "business" | "minivan";
@@ -68,23 +68,6 @@ function SegButton({
   );
 }
 
-function isAirportText(s: string) {
-  const t = s.toLowerCase();
-  return /аэропорт|airport|svo|dme|vko|svx|led|aer|kuf|kgd|ovb|krr|kzn/.test(t);
-}
-
-function isIntercityLikely(from: string, to: string) {
-  const s = `${from} ${to}`.toLowerCase();
-  if (isAirportText(from) || isAirportText(to)) return false;
-
-  if (/[—–-]|->/.test(s)) return true;
-
-  const signals = (s.match(/область|край|республика|район/g) || []).length;
-  if (signals >= 1) return true;
-
-  return false;
-}
-
 function formatRub(n: number) {
   const s = String(n);
   const parts: string[] = [];
@@ -96,11 +79,7 @@ function formatRub(n: number) {
 }
 
 /**
- * Средние по рынку ориентиры (диапазоны), чтобы не обещать точную цену:
- * city: 900–2800
- * airport: 1200–3800
- * intercity: 8000–22000
- * + коэффициенты по классу.
+ * Средние "рыночные" ориентиры (диапазоны) + коэффициенты класса.
  */
 function calcEstimate(routeType: RouteType, carClass: CarClass) {
   const base = {
@@ -124,7 +103,99 @@ function calcEstimate(routeType: RouteType, carClass: CarClass) {
   const label = routeType === "city" ? "По городу" : routeType === "airport" ? "Аэропорт" : "Межгород";
   const extra = routeType === "intercity" ? "Межгород обычно считают от расстояния (условно ~25–27 ₽/км)." : null;
 
-  return { label, min, max, text: `${label}: ${formatRub(min)} – ${formatRub(max)}`, extra };
+  return { text: `${label}: ${formatRub(min)} – ${formatRub(max)}`, extra };
+}
+
+// --- Автоподсказки городов (можешь расширять) ---
+const POPULAR_CITIES = [
+  "Москва",
+  "Санкт-Петербург",
+  "Казань",
+  "Сочи",
+  "Екатеринбург",
+  "Новосибирск",
+  "Нижний Новгород",
+  "Самара",
+  "Ростов-на-Дону",
+  "Краснодар",
+  "Уфа",
+  "Красноярск",
+  "Воронеж",
+  "Пермь",
+  "Волгоград",
+  "Омск",
+  "Челябинск",
+  "Калининград",
+  "Тюмень",
+  "Иркутск",
+  "Хабаровск",
+  "Владивосток",
+];
+
+const AIRPORT_HINTS = [
+  "Шереметьево (SVO)",
+  "Домодедово (DME)",
+  "Внуково (VKO)",
+  "Пулково (LED)",
+  "Сочи (AER)",
+  "Кольцово (SVX)",
+  "Толмачёво (OVB)",
+  "Курумоч (KUF)",
+  "Казань (KZN)",
+  "Пашковский (KRR)",
+  "Храброво (KGD)",
+];
+
+function normalize(s: string) {
+  return s.trim().toLowerCase();
+}
+
+function pickSuggestions(value: string, routeType: RouteType) {
+  const q = normalize(value);
+  if (!q) return routeType === "airport" ? AIRPORT_HINTS.slice(0, 6) : POPULAR_CITIES.slice(0, 10);
+
+  const source = routeType === "airport" ? [...AIRPORT_HINTS, ...POPULAR_CITIES] : POPULAR_CITIES;
+
+  const scored = source
+    .map((name) => {
+      const n = normalize(name);
+      const idx = n.indexOf(q);
+      if (idx === -1) return null;
+      // чем ближе к началу — тем выше
+      const score = idx === 0 ? 100 : 50 - idx;
+      return { name, score };
+    })
+    .filter(Boolean) as Array<{ name: string; score: number }>;
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 10).map((x) => x.name);
+}
+
+// --- Дата/время helpers ---
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+// datetime-local требует "YYYY-MM-DDTHH:mm"
+function toDatetimeLocal(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = pad2(d.getMonth() + 1);
+  const dd = pad2(d.getDate());
+  const hh = pad2(d.getHours());
+  const mi = pad2(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+
+function addMinutes(base: Date, minutes: number) {
+  const d = new Date(base.getTime());
+  d.setMinutes(d.getMinutes() + minutes);
+  return d;
+}
+
+function setTimeSameDay(base: Date, hh: number, mm: number) {
+  const d = new Date(base.getTime());
+  d.setHours(hh, mm, 0, 0);
+  return d;
 }
 
 export default function LeadForm({
@@ -136,7 +207,6 @@ export default function LeadForm({
   carClass: CarClass;
   onCarClassChange: (v: CarClass) => void;
 
-  // ВАЖНО: эти два пропа приходят с главной страницы
   routeType: RouteType;
   onRouteTypeChange: (v: RouteType) => void;
 }) {
@@ -146,33 +216,43 @@ export default function LeadForm({
   const [phone, setPhone] = useState("");
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
-  const [datetime, setDatetime] = useState("");
+
+  // datetime-local хранится как строка "YYYY-MM-DDTHH:mm"
+  const [datetimeLocal, setDatetimeLocal] = useState<string>("");
+
   const [roundTrip, setRoundTrip] = useState(false);
   const [comment, setComment] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // “Автоопределение” — только пока пользователь не переключал руками
+  // автоопределение оставим простым: если человек выбрал тип на главной/в кнопках — не перебиваем
   const [routeTypeTouched, setRouteTypeTouched] = useState(false);
 
-  const autoRouteType = useMemo<RouteType>(() => {
-    if (isAirportText(fromText) || isAirportText(toText)) return "airport";
-    if (isIntercityLikely(fromText, toText)) return "intercity";
-    return "city";
-  }, [fromText, toText]);
+  const estimate = useMemo(() => calcEstimate(routeType, carClass), [routeType, carClass]);
+
+  // Списки подсказок (обновляются по вводу)
+  const fromSuggestions = useMemo(() => pickSuggestions(fromText, routeType), [fromText, routeType]);
+  const toSuggestions = useMemo(() => pickSuggestions(toText, routeType), [toText, routeType]);
+
+  // Чтобы удобнее было выбирать подсказки кликом — показываем dropdown
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
+  const fromBoxRef = useRef<HTMLDivElement | null>(null);
+  const toBoxRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!routeTypeTouched) onRouteTypeChange(autoRouteType);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRouteType, routeTypeTouched]);
+    function onDocClick(e: MouseEvent) {
+      const t = e.target as Node;
+      if (fromBoxRef.current && !fromBoxRef.current.contains(t)) setFromOpen(false);
+      if (toBoxRef.current && !toBoxRef.current.contains(t)) setToOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
 
-  // Если тип маршрута прилетел с главной (клик по карточке),
-  // считаем это “ручным выбором”, чтобы автоопределение не перебивало.
+  // Если тип маршрута меняют извне (с главной) — считаем это ручным выбором
   useEffect(() => {
-    // когда routeType меняется извне — фиксируем как “touched”
-    // но делаем мягко: только если уже есть какие-то поля или кнопка была нажата на главной
-    // (на практике достаточно просто поставить touched в true)
     setRouteTypeTouched(true);
   }, [routeType]);
 
@@ -180,7 +260,21 @@ export default function LeadForm({
     return name.trim() && phone.trim() && fromText.trim() && toText.trim();
   }, [name, phone, fromText, toText]);
 
-  const estimate = useMemo(() => calcEstimate(routeType, carClass), [routeType, carClass]);
+  function applyQuickTime(kind: "plus1" | "plus2" | "today18" | "tomorrow10") {
+    const now = new Date();
+    let d = now;
+
+    if (kind === "plus1") d = addMinutes(now, 60);
+    if (kind === "plus2") d = addMinutes(now, 120);
+    if (kind === "today18") d = setTimeSameDay(now, 18, 0);
+    if (kind === "tomorrow10") {
+      const t = new Date(now.getTime());
+      t.setDate(t.getDate() + 1);
+      d = setTimeSameDay(t, 10, 0);
+    }
+
+    setDatetimeLocal(toDatetimeLocal(d));
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -193,12 +287,13 @@ export default function LeadForm({
 
     setLoading(true);
     try {
+      // В базу отправляем как строку (можешь потом хранить DateTime)
       const payload = {
         name: name.trim(),
         phone: phone.trim(),
         fromText: fromText.trim(),
         toText: toText.trim(),
-        datetime: datetime.trim() ? datetime.trim() : null,
+        datetime: datetimeLocal ? datetimeLocal : null,
         carClass,
         roundTrip,
         comment: comment.trim() ? comment.trim() : null,
@@ -280,11 +375,11 @@ export default function LeadForm({
             </div>
 
             <div className="mt-2 text-[11px] leading-5 text-zinc-600">
-              Сейчас:{" "}
-              <span className="font-semibold text-zinc-800">
-                {routeType === "city" ? "город" : routeType === "airport" ? "аэропорт" : "межгород"}
-              </span>
-              {!routeTypeTouched ? <> (по заполненным полям)</> : null}
+              {routeType === "city"
+                ? "Для поездок по городу и встреч."
+                : routeType === "airport"
+                ? "Встреча по времени прилёта/вылета."
+                : "Трансферы между городами."}
             </div>
           </div>
 
@@ -300,7 +395,7 @@ export default function LeadForm({
         <div className="mt-1 text-base font-extrabold text-zinc-900">{estimate.text}</div>
         {estimate.extra ? <div className="mt-1 text-[11px] leading-5 text-zinc-600">{estimate.extra}</div> : null}
         <div className="mt-1 text-[11px] leading-5 text-zinc-600">
-          Это примерный диапазон по рынку и выбранным параметрам. Точную стоимость подтвердим после заявки.
+          Это ориентир. Итоговую стоимость подтвердим после уточнения маршрута и деталей.
         </div>
       </div>
 
@@ -319,34 +414,130 @@ export default function LeadForm({
           />
         </Field>
 
-        <Field label="Откуда *" className="sm:col-span-2">
-          <input
-            className={ControlBase()}
-            value={fromText}
-            onChange={(e) => setFromText(e.target.value)}
-            placeholder="Город, адрес, аэропорт"
-          />
+        {/* ОТКУДА with autocomplete */}
+        <Field
+          label="Откуда *"
+          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Начните вводить город"}
+          className="sm:col-span-2"
+        >
+          <div ref={fromBoxRef} className="relative">
+            <input
+              className={ControlBase()}
+              value={fromText}
+              onChange={(e) => {
+                setFromText(e.target.value);
+                setFromOpen(true);
+              }}
+              onFocus={() => setFromOpen(true)}
+              placeholder={routeType === "airport" ? "Например: Шереметьево (SVO) или Москва" : "Например: Москва"}
+            />
+            {fromOpen && fromSuggestions.length > 0 ? (
+              <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
+                {fromSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
+                    onClick={() => {
+                      setFromText(s);
+                      setFromOpen(false);
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </Field>
 
-        <Field label="Куда *" className="sm:col-span-2">
-          <input
-            className={ControlBase()}
-            value={toText}
-            onChange={(e) => setToText(e.target.value)}
-            placeholder="Город, адрес"
-          />
+        {/* КУДА with autocomplete */}
+        <Field
+          label="Куда *"
+          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Начните вводить город"}
+          className="sm:col-span-2"
+        >
+          <div ref={toBoxRef} className="relative">
+            <input
+              className={ControlBase()}
+              value={toText}
+              onChange={(e) => {
+                setToText(e.target.value);
+                setToOpen(true);
+              }}
+              onFocus={() => setToOpen(true)}
+              placeholder={routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"}
+            />
+            {toOpen && toSuggestions.length > 0 ? (
+              <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
+                {toSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
+                    onClick={() => {
+                      setToText(s);
+                      setToOpen(false);
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </Field>
 
-        <Field label="Дата и время" hint="Если известно" className="sm:col-span-2">
-          <input
-            className={ControlBase()}
-            value={datetime}
-            onChange={(e) => setDatetime(e.target.value)}
-            placeholder="Например: сегодня 18:30"
-          />
+        {/* Дата/время */}
+        <Field label="Дата и время" hint="Можно выбрать быстро" className="sm:col-span-2">
+          <div className="grid gap-2">
+            <input
+              className={ControlBase()}
+              type="datetime-local"
+              value={datetimeLocal}
+              onChange={(e) => setDatetimeLocal(e.target.value)}
+            />
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => applyQuickTime("plus1")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Через 1 час
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTime("plus2")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Через 2 часа
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTime("today18")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Сегодня 18:00
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTime("tomorrow10")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Завтра 10:00
+              </button>
+            </div>
+
+            {routeType === "airport" ? (
+              <div className="text-[11px] leading-5 text-zinc-600">
+                Для аэропорта удобно указать время прилёта/вылета и номер рейса в комментарии.
+              </div>
+            ) : null}
+          </div>
         </Field>
 
-        <Field label="Класс авто" hint="Подсветит карточку ниже">
+        <Field label="Класс авто">
           <select className={ControlBase()} value={carClass} onChange={(e) => onCarClassChange(e.target.value as CarClass)}>
             <option value="standard">Стандарт</option>
             <option value="comfort">Комфорт</option>
