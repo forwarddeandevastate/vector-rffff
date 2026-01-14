@@ -65,6 +65,50 @@ function tgLink(phone: string) {
   return p ? `https://t.me/+${p}` : null;
 }
 
+function cn(...xs: Array<string | false | null | undefined>) {
+  return xs.filter(Boolean).join(" ");
+}
+
+function Badge({
+  children,
+  tone,
+}: {
+  children: React.ReactNode;
+  tone: "neutral" | "new" | "work" | "done" | "canceled" | "dupe";
+}) {
+  const cls =
+    tone === "new"
+      ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-black"
+      : tone === "work"
+      ? "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200"
+      : tone === "done"
+      ? "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-200"
+      : tone === "canceled"
+      ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200"
+      : tone === "dupe"
+      ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200"
+      : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-200";
+
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium", cls)}>
+      {children}
+    </span>
+  );
+}
+
+function Spinner({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={cn("animate-spin", className)} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+      />
+    </svg>
+  );
+}
+
 export default function LeadsClient() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -74,9 +118,14 @@ export default function LeadsClient() {
   const [onlyDupes, setOnlyDupes] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // локальные правки по leadId
   const [draft, setDraft] = useState<Record<number, { price?: string; comment?: string; datetime?: string }>>({});
 
-  // refs по leadId, чтобы "открыть оригинал" мог скроллить на карточку
+  // для видимого фидбэка по кнопкам (на каждый лид отдельно)
+  const [busy, setBusy] = useState<Record<number, string | null>>({}); // например "status:done", "save", "assign"
+  const [flash, setFlash] = useState<Record<number, "ok" | "err" | null>>({}); // краткий подсвет карточки
+
+  // refs по leadId, чтобы "открыть оригинал" мог скроллить
   const cardRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const setRef = (id: number) => (el: HTMLDivElement | null) => {
     cardRefs.current[id] = el;
@@ -86,7 +135,6 @@ export default function LeadsClient() {
     () => users.filter((u) => u.role === "DISPATCHER" && u.isActive),
     [users]
   );
-
   const singleDispatcherId = dispatchers.length === 1 ? dispatchers[0].id : null;
 
   async function loadUsers() {
@@ -116,16 +164,68 @@ export default function LeadsClient() {
       body: JSON.stringify(patch),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) {
-      alert(data?.error || "Ошибка сохранения");
-      return false;
+    if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка сохранения");
+    return data.lead;
+  }
+
+  function ping(id: number, kind: "ok" | "err") {
+    setFlash((p) => ({ ...p, [id]: kind }));
+    setTimeout(() => setFlash((p) => ({ ...p, [id]: null })), 650);
+  }
+
+  function openLead(id: number) {
+    const el = cardRefs.current[id];
+    if (!el) {
+      alert("Оригинал не найден в текущем списке (возможно, фильтр скрывает его).");
+      return;
     }
-    return true;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.classList.add("ring-2", "ring-zinc-900", "dark:ring-white");
+    setTimeout(() => el.classList.remove("ring-2", "ring-zinc-900", "dark:ring-white"), 1200);
+  }
+
+  async function copyPhone(phone: string) {
+    try {
+      await navigator.clipboard.writeText(phone);
+    } catch {
+      prompt("Скопируй телефон:", phone);
+      return;
+    }
+    // небольшой “тихий” успех без alert
   }
 
   async function quickStatus(id: number, next: Lead["status"]) {
-    const ok = await patchLead(id, { status: next });
-    if (ok) loadLeads();
+    // optimistic: сразу обновим UI
+    setBusy((p) => ({ ...p, [id]: `status:${next}` }));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: next } : l)));
+
+    try {
+      await patchLead(id, { status: next });
+      ping(id, "ok");
+    } catch (e: any) {
+      // откат — перезагрузим список, чтобы не гадать
+      ping(id, "err");
+      await loadLeads();
+      alert(e?.message || "Не удалось обновить статус");
+    } finally {
+      setBusy((p) => ({ ...p, [id]: null }));
+    }
+  }
+
+  async function assignLead(id: number, assignedToId: number | null) {
+    setBusy((p) => ({ ...p, [id]: "assign" }));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, assignedToId } : l)));
+
+    try {
+      await patchLead(id, { assignedToId });
+      ping(id, "ok");
+    } catch (e: any) {
+      ping(id, "err");
+      await loadLeads();
+      alert(e?.message || "Не удалось назначить диспетчера");
+    } finally {
+      setBusy((p) => ({ ...p, [id]: null }));
+    }
   }
 
   async function saveInline(id: number) {
@@ -140,63 +240,52 @@ export default function LeadsClient() {
         return;
       }
     }
-
     if ("comment" in d) patch.comment = (d.comment ?? "").trim() || null;
     if ("datetime" in d) patch.datetime = (d.datetime ?? "").trim() || null;
 
-    const ok = await patchLead(id, patch);
-    if (ok) {
+    setBusy((p) => ({ ...p, [id]: "save" }));
+    // optimistic: применим патч локально
+    setLeads((prev) =>
+      prev.map((l) =>
+        l.id === id
+          ? {
+              ...l,
+              ...(patch.price !== undefined ? { price: patch.price } : {}),
+              ...(patch.comment !== undefined ? { comment: patch.comment } : {}),
+              ...(patch.datetime !== undefined ? { datetime: patch.datetime } : {}),
+            }
+          : l
+      )
+    );
+
+    try {
+      await patchLead(id, patch);
       setDraft((prev) => {
         const copy = { ...prev };
         delete copy[id];
         return copy;
       });
-      loadLeads();
+      ping(id, "ok");
+    } catch (e: any) {
+      ping(id, "err");
+      await loadLeads();
+      alert(e?.message || "Не удалось сохранить");
+    } finally {
+      setBusy((p) => ({ ...p, [id]: null }));
     }
-  }
-
-  async function copyPhone(phone: string) {
-    try {
-      await navigator.clipboard.writeText(phone);
-      alert("Телефон скопирован ✅");
-    } catch {
-      prompt("Скопируй телефон:", phone);
-    }
-  }
-
-  function openLead(id: number) {
-    const el = cardRefs.current[id];
-    if (!el) {
-      alert("Оригинал не найден в текущем списке (возможно, фильтр скрывает его).");
-      return;
-    }
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-    el.style.outline = "3px solid #111";
-    el.style.outlineOffset = "2px";
-    setTimeout(() => {
-      // аккуратно убираем подсветку
-      if (el) el.style.outline = "";
-    }, 1400);
   }
 
   // --- Авто-назначение: если диспетчер один и есть новые неназначенные лиды ---
   async function autoAssignIfNeeded(currentLeads: Lead[]) {
     if (!singleDispatcherId) return;
-
     const targets = currentLeads.filter((l) => l.status === "new" && !l.assignedToId);
     if (targets.length === 0) return;
 
-    // назначим максимум первые 20, чтобы не долбить API бесконечно
     const batch = targets.slice(0, 20);
-
-    // последовательно, чтобы не устроить шторм запросов
     for (const l of batch) {
       // eslint-disable-next-line no-await-in-loop
-      await patchLead(l.id, { assignedToId: singleDispatcherId });
+      await assignLead(l.id, singleDispatcherId);
     }
-
-    // обновим список после автоназначения
-    await loadLeads();
   }
 
   useEffect(() => {
@@ -209,55 +298,89 @@ export default function LeadsClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, q, onlyDupes]);
 
-  // когда меняется список leads или вычислился singleDispatcherId — попробуем автоназначение
   useEffect(() => {
-    if (!loading && leads.length > 0) {
-      autoAssignIfNeeded(leads);
-    }
+    if (!loading && leads.length > 0) autoAssignIfNeeded(leads);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singleDispatcherId, leads.length]);
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Лиды</h1>
+    <div className="p-4">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Лиды</h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Быстрые действия с заметным фидбеком: кнопки “нажимаются”, показывают загрузку и результат.
+          </p>
+        </div>
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
-        <select value={status} onChange={(e) => setStatus(e.target.value as any)}>
-          {STATUS_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Поиск: телефон / имя / откуда / куда"
-          style={{ minWidth: 320, padding: "6px 10px" }}
-        />
-
-        <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input type="checkbox" checked={onlyDupes} onChange={(e) => setOnlyDupes(e.target.checked)} />
-          Только дубликаты
-        </label>
-
-        <button onClick={loadLeads} disabled={loading}>
-          {loading ? "Обновляем..." : "Обновить"}
+        <button
+          onClick={loadLeads}
+          className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium shadow-sm hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+          disabled={loading}
+        >
+          {loading ? <Spinner /> : <span aria-hidden>↻</span>}
+          {loading ? "Обновляем…" : "Обновить"}
         </button>
+      </div>
+
+      <div className="mb-4 grid gap-3 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:grid-cols-12">
+        <div className="sm:col-span-3">
+          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">Статус</label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as any)}
+            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-zinc-800"
+          >
+            {STATUS_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sm:col-span-6">
+          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">Поиск</label>
+          <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+            <span className="text-zinc-500" aria-hidden>
+              🔎
+            </span>
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Телефон / имя / откуда / куда"
+              className="w-full bg-transparent text-sm outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="sm:col-span-3">
+          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">Фильтры</label>
+          <label className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+            <input
+              type="checkbox"
+              checked={onlyDupes}
+              onChange={(e) => setOnlyDupes(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Только дубликаты
+          </label>
+        </div>
 
         {singleDispatcherId && (
-          <span style={{ fontSize: 12, opacity: 0.75 }}>
-            Авто-назначение включено (единственный диспетчер).
-          </span>
+          <div className="sm:col-span-12">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
+              ⚡ Авто-назначение включено: есть ровно один активный диспетчер.
+            </div>
+          </div>
         )}
       </div>
 
-      {loading && <div>Загрузка…</div>}
-
-      <div style={{ display: "grid", gap: 12 }}>
+      <div className="grid gap-3">
         {leads.map((l) => {
           const d = draft[l.id] || {};
+          const isBusy = !!busy[l.id];
+          const busyKey = busy[l.id] || "";
           const priceStr = "price" in d ? d.price ?? "" : l.price?.toString() ?? "";
           const commentStr = "comment" in d ? d.comment ?? "" : l.comment ?? "";
           const datetimeStr = "datetime" in d ? d.datetime ?? "" : l.datetime ?? "";
@@ -266,88 +389,85 @@ export default function LeadsClient() {
           const tg = tgLink(l.phone);
           const tel = l.phone ? `tel:${l.phone}` : null;
 
-          const cardBorder =
-            l.status === "new" ? "2px solid #111" : l.isDuplicate ? "1px solid #f2b6b6" : "1px solid #ddd";
-          const cardBg = l.isDuplicate ? "#fff6f6" : "#fff";
+          const statusTone =
+            l.status === "new"
+              ? "new"
+              : l.status === "in_progress"
+              ? "work"
+              : l.status === "done"
+              ? "done"
+              : "canceled";
+
+          const flashCls =
+            flash[l.id] === "ok"
+              ? "ring-2 ring-emerald-400"
+              : flash[l.id] === "err"
+              ? "ring-2 ring-rose-400"
+              : "";
 
           return (
             <div
               key={l.id}
               ref={setRef(l.id)}
-              style={{
-                border: cardBorder,
-                borderRadius: 12,
-                padding: 12,
-                background: cardBg,
-              }}
+              className={cn(
+                "rounded-2xl border bg-white p-4 shadow-sm transition",
+                "border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950",
+                l.status === "new" && "border-zinc-900 dark:border-white",
+                l.isDuplicate && "bg-rose-50/40 dark:bg-rose-950/10",
+                flashCls
+              )}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "baseline" }}>
-                    <b style={{ fontSize: 16 }}>#{l.id}</b>
-                    <span style={{ fontWeight: 800 }}>{l.name}</span>
-                    <span style={{ opacity: 0.85 }}>({l.phone})</span>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-base font-extrabold">#{l.id}</span>
+                    <span className="font-semibold">{l.name}</span>
+                    <button
+                      onClick={() => copyPhone(l.phone)}
+                      className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:bg-zinc-900"
+                      title="Скопировать телефон"
+                    >
+                      📋 <span className="truncate">{l.phone}</span>
+                    </button>
 
-                    {l.status === "new" && (
-                      <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 999, border: "1px solid #111" }}>
-                        НОВЫЙ
-                      </span>
-                    )}
+                    <Badge tone={statusTone}>
+                      {l.status === "new" ? "✨ " : l.status === "in_progress" ? "🟡 " : l.status === "done" ? "✅ " : "⛔ "}
+                      {STATUS_LABEL[l.status]}
+                    </Badge>
 
                     {l.isDuplicate && (
-                      <span
-                        style={{
-                          fontSize: 12,
-                          padding: "2px 8px",
-                          borderRadius: 999,
-                          border: "1px solid #c33",
-                          color: "#c33",
-                          display: "inline-flex",
-                          gap: 8,
-                          alignItems: "center",
-                        }}
-                      >
-                        ДУБЛИКАТ #{l.duplicateOfId ?? "—"}
+                      <span className="inline-flex items-center gap-2">
+                        <Badge tone="dupe">🧬 Дубликат #{l.duplicateOfId ?? "—"}</Badge>
                         {l.duplicateOfId && (
                           <button
                             onClick={() => openLead(l.duplicateOfId!)}
-                            style={{
-                              padding: "2px 8px",
-                              borderRadius: 999,
-                              border: "1px solid #c33",
-                              cursor: "pointer",
-                              background: "transparent",
-                            }}
+                            className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-900 hover:bg-rose-100 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50"
                           >
-                            Открыть оригинал
+                            ↪ Открыть оригинал
                           </button>
                         )}
                       </span>
                     )}
                   </div>
 
-                  <div style={{ marginTop: 4 }}>
-                    {l.fromText} → {l.toText}
-                    {l.roundTrip ? " (туда-обратно)" : ""}
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
+                    <span className="truncate">
+                      📍 {l.fromText} <span className="opacity-60">→</span> {l.toText}
+                    </span>
+                    {l.roundTrip && <Badge tone="neutral">🔁 туда-обратно</Badge>}
+                    <Badge tone="neutral">🚗 {l.carClass}</Badge>
                   </div>
 
-                  <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{fmt(l.createdAt)}</div>
+                  <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+                    🗓 {fmt(l.createdAt)}
+                    {l.datetime ? ` • 🕒 ${l.datetime}` : ""}
+                  </div>
 
-                  <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button onClick={() => copyPhone(l.phone)} style={{ padding: "6px 10px" }}>
-                      📋 Скопировать телефон
-                    </button>
+                  <div className="mt-3 flex flex-wrap gap-2">
                     {tel && (
                       <a
                         href={tel}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "6px 10px",
-                          border: "1px solid #ddd",
-                          borderRadius: 10,
-                        }}
+                        className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
                       >
                         📞 Позвонить
                       </a>
@@ -357,14 +477,7 @@ export default function LeadsClient() {
                         href={wa}
                         target="_blank"
                         rel="noreferrer"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "6px 10px",
-                          border: "1px solid #ddd",
-                          borderRadius: 10,
-                        }}
+                        className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200 dark:hover:bg-emerald-950/50"
                       >
                         💬 WhatsApp
                       </a>
@@ -374,113 +487,181 @@ export default function LeadsClient() {
                         href={tg}
                         target="_blank"
                         rel="noreferrer"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "6px 10px",
-                          border: "1px solid #ddd",
-                          borderRadius: 10,
-                        }}
+                        className="inline-flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-medium text-sky-900 hover:bg-sky-100 dark:border-sky-900/40 dark:bg-sky-950/30 dark:text-sky-200 dark:hover:bg-sky-950/50"
                       >
-                        ✈️ Telegram
+                        ✈ Telegram
                       </a>
                     )}
                   </div>
                 </div>
 
-                <div style={{ textAlign: "right" }}>
-                  <div>
-                    <b>{STATUS_LABEL[l.status]}</b>
+                <div className="w-full shrink-0 sm:w-[360px]">
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="text-sm font-semibold">Управление</div>
+                      {isBusy && (
+                        <div className="inline-flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                          <Spinner className="h-4 w-4" />
+                          Выполняем…
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid gap-2">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                          Диспетчер
+                        </label>
+                        <select
+                          value={l.assignedToId ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value === "" ? null : Number(e.target.value);
+                            assignLead(l.id, v);
+                          }}
+                          disabled={isBusy}
+                          className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-200 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-zinc-800"
+                        >
+                          <option value="">— не назначен —</option>
+                          {dispatchers.map((u) => (
+                            <option key={u.id} value={u.id}>
+                              {u.name} ({u.email})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Дата/время
+                          </label>
+                          <input
+                            value={datetimeStr}
+                            onChange={(e) =>
+                              setDraft((p) => ({ ...p, [l.id]: { ...p[l.id], datetime: e.target.value } }))
+                            }
+                            placeholder="20.01 14:00"
+                            disabled={isBusy}
+                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-200 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-zinc-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            Цена (₽)
+                          </label>
+                          <input
+                            value={priceStr}
+                            onChange={(e) =>
+                              setDraft((p) => ({ ...p, [l.id]: { ...p[l.id], price: e.target.value } }))
+                            }
+                            placeholder="3500"
+                            disabled={isBusy}
+                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-200 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-zinc-800"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                          Комментарий диспетчера
+                        </label>
+                        <textarea
+                          value={commentStr}
+                          onChange={(e) =>
+                            setDraft((p) => ({ ...p, [l.id]: { ...p[l.id], comment: e.target.value } }))
+                          }
+                          placeholder="Детское кресло, багаж, встреча…"
+                          disabled={isBusy}
+                          className="min-h-[76px] w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-200 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:ring-zinc-800"
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => saveInline(l.id)}
+                          disabled={isBusy}
+                          className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                        >
+                          {busyKey === "save" ? <Spinner className="h-4 w-4" /> : "💾"}
+                          Сохранить
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            setDraft((p) => {
+                              const copy = { ...p };
+                              delete copy[l.id];
+                              return copy;
+                            })
+                          }
+                          disabled={isBusy}
+                          className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+                        >
+                          ↩ Отменить
+                        </button>
+                      </div>
+
+                      <div className="mt-1 grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => quickStatus(l.id, "in_progress")}
+                          disabled={isBusy}
+                          className={cn(
+                            "inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold disabled:opacity-60",
+                            l.status === "in_progress"
+                              ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200"
+                              : "border-amber-200 bg-amber-50 text-amber-900 hover:bg-amber-100 dark:border-amber-900/30 dark:bg-amber-950/25 dark:text-amber-200 dark:hover:bg-amber-950/40"
+                          )}
+                        >
+                          {busyKey === "status:in_progress" ? <Spinner className="h-4 w-4" /> : "🟡"}
+                          В работу
+                        </button>
+
+                        <button
+                          onClick={() => quickStatus(l.id, "done")}
+                          disabled={isBusy}
+                          className={cn(
+                            "inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold disabled:opacity-60",
+                            l.status === "done"
+                              ? "border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-200"
+                              : "border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/30 dark:bg-emerald-950/25 dark:text-emerald-200 dark:hover:bg-emerald-950/40"
+                          )}
+                        >
+                          {busyKey === "status:done" ? <Spinner className="h-4 w-4" /> : "✅"}
+                          Завершить
+                        </button>
+
+                        <button
+                          onClick={() => quickStatus(l.id, "canceled")}
+                          disabled={isBusy}
+                          className={cn(
+                            "inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold disabled:opacity-60",
+                            l.status === "canceled"
+                              ? "border-rose-300 bg-rose-100 text-rose-900 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200"
+                              : "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100 dark:border-rose-900/30 dark:bg-rose-950/25 dark:text-rose-200 dark:hover:bg-rose-950/40"
+                          )}
+                        >
+                          {busyKey === "status:canceled" ? <Spinner className="h-4 w-4" /> : "⛔"}
+                          Отменить
+                        </button>
+                      </div>
+
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                        {flash[l.id] === "ok" ? "✅ Готово" : flash[l.id] === "err" ? "⚠ Ошибка" : " "}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>{l.carClass}</div>
-                </div>
-              </div>
-
-              <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                  <span style={{ fontSize: 13, opacity: 0.8 }}>Диспетчер:</span>
-                  <select
-                    value={l.assignedToId ?? ""}
-                    onChange={async (e) => {
-                      const v = e.target.value === "" ? null : Number(e.target.value);
-                      const ok = await patchLead(l.id, { assignedToId: v });
-                      if (ok) loadLeads();
-                    }}
-                  >
-                    <option value="">— не назначен —</option>
-                    {dispatchers.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} ({u.email})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr", alignItems: "start" }}>
-                  <div>
-                    <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Дата/время</div>
-                    <input
-                      value={datetimeStr}
-                      onChange={(e) =>
-                        setDraft((p) => ({ ...p, [l.id]: { ...p[l.id], datetime: e.target.value } }))
-                      }
-                      placeholder="например 20.01 14:00"
-                      style={{ width: "100%", padding: "6px 10px" }}
-                    />
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Цена (₽)</div>
-                    <input
-                      value={priceStr}
-                      onChange={(e) =>
-                        setDraft((p) => ({ ...p, [l.id]: { ...p[l.id], price: e.target.value } }))
-                      }
-                      placeholder="например 3500"
-                      style={{ width: "100%", padding: "6px 10px" }}
-                    />
-                  </div>
-
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Комментарий диспетчера</div>
-                    <textarea
-                      value={commentStr}
-                      onChange={(e) =>
-                        setDraft((p) => ({ ...p, [l.id]: { ...p[l.id], comment: e.target.value } }))
-                      }
-                      placeholder="Например: клиент просит детское кресло"
-                      style={{ width: "100%", padding: "6px 10px", minHeight: 70 }}
-                    />
-                  </div>
-
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button onClick={() => saveInline(l.id)}>Сохранить</button>
-                    <button
-                      onClick={() =>
-                        setDraft((p) => {
-                          const copy = { ...p };
-                          delete copy[l.id];
-                          return copy;
-                        })
-                      }
-                    >
-                      Отменить правки
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button onClick={() => quickStatus(l.id, "in_progress")}>🟡 В работу</button>
-                  <button onClick={() => quickStatus(l.id, "done")}>✅ Завершить</button>
-                  <button onClick={() => quickStatus(l.id, "canceled")}>⛔ Отменить</button>
                 </div>
               </div>
             </div>
           );
         })}
 
-        {!loading && leads.length === 0 && <div>Лидов нет</div>}
+        {!loading && leads.length === 0 && (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+            Лидов нет.
+          </div>
+        )}
       </div>
     </div>
   );
