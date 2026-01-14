@@ -130,6 +130,29 @@ const POPULAR_CITIES = [
   "Иркутск",
   "Хабаровск",
   "Владивосток",
+
+  // ЛДНР
+  "Донецк (ДНР)",
+  "Луганск (ЛНР)",
+  "Макеевка (ДНР)",
+  "Мариуполь (ДНР)",
+  "Горловка (ДНР)",
+  "Енакиево (ДНР)",
+  "Алчевск (ЛНР)",
+  "Стаханов (ЛНР)",
+  "Северодонецк (ЛНР)",
+  "Лисичанск (ЛНР)",
+
+  // Запорожье
+  "Запорожье",
+  "Мелитополь",
+  "Бердянск",
+
+  // Херсон
+  "Херсон",
+  "Геническ",
+  "Скадовск",
+  "Новая Каховка",
 ];
 
 const AIRPORT_HINTS = [
@@ -152,7 +175,7 @@ function normalize(s: string) {
 
 function pickSuggestions(value: string, routeType: RouteType) {
   const q = normalize(value);
-  if (!q) return routeType === "airport" ? AIRPORT_HINTS.slice(0, 6) : POPULAR_CITIES.slice(0, 10);
+  if (!q) return routeType === "airport" ? AIRPORT_HINTS.slice(0, 8) : POPULAR_CITIES.slice(0, 12);
 
   const source = routeType === "airport" ? [...AIRPORT_HINTS, ...POPULAR_CITIES] : POPULAR_CITIES;
 
@@ -161,7 +184,6 @@ function pickSuggestions(value: string, routeType: RouteType) {
       const n = normalize(name);
       const idx = n.indexOf(q);
       if (idx === -1) return null;
-      // чем ближе к началу — тем выше
       const score = idx === 0 ? 100 : 50 - idx;
       return { name, score };
     })
@@ -226,16 +248,13 @@ export default function LeadForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // автоопределение оставим простым: если человек выбрал тип на главной/в кнопках — не перебиваем
   const [routeTypeTouched, setRouteTypeTouched] = useState(false);
 
   const estimate = useMemo(() => calcEstimate(routeType, carClass), [routeType, carClass]);
 
-  // Списки подсказок (обновляются по вводу)
   const fromSuggestions = useMemo(() => pickSuggestions(fromText, routeType), [fromText, routeType]);
   const toSuggestions = useMemo(() => pickSuggestions(toText, routeType), [toText, routeType]);
 
-  // Чтобы удобнее было выбирать подсказки кликом — показываем dropdown
   const [fromOpen, setFromOpen] = useState(false);
   const [toOpen, setToOpen] = useState(false);
   const fromBoxRef = useRef<HTMLDivElement | null>(null);
@@ -251,7 +270,6 @@ export default function LeadForm({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  // Если тип маршрута меняют извне (с главной) — считаем это ручным выбором
   useEffect(() => {
     setRouteTypeTouched(true);
   }, [routeType]);
@@ -287,7 +305,6 @@ export default function LeadForm({
 
     setLoading(true);
     try {
-      // В базу отправляем как строку (можешь потом хранить DateTime)
       const payload = {
         name: name.trim(),
         phone: phone.trim(),
@@ -414,7 +431,7 @@ export default function LeadForm({
           />
         </Field>
 
-        {/* ОТКУДА with autocomplete */}
+        {/* ОТКУДА */}
         <Field
           label="Откуда *"
           hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Начните вводить город"}
@@ -451,7 +468,7 @@ export default function LeadForm({
           </div>
         </Field>
 
-        {/* КУДА with autocomplete */}
+        {/* КУДА */}
         <Field
           label="Куда *"
           hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Начните вводить город"}
@@ -466,7 +483,9 @@ export default function LeadForm({
                 setToOpen(true);
               }}
               onFocus={() => setToOpen(true)}
-              placeholder={routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"}
+              placeholder={
+                routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"
+              }
             />
             {toOpen && toSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
