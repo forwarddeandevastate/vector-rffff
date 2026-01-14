@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import AdminNav from "./nav";
+import LogoutButton from "./logout-button";
+import ThemeToggle from "./theme-toggle";
 
 export default async function AdminProtectedLayout({ children }: { children: ReactNode }) {
   const name = process.env.ADMIN_COOKIE_NAME || "admin_token";
@@ -13,12 +14,11 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
-      {/* top bar */}
       <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link href="/admin/leads" className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-black">
-              ⚡
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-black">
+              V
             </div>
             <div className="leading-tight">
               <div className="text-sm font-extrabold tracking-tight">Вектор РФ</div>
@@ -26,16 +26,26 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
             </div>
           </Link>
 
-          <AdminNav />
+          <nav className="hidden items-center gap-2 md:flex">
+            <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/leads">
+              Лиды
+            </Link>
+            <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/users">
+              Пользователи
+            </Link>
+            <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/settings">
+              Настройки
+            </Link>
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LogoutButton />
+          </div>
         </div>
       </header>
 
-      {/* page */}
-      <main className="mx-auto max-w-6xl px-4 py-5">{children}</main>
-
-      <footer className="mx-auto max-w-6xl px-4 py-6 text-xs text-zinc-500 dark:text-zinc-500">
-        © {new Date().getFullYear()} Вектор РФ
-      </footer>
+      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
     </div>
   );
 }
