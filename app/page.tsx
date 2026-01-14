@@ -203,11 +203,13 @@ export default function HomePage() {
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
   const orderRef = useRef<HTMLDivElement | null>(null);
 
+  function scrollToOrder() {
+    orderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function pickClass(v: CarClass, scrollToForm = true) {
     setSelectedClass(v);
-    if (scrollToForm) {
-      orderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (scrollToForm) scrollToOrder();
   }
 
   return (
@@ -295,22 +297,42 @@ export default function HomePage() {
               Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
             </p>
 
+            {/* КАРТОЧКИ: по клику скролл к заявке */}
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+              <button
+                type="button"
+                onClick={scrollToOrder}
+                className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
+              >
                 <div className="text-sm font-extrabold text-zinc-900">Город</div>
                 <div className="mt-1 text-sm text-zinc-600">Встреча и поездки по городу</div>
-              </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToOrder}
+                className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
+              >
                 <div className="text-sm font-extrabold text-zinc-900">Межгород</div>
                 <div className="mt-1 text-sm text-zinc-600">Трансферы между городами</div>
-              </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToOrder}
+                className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
+              >
                 <div className="text-sm font-extrabold text-zinc-900">Аэропорты</div>
                 <div className="mt-1 text-sm text-zinc-600">Встреча по времени прилёта</div>
-              </div>
+              </button>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-sky-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
+            {/* ГАРАНТИИ: по клику скролл к заявке */}
+            <button
+              type="button"
+              onClick={scrollToOrder}
+              className="mt-6 w-full rounded-2xl border border-sky-200/70 bg-white/70 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
+            >
               <div className="text-sm font-extrabold text-zinc-900">Гарантии</div>
               <div className="mt-2 grid gap-2 text-sm text-zinc-700">
                 <div className="flex items-start gap-2">
@@ -326,18 +348,19 @@ export default function HomePage() {
                   <span>Учитываем пожелания: багаж, кресло, рейс, остановки.</span>
                 </div>
               </div>
-            </div>
+            </button>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              <a
-                href="#order"
+              <button
+                type="button"
+                onClick={scrollToOrder}
                 className={cn(
                   "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
                   "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
                 )}
               >
                 Оставить заявку
-              </a>
+              </button>
 
               <a
                 href="#classes"
@@ -452,10 +475,7 @@ export default function HomePage() {
       </section>
 
       <section id="classes" className="mx-auto max-w-6xl px-4 pb-12">
-        <SectionTitle
-          title="Классы авто"
-          desc="Нажмите на карточку — класс подставится в форму и подсветится."
-        />
+        <SectionTitle title="Классы авто" desc="Нажмите на карточку — класс подставится в форму и подсветится." />
 
         <div className="grid gap-3 md:grid-cols-2">
           <ClassCardButton

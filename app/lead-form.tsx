@@ -95,12 +95,18 @@ function formatRub(n: number) {
   return `${parts.join(" ")} ₽`;
 }
 
+/**
+ * "Средние по рынку" ориентиры:
+ * city: 900–2800
+ * airport: 1200–3800
+ * intercity: 8000–22000
+ * Плюс коэффициенты по классу.
+ */
 function calcEstimate(routeType: RouteType, carClass: CarClass) {
-  // Базовые ориентиры (меняй под себя)
   const base = {
-    city: { min: 1500, max: 3500 },
-    airport: { min: 2500, max: 6000 },
-    intercity: { min: 7000, max: 18000 },
+    city: { min: 900, max: 2800 },
+    airport: { min: 1200, max: 3800 },
+    intercity: { min: 8000, max: 22000 },
   }[routeType];
 
   const mult =
@@ -117,11 +123,14 @@ function calcEstimate(routeType: RouteType, carClass: CarClass) {
 
   const label = routeType === "city" ? "По городу" : routeType === "airport" ? "Аэропорт" : "Межгород";
 
+  const extra = routeType === "intercity" ? "Межгород обычно считают от расстояния (условно ~25–27 ₽/км)." : null;
+
   return {
     label,
     min,
     max,
     text: `${label}: ${formatRub(min)} – ${formatRub(max)}`,
+    extra,
   };
 }
 
@@ -145,7 +154,6 @@ export default function LeadForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Тип маршрута: авто-подсказка + ручной выбор
   const [routeType, setRouteType] = useState<RouteType>("city");
   const [routeTypeTouched, setRouteTypeTouched] = useState(false);
 
@@ -155,7 +163,6 @@ export default function LeadForm({
     return "city";
   }, [fromText, toText]);
 
-  // Пока пользователь не трогал — подставляем автоматически
   useEffect(() => {
     if (!routeTypeTouched) setRouteType(autoRouteType);
   }, [autoRouteType, routeTypeTouched]);
@@ -186,7 +193,6 @@ export default function LeadForm({
         carClass,
         roundTrip,
         comment: comment.trim() ? comment.trim() : null,
-        // routeType можно сохранить в базу позже, если захочешь.
       };
 
       const res = await fetch("/api/leads", {
@@ -268,12 +274,7 @@ export default function LeadForm({
               <span className="font-semibold text-zinc-800">
                 {routeType === "city" ? "город" : routeType === "airport" ? "аэропорт" : "межгород"}
               </span>
-              {!routeTypeTouched ? (
-                <>
-                  {" "}
-                  (по заполненным полям)
-                </>
-              ) : null}
+              {!routeTypeTouched ? <> (по заполненным полям)</> : null}
             </div>
           </div>
 
@@ -287,8 +288,9 @@ export default function LeadForm({
       <div className="rounded-2xl border border-sky-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
         <div className="text-xs font-semibold text-zinc-700">Ориентир стоимости</div>
         <div className="mt-1 text-base font-extrabold text-zinc-900">{estimate.text}</div>
+        {estimate.extra ? <div className="mt-1 text-[11px] leading-5 text-zinc-600">{estimate.extra}</div> : null}
         <div className="mt-1 text-[11px] leading-5 text-zinc-600">
-          Это примерный диапазон по типу маршрута и классу авто. Точную стоимость подтвердим после заявки.
+          Это примерный диапазон по рынку и выбранным параметрам. Точную стоимость подтвердим после заявки.
         </div>
       </div>
 
@@ -335,11 +337,7 @@ export default function LeadForm({
         </Field>
 
         <Field label="Класс авто" hint="Подсветит карточку ниже">
-          <select
-            className={ControlBase()}
-            value={carClass}
-            onChange={(e) => onCarClassChange(e.target.value as CarClass)}
-          >
+          <select className={ControlBase()} value={carClass} onChange={(e) => onCarClassChange(e.target.value as CarClass)}>
             <option value="standard">Стандарт</option>
             <option value="comfort">Комфорт</option>
             <option value="business">Бизнес</option>
