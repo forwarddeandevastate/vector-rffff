@@ -7,6 +7,67 @@ function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
+function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className={cn(
+        "h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none",
+        "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
+        props.className
+      )}
+    />
+  );
+}
+
+function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      className={cn(
+        "h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none",
+        "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
+        props.className
+      )}
+    />
+  );
+}
+
+function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={cn(
+        "min-h-[96px] w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none",
+        "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
+        props.className
+      )}
+    />
+  );
+}
+
+function Field({
+  label,
+  hint,
+  children,
+  className,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <div className="flex items-end justify-between gap-2">
+        <div className="text-xs font-semibold text-zinc-700">{label}</div>
+        {hint ? <div className="text-[11px] text-zinc-500">{hint}</div> : null}
+      </div>
+      <div className="mt-1">{children}</div>
+    </div>
+  );
+}
+
 export default function LeadForm() {
   const router = useRouter();
 
@@ -31,7 +92,7 @@ export default function LeadForm() {
     setError(null);
 
     if (!canSubmit) {
-      setError("Заполни имя, телефон, откуда и куда.");
+      setError("Заполните имя, телефон, откуда и куда.");
       return;
     }
 
@@ -66,67 +127,56 @@ export default function LeadForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-2xl bg-white p-5 shadow-sm dark:bg-zinc-950">
+    <form onSubmit={onSubmit} className="grid gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Ваше имя *">
-          <input value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Иван" />
+        <Field label="Ваше имя *" hint="Как к вам обращаться">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />
         </Field>
 
-        <Field label="Телефон *">
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="input"
-            placeholder="+7 999 123-45-67"
-            inputMode="tel"
-          />
+        <Field label="Телефон *" hint="Для связи">
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 999 123-45-67" inputMode="tel" />
         </Field>
 
         <Field label="Откуда *" className="sm:col-span-2">
-          <input
-            value={fromText}
-            onChange={(e) => setFromText(e.target.value)}
-            className="input"
-            placeholder="Москва, аэропорт / адрес"
-          />
+          <Input value={fromText} onChange={(e) => setFromText(e.target.value)} placeholder="Город, адрес, аэропорт" />
         </Field>
 
         <Field label="Куда *" className="sm:col-span-2">
-          <input value={toText} onChange={(e) => setToText(e.target.value)} className="input" placeholder="Город / адрес" />
+          <Input value={toText} onChange={(e) => setToText(e.target.value)} placeholder="Город, адрес" />
         </Field>
 
-        <Field label="Дата/время" className="sm:col-span-2">
-          <input value={datetime} onChange={(e) => setDatetime(e.target.value)} className="input" placeholder="Например: сегодня 18:30" />
+        <Field label="Дата и время" hint="Если известно" className="sm:col-span-2">
+          <Input value={datetime} onChange={(e) => setDatetime(e.target.value)} placeholder="Например: сегодня 18:30" />
         </Field>
 
         <Field label="Класс авто">
-          <select value={carClass} onChange={(e) => setCarClass(e.target.value)} className="input">
+          <Select value={carClass} onChange={(e) => setCarClass(e.target.value)}>
             <option value="standard">Стандарт</option>
             <option value="comfort">Комфорт</option>
             <option value="business">Бизнес</option>
             <option value="minivan">Минивэн</option>
-          </select>
+          </Select>
         </Field>
 
-        <Field label="Туда-обратно">
-          <label className="flex h-11 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} className="h-4 w-4" />
-            <span>Нужен обратный трансфер</span>
+        <Field label="Опции">
+          <label className="flex h-11 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-800">
+            <input
+              type="checkbox"
+              checked={roundTrip}
+              onChange={(e) => setRoundTrip(e.target.checked)}
+              className="h-4 w-4 accent-indigo-600"
+            />
+            Туда-обратно
           </label>
         </Field>
 
-        <Field label="Комментарий" className="sm:col-span-2">
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="textarea"
-            placeholder="Детское кресло, багаж, номер рейса и т.п."
-          />
+        <Field label="Комментарий" hint="Багаж, кресло, рейс" className="sm:col-span-2">
+          <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Например: детское кресло, 2 чемодана, рейс SU123" />
         </Field>
       </div>
 
       {error ? (
-        <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">
           {error}
         </div>
       ) : null}
@@ -134,61 +184,12 @@ export default function LeadForm() {
       <button
         disabled={loading || !canSubmit}
         className={cn(
-          "mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-extrabold text-white shadow-sm transition",
-          "hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          "inline-flex h-11 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-extrabold text-white shadow-sm transition",
+          "hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
         )}
       >
         {loading ? "Отправляем…" : "Отправить заявку"}
       </button>
-
-      <style jsx>{`
-        .input {
-          height: 44px;
-          width: 100%;
-          border-radius: 12px;
-          border: 1px solid rgb(228 228 231);
-          background: white;
-          padding: 0 12px;
-          font-size: 14px;
-          outline: none;
-        }
-        .input:focus {
-          box-shadow: 0 0 0 2px rgb(228 228 231);
-        }
-        .textarea {
-          min-height: 96px;
-          width: 100%;
-          border-radius: 12px;
-          border: 1px solid rgb(228 228 231);
-          background: white;
-          padding: 10px 12px;
-          font-size: 14px;
-          outline: none;
-        }
-        .textarea:focus {
-          box-shadow: 0 0 0 2px rgb(228 228 231);
-        }
-
-        :global(.dark) .input,
-        :global(.dark) .textarea {
-          border-color: rgb(39 39 42);
-          background: rgb(9 9 11);
-          color: rgb(250 250 250);
-        }
-        :global(.dark) .input:focus,
-        :global(.dark) .textarea:focus {
-          box-shadow: 0 0 0 2px rgb(39 39 42);
-        }
-      `}</style>
     </form>
-  );
-}
-
-function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
-  return (
-    <div className={className}>
-      <div className="mb-1 text-xs font-semibold text-white/60 dark:text-zinc-400">{label}</div>
-      {children}
-    </div>
   );
 }
