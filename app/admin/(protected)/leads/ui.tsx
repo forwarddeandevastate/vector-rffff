@@ -51,15 +51,31 @@ function fmt(dt: string) {
   }
 }
 
+function digitsOnly(s: string) {
+  return (s || "").replace(/[^\d]/g, "");
+}
+
+function waLink(phone: string) {
+  // WhatsApp любит E.164 без плюса, но обычно ок и так
+  const p = digitsOnly(phone);
+  return p ? `https://wa.me/${p}` : null;
+}
+
+function tgLink(phone: string) {
+  // универсального tg:// по телефону нет, но можно открыть поиск
+  const p = digitsOnly(phone);
+  return p ? `https://t.me/+${p}` : null;
+}
+
 export default function LeadsClient() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [users, setUsers] = useState<User[]>([]);
 
   const [status, setStatus] = useState<"all" | Lead["status"]>("all");
   const [q, setQ] = useState("");
+  const [onlyDupes, setOnlyDupes] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // локальные правки по leadId
   const [draft, setDraft] = useState<Record<number, { price?: string; comment?: string; datetime?: string }>>({});
 
   const dispatchers = useMemo(
@@ -81,7 +97,9 @@ export default function LeadsClient() {
 
     const res = await fetch(`/api/admin/leads?${sp.toString()}`);
     const data = await res.json().catch(() => ({}));
-    setLeads(data.leads || []);
+    let rows: Lead[] = data.leads || [];
+    if (onlyDupes) rows = rows.filter((x) => x.isDuplicate);
+    setLeads(rows);
     setLoading(false);
   }
 
@@ -131,22 +149,31 @@ export default function LeadsClient() {
     }
   }
 
+  async function copyPhone(phone: string) {
+    try {
+      await navigator.clipboard.writeText(phone);
+      alert("Телефон скопирован ✅");
+    } catch {
+      // fallback
+      prompt("Скопируй телефон:", phone);
+    }
+  }
+
   useEffect(() => {
     loadUsers();
   }, []);
 
-  // легкий “debounce” для поиска
   useEffect(() => {
     const t = setTimeout(() => loadLeads(), 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, q]);
+  }, [status, q, onlyDupes]);
 
   return (
     <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Лиды</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Лиды</h1>
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
         <select value={status} onChange={(e) => setStatus(e.target.value as any)}>
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -162,6 +189,11 @@ export default function LeadsClient() {
           style={{ minWidth: 320, padding: "6px 10px" }}
         />
 
+        <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input type="checkbox" checked={onlyDupes} onChange={(e) => setOnlyDupes(e.target.checked)} />
+          Только дубликаты
+        </label>
+
         <button onClick={loadLeads} disabled={loading}>
           {loading ? "Обновляем..." : "Обновить"}
         </button>
@@ -176,31 +208,82 @@ export default function LeadsClient() {
           const commentStr = "comment" in d ? d.comment ?? "" : l.comment ?? "";
           const datetimeStr = "datetime" in d ? d.datetime ?? "" : l.datetime ?? "";
 
+          const wa = waLink(l.phone);
+          const tg = tgLink(l.phone);
+          const tel = l.phone ? `tel:${l.phone}` : null;
+
+          const cardBorder =
+            l.status === "new" ? "2px solid #111" : l.isDuplicate ? "1px solid #f2b6b6" : "1px solid #ddd";
+          const cardBg = l.isDuplicate ? "#fff6f6" : "#fff";
+
           return (
             <div
               key={l.id}
               style={{
-                border: "1px solid #ddd",
+                border: cardBorder,
                 borderRadius: 12,
                 padding: 12,
-                background: l.isDuplicate ? "#fff6f6" : "#fff",
+                background: cardBg,
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <div>
-                  <b>#{l.id}</b> — {l.name} ({l.phone})
-                  <div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "baseline" }}>
+                    <b style={{ fontSize: 16 }}>#{l.id}</b>
+                    <span style={{ fontWeight: 800 }}>{l.name}</span>
+                    <span style={{ opacity: 0.85 }}>({l.phone})</span>
+
+                    {l.status === "new" && (
+                      <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 999, border: "1px solid #111" }}>
+                        НОВЫЙ
+                      </span>
+                    )}
+
+                    {l.isDuplicate && (
+                      <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 999, border: "1px solid #c33", color: "#c33" }}>
+                        ДУБЛИКАТ #{l.duplicateOfId ?? "—"}
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: 4 }}>
                     {l.fromText} → {l.toText}
                     {l.roundTrip ? " (туда-обратно)" : ""}
                   </div>
 
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>{fmt(l.createdAt)}</div>
+                  <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{fmt(l.createdAt)}</div>
 
-                  {l.isDuplicate && (
-                    <div style={{ color: "crimson", fontSize: 12 }}>
-                      Дубликат. Оригинал: #{l.duplicateOfId ?? "—"}
-                    </div>
-                  )}
+                  {/* Быстрые контакты */}
+                  <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button onClick={() => copyPhone(l.phone)} style={{ padding: "6px 10px" }}>
+                      📋 Скопировать телефон
+                    </button>
+                    {tel && (
+                      <a href={tel} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ddd", borderRadius: 10 }}>
+                        📞 Позвонить
+                      </a>
+                    )}
+                    {wa && (
+                      <a
+                        href={wa}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ddd", borderRadius: 10 }}
+                      >
+                        💬 WhatsApp
+                      </a>
+                    )}
+                    {tg && (
+                      <a
+                        href={tg}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ddd", borderRadius: 10 }}
+                      >
+                        ✈️ Telegram
+                      </a>
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ textAlign: "right" }}>
@@ -259,13 +342,13 @@ export default function LeadsClient() {
                   </div>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Комментарий</div>
+                    <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Комментарий диспетчера</div>
                     <textarea
                       value={commentStr}
                       onChange={(e) =>
                         setDraft((p) => ({ ...p, [l.id]: { ...p[l.id], comment: e.target.value } }))
                       }
-                      placeholder="Комментарий диспетчера"
+                      placeholder="Например: клиент просит детское кресло"
                       style={{ width: "100%", padding: "6px 10px", minHeight: 70 }}
                     />
                   </div>
@@ -288,9 +371,9 @@ export default function LeadsClient() {
 
                 {/* Быстрые статусы */}
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button onClick={() => quickStatus(l.id, "in_progress")}>В работу</button>
-                  <button onClick={() => quickStatus(l.id, "done")}>Завершить</button>
-                  <button onClick={() => quickStatus(l.id, "canceled")}>Отменить</button>
+                  <button onClick={() => quickStatus(l.id, "in_progress")}>🟡 В работу</button>
+                  <button onClick={() => quickStatus(l.id, "done")}>✅ Завершить</button>
+                  <button onClick={() => quickStatus(l.id, "canceled")}>⛔ Отменить</button>
                 </div>
               </div>
             </div>
