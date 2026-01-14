@@ -40,6 +40,80 @@ function Field({
   );
 }
 
+function isAirportText(s: string) {
+  const t = s.toLowerCase();
+  return /аэропорт|airport|svo|dme|vko|svx|led|aer|kuf|kgd|ovb|krr|kzn/.test(t);
+}
+
+function isSameCityLikely(from: string, to: string) {
+  // Очень грубая эвристика: если обе строки короткие и похожи — город.
+  // Но реальнее: если нет признаков аэропорта и нет "город - город" по запятой.
+  const f = from.trim().toLowerCase();
+  const tt = to.trim().toLowerCase();
+  if (!f || !tt) return true;
+  if (isAirportText(f) || isAirportText(tt)) return false;
+  // Если обе строки содержат слова "г." или город как отдельный токен — не определяем,
+  // будем считать "город", пока не увидим явный межгород.
+  return true;
+}
+
+function isIntercityLikely(from: string, to: string) {
+  // Эвристика: если явно указаны два разных города (через "—", "-", "->") или две запятые
+  const s = `${from} ${to}`.toLowerCase();
+  if (isAirportText(from) || isAirportText(to)) return false;
+
+  if (/[—–-]|->/.test(s)) return true;
+
+  // если оба поля содержат запятую (обычно "город, адрес") — это может быть межгород, но не факт.
+  // добавим лёгкий сигнал: если слова "город" / "область" / "край" встречаются много.
+  const signals = (s.match(/область|край|республика|район/g) || []).length;
+  if (signals >= 1) return true;
+
+  // без явных признаков — не межгород
+  return false;
+}
+
+function formatRub(n: number) {
+  // 12000 -> "12 000 ₽"
+  const s = String(n);
+  const parts: string[] = [];
+  for (let i = s.length; i > 0; i -= 3) {
+    const start = Math.max(0, i - 3);
+    parts.unshift(s.slice(start, i));
+  }
+  return `${parts.join(" ")} ₽`;
+}
+
+function calcEstimate(routeType: "city" | "airport" | "intercity", carClass: CarClass) {
+  // Базовые ориентиры (можешь менять)
+  const base = {
+    city: { min: 1500, max: 3500 },
+    airport: { min: 2500, max: 6000 },
+    intercity: { min: 7000, max: 18000 },
+  }[routeType];
+
+  const mult =
+    carClass === "standard" ? 1 :
+    carClass === "comfort" ? 1.25 :
+    carClass === "business" ? 1.7 :
+    1.55; // minivan
+
+  const min = Math.round(base.min * mult);
+  const max = Math.round(base.max * mult);
+
+  const label =
+    routeType === "city" ? "По городу" :
+    routeType === "airport" ? "Аэропорт" :
+    "Межгород";
+
+  return {
+    label,
+    min,
+    max,
+    text: `${label}: ${formatRub(min)} – ${formatRub(max)}`,
+  };
+}
+
 export default function LeadForm({
   carClass,
   onCarClassChange,
@@ -63,6 +137,15 @@ export default function LeadForm({
   const canSubmit = useMemo(() => {
     return name.trim() && phone.trim() && fromText.trim() && toText.trim();
   }, [name, phone, fromText, toText]);
+
+  const routeType = useMemo<"city" | "airport" | "intercity">(() => {
+    if (isAirportText(fromText) || isAirportText(toText)) return "airport";
+    if (isIntercityLikely(fromText, toText)) return "intercity";
+    // по умолчанию город
+    return "city";
+  }, [fromText, toText]);
+
+  const estimate = useMemo(() => calcEstimate(routeType, carClass), [routeType, carClass]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -105,6 +188,22 @@ export default function LeadForm({
 
   return (
     <form onSubmit={onSubmit} className="grid gap-3">
+      {/* ОРИЕНТИР СТОИМОСТИ */}
+      <div className="rounded-2xl border border-sky-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-xs font-semibold text-zinc-700">Ориентир стоимости</div>
+            <div className="mt-1 text-base font-extrabold text-zinc-900">{estimate.text}</div>
+            <div className="mt-1 text-[11px] leading-5 text-zinc-600">
+              Это примерный диапазон по типу маршрута и классу авто. Точную стоимость подтвердим после заявки.
+            </div>
+          </div>
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-sky-50 ring-1 ring-sky-100">
+            <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600" />
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Ваше имя *" hint="Как к вам обращаться">
           <input className={ControlBase()} value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />
@@ -200,6 +299,10 @@ export default function LeadForm({
       >
         {loading ? "Отправляем…" : "Отправить заявку"}
       </button>
+
+      <div className="text-[11px] leading-5 text-zinc-500">
+        Диапазон стоимости — ориентир. Итоговую сумму подтверждаем после уточнения маршрута и деталей.
+      </div>
     </form>
   );
 }
