@@ -26,7 +26,7 @@ export default function LoginClient() {
     setLoading(false);
 
     if (!res.ok || !data.ok) {
-      alert(data?.error || "Login failed");
+      alert(data?.error || "Не удалось войти");
       return;
     }
 
@@ -36,28 +36,28 @@ export default function LoginClient() {
 
   return (
     <div style={{ maxWidth: 420, margin: "40px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Admin login</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Вход в админ-панель</h1>
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
         <input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
+          style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
         />
         <input
-          placeholder="Password"
+          placeholder="Пароль"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
+          style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
         />
 
         <button
           disabled={loading}
-          style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd", cursor: "pointer" }}
+          style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd", cursor: "pointer" }}
         >
-          {loading ? "..." : "Login"}
+          {loading ? "Входим…" : "Войти"}
         </button>
       </form>
     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type UserRow = {
+type User = {
   id: number;
   email: string;
   name: string;
@@ -12,150 +12,140 @@ type UserRow = {
 };
 
 export default function UsersClient() {
-  const [users, setUsers] = useState<UserRow[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // форма создания диспетчера
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/users", { cache: "no-store" });
+    const res = await fetch("/api/admin/users");
     const data = await res.json().catch(() => ({}));
-    if (data?.ok) setUsers(data.users || []);
+    setUsers(data.users || []);
     setLoading(false);
+  }
+
+  async function createDispatcher(e: React.FormEvent) {
+    e.preventDefault();
+
+    const res = await fetch("/api/admin/users", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email, name, password, isActive: true }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      alert(data?.error || "Не удалось создать пользователя");
+      return;
+    }
+
+    setEmail("");
+    setName("");
+    setPassword("");
+    load();
+  }
+
+  async function toggleActive(id: number, isActive: boolean) {
+    const res = await fetch(`/api/admin/users/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ isActive }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      alert(data?.error || "Не удалось обновить пользователя");
+      return;
+    }
+    load();
   }
 
   useEffect(() => {
     load();
   }, []);
 
-  async function createDispatcher(e: React.FormEvent) {
-    e.preventDefault();
-    setMsg(null);
-
-    const res = await fetch("/api/admin/users", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, name, password }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) {
-      setMsg(data?.error || "Create failed");
-      return;
-    }
-
-    setUsers((prev) => [data.user, ...prev]);
-    setEmail("");
-    setName("");
-    setPassword("");
-    setMsg("Диспетчер создан ✅");
-  }
-
-  async function toggleActive(u: UserRow) {
-    const res = await fetch(`/api/admin/users/${u.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ isActive: !u.isActive }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) {
-      alert(data?.error || "Update failed");
-      return;
-    }
-    setUsers((prev) => prev.map((x) => (x.id === u.id ? data.user : x)));
-  }
-
   return (
-    <div style={{ maxWidth: 900 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Users</h1>
+    <div>
+      <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Пользователи</h1>
 
-      <form onSubmit={createDispatcher} style={{ display: "grid", gap: 10, marginBottom: 16, border: "1px solid #eee", borderRadius: 10, padding: 12 }}>
-        <div style={{ fontWeight: 700 }}>Create Dispatcher</div>
+      <div style={{ border: "1px solid #ddd", borderRadius: 12, padding: 12, background: "#fff" }}>
+        <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0, marginBottom: 10 }}>
+          Создать диспетчера
+        </h2>
 
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="email"
-          type="email"
-          required
-          style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
-        />
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="name"
-          required
-          style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
-        />
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="password"
-          type="password"
-          required
-          style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
-        />
+        <form onSubmit={createDispatcher} style={{ display: "grid", gap: 8, maxWidth: 520 }}>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
+          />
+          <input
+            placeholder="Имя"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
+          />
+          <input
+            placeholder="Пароль"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd" }}
+          />
 
-        <button style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd", cursor: "pointer" }}>
-          Create
-        </button>
+          <button style={{ padding: 10, borderRadius: 10, border: "1px solid #ddd", cursor: "pointer" }}>
+            Создать
+          </button>
+        </form>
+      </div>
 
-        {msg && <div style={{ padding: 10, borderRadius: 8, border: "1px solid #eee" }}>{msg}</div>}
-      </form>
+      <div style={{ marginTop: 12 }}>
+        {loading && <div>Загрузка…</div>}
 
-      <button onClick={load} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", cursor: "pointer", marginBottom: 10 }}>
-        {loading ? "Loading..." : "Reload"}
-      </button>
+        <div style={{ display: "grid", gap: 10 }}>
+          {users.map((u) => (
+            <div
+              key={u.id}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: 12,
+                padding: 12,
+                background: "#fff",
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 800 }}>
+                  {u.name} — {u.role === "ADMIN" ? "Администратор" : "Диспетчер"}
+                </div>
+                <div style={{ opacity: 0.8 }}>{u.email}</div>
+                <div style={{ fontSize: 12, opacity: 0.6 }}>Создан: {new Date(u.createdAt).toLocaleString()}</div>
+              </div>
 
-      <div style={{ overflowX: "auto", border: "1px solid #eee", borderRadius: 10 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              {["ID", "Name", "Email", "Role", "Active", "Created", "Action"].map((h) => (
-                <th key={h} style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td style={{ padding: 10, borderBottom: "1px solid #f3f3f3" }}>{u.id}</td>
-                <td style={{ padding: 10, borderBottom: "1px solid #f3f3f3" }}>{u.name}</td>
-                <td style={{ padding: 10, borderBottom: "1px solid #f3f3f3" }}>{u.email}</td>
-                <td style={{ padding: 10, borderBottom: "1px solid #f3f3f3" }}>{u.role}</td>
-                <td style={{ padding: 10, borderBottom: "1px solid #f3f3f3" }}>{u.isActive ? "✅" : "—"}</td>
-                <td style={{ padding: 10, borderBottom: "1px solid #f3f3f3" }}>
-                  {new Date(u.createdAt).toLocaleString("ru-RU")}
-                </td>
-                <td style={{ padding: 10, borderBottom: "1px solid #f3f3f3" }}>
-                  {u.role === "ADMIN" ? (
-                    <span style={{ opacity: 0.7 }}>—</span>
-                  ) : (
-                    <button
-                      onClick={() => toggleActive(u)}
-                      style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #ddd", cursor: "pointer" }}
-                    >
-                      {u.isActive ? "Disable" : "Enable"}
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={7} style={{ padding: 12 }}>
-                  No users
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ marginBottom: 8 }}>
+                  Статус: <b>{u.isActive ? "Активен" : "Отключён"}</b>
+                </div>
+                {u.role !== "ADMIN" && (
+                  <button
+                    onClick={() => toggleActive(u.id, !u.isActive)}
+                    style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ddd", cursor: "pointer" }}
+                  >
+                    {u.isActive ? "Отключить" : "Включить"}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {!loading && users.length === 0 && <div>Пользователей нет</div>}
+        </div>
       </div>
     </div>
   );
