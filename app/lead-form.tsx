@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type CarClass = "standard" | "comfort" | "business" | "minivan";
-type RouteType = "city" | "airport" | "intercity";
+export type CarClass = "standard" | "comfort" | "business" | "minivan";
+export type RouteType = "city" | "airport" | "intercity";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -96,11 +96,11 @@ function formatRub(n: number) {
 }
 
 /**
- * "Средние по рынку" ориентиры:
+ * Средние по рынку ориентиры (диапазоны), чтобы не обещать точную цену:
  * city: 900–2800
  * airport: 1200–3800
  * intercity: 8000–22000
- * Плюс коэффициенты по классу.
+ * + коэффициенты по классу.
  */
 function calcEstimate(routeType: RouteType, carClass: CarClass) {
   const base = {
@@ -122,24 +122,23 @@ function calcEstimate(routeType: RouteType, carClass: CarClass) {
   const max = Math.round(base.max * mult);
 
   const label = routeType === "city" ? "По городу" : routeType === "airport" ? "Аэропорт" : "Межгород";
-
   const extra = routeType === "intercity" ? "Межгород обычно считают от расстояния (условно ~25–27 ₽/км)." : null;
 
-  return {
-    label,
-    min,
-    max,
-    text: `${label}: ${formatRub(min)} – ${formatRub(max)}`,
-    extra,
-  };
+  return { label, min, max, text: `${label}: ${formatRub(min)} – ${formatRub(max)}`, extra };
 }
 
 export default function LeadForm({
   carClass,
   onCarClassChange,
+  routeType,
+  onRouteTypeChange,
 }: {
   carClass: CarClass;
   onCarClassChange: (v: CarClass) => void;
+
+  // ВАЖНО: эти два пропа приходят с главной страницы
+  routeType: RouteType;
+  onRouteTypeChange: (v: RouteType) => void;
 }) {
   const router = useRouter();
 
@@ -154,7 +153,7 @@ export default function LeadForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [routeType, setRouteType] = useState<RouteType>("city");
+  // “Автоопределение” — только пока пользователь не переключал руками
   const [routeTypeTouched, setRouteTypeTouched] = useState(false);
 
   const autoRouteType = useMemo<RouteType>(() => {
@@ -164,8 +163,18 @@ export default function LeadForm({
   }, [fromText, toText]);
 
   useEffect(() => {
-    if (!routeTypeTouched) setRouteType(autoRouteType);
+    if (!routeTypeTouched) onRouteTypeChange(autoRouteType);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRouteType, routeTypeTouched]);
+
+  // Если тип маршрута прилетел с главной (клик по карточке),
+  // считаем это “ручным выбором”, чтобы автоопределение не перебивало.
+  useEffect(() => {
+    // когда routeType меняется извне — фиксируем как “touched”
+    // но делаем мягко: только если уже есть какие-то поля или кнопка была нажата на главной
+    // (на практике достаточно просто поставить touched в true)
+    setRouteTypeTouched(true);
+  }, [routeType]);
 
   const canSubmit = useMemo(() => {
     return name.trim() && phone.trim() && fromText.trim() && toText.trim();
@@ -219,12 +228,13 @@ export default function LeadForm({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-xs font-semibold text-zinc-700">Тип поездки</div>
+
             <div className="mt-2 flex flex-wrap gap-2">
               <SegButton
                 active={routeType === "city"}
                 onClick={() => {
                   setRouteTypeTouched(true);
-                  setRouteType("city");
+                  onRouteTypeChange("city");
                 }}
               >
                 Город
@@ -234,7 +244,7 @@ export default function LeadForm({
                 active={routeType === "airport"}
                 onClick={() => {
                   setRouteTypeTouched(true);
-                  setRouteType("airport");
+                  onRouteTypeChange("airport");
                 }}
               >
                 Аэропорт
@@ -244,7 +254,7 @@ export default function LeadForm({
                 active={routeType === "intercity"}
                 onClick={() => {
                   setRouteTypeTouched(true);
-                  setRouteType("intercity");
+                  onRouteTypeChange("intercity");
                 }}
               >
                 Межгород
@@ -258,7 +268,7 @@ export default function LeadForm({
                     "h-10 rounded-xl px-3 text-sm font-semibold",
                     "border border-zinc-200 bg-white/85 text-zinc-700 hover:bg-white"
                   )}
-                  title="Вернуть автоподбор"
+                  title="Вернуть автоопределение"
                 >
                   Авто
                 </button>

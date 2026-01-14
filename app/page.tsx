@@ -1,13 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import LeadForm from "./lead-form";
+import LeadForm, { type CarClass, type RouteType } from "./lead-form";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
-
-type CarClass = "standard" | "comfort" | "business" | "minivan";
 
 function LogoMark() {
   return (
@@ -201,6 +199,8 @@ export default function HomePage() {
   const TELEGRAM = "https://t.me/";
 
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
+  const [selectedRouteType, setSelectedRouteType] = useState<RouteType>("city");
+
   const orderRef = useRef<HTMLDivElement | null>(null);
 
   function scrollToOrder() {
@@ -210,6 +210,11 @@ export default function HomePage() {
   function pickClass(v: CarClass, scrollToForm = true) {
     setSelectedClass(v);
     if (scrollToForm) scrollToOrder();
+  }
+
+  function pickRouteType(v: RouteType) {
+    setSelectedRouteType(v);
+    scrollToOrder();
   }
 
   return (
@@ -297,11 +302,11 @@ export default function HomePage() {
               Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
             </p>
 
-            {/* КАРТОЧКИ: по клику скролл к заявке */}
+            {/* Карточки -> скролл + выставить тип поездки */}
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <button
                 type="button"
-                onClick={scrollToOrder}
+                onClick={() => pickRouteType("city")}
                 className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
               >
                 <div className="text-sm font-extrabold text-zinc-900">Город</div>
@@ -310,7 +315,7 @@ export default function HomePage() {
 
               <button
                 type="button"
-                onClick={scrollToOrder}
+                onClick={() => pickRouteType("intercity")}
                 className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
               >
                 <div className="text-sm font-extrabold text-zinc-900">Межгород</div>
@@ -319,7 +324,7 @@ export default function HomePage() {
 
               <button
                 type="button"
-                onClick={scrollToOrder}
+                onClick={() => pickRouteType("airport")}
                 className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
               >
                 <div className="text-sm font-extrabold text-zinc-900">Аэропорты</div>
@@ -327,7 +332,7 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* ГАРАНТИИ: по клику скролл к заявке */}
+            {/* Гарантии -> скролл */}
             <button
               type="button"
               onClick={scrollToOrder}
@@ -374,6 +379,7 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Заявка */}
           <div id="order" ref={orderRef} className="md:col-span-5">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
@@ -389,7 +395,12 @@ export default function HomePage() {
               </div>
 
               <div className="p-5">
-                <LeadForm carClass={selectedClass} onCarClassChange={(v) => pickClass(v, false)} />
+                <LeadForm
+                  carClass={selectedClass}
+                  onCarClassChange={(v) => pickClass(v, false)}
+                  routeType={selectedRouteType}
+                  onRouteTypeChange={setSelectedRouteType}
+                />
               </div>
 
               <div className="border-t border-zinc-200 bg-white/70 p-5">
@@ -481,61 +492,35 @@ export default function HomePage() {
           <ClassCardButton
             title="Стандарт"
             priceHint="Оптимально для города"
-            features={[
-              "Базовый комфорт, аккуратная подача",
-              "Подходит для 1–3 пассажиров",
-              "Хороший выбор для коротких поездок",
-            ]}
+            features={["Базовый комфорт, аккуратная подача", "Подходит для 1–3 пассажиров", "Хороший выбор для коротких поездок"]}
             note="Точную стоимость подтверждаем до подачи."
             active={selectedClass === "standard"}
             onClick={() => pickClass("standard", true)}
           />
-
           <ClassCardButton
             title="Комфорт"
             priceHint="Чаще выбирают для аэропортов"
-            features={[
-              "Больше пространства и мягче ход",
-              "Удобно с багажом",
-              "Подходит для деловых и семейных поездок",
-            ]}
+            features={["Больше пространства и мягче ход", "Удобно с багажом", "Подходит для деловых и семейных поездок"]}
             note="Можно указать пожелания: детское кресло, остановки."
             active={selectedClass === "comfort"}
             onClick={() => pickClass("comfort", true)}
           />
-
           <ClassCardButton
             title="Бизнес"
             priceHint="Максимально спокойно и представительно"
-            features={[
-              "Повышенный комфорт и тишина в салоне",
-              "Подходит для встреч и важных поездок",
-              "Акцент на сервис и пунктуальность",
-            ]}
+            features={["Повышенный комфорт и тишина в салоне", "Подходит для встреч и важных поездок", "Акцент на сервис и пунктуальность"]}
             note="Уточняем детали заранее и фиксируем заявку."
             active={selectedClass === "business"}
             onClick={() => pickClass("business", true)}
           />
-
           <ClassCardButton
             title="Минивэн"
             priceHint="Когда нужно больше мест"
-            features={[
-              "Для семьи/компании и большого багажа",
-              "Подходит для 4–7 пассажиров",
-              "Удобно на межгород и в аэропорт",
-            ]}
+            features={["Для семьи/компании и большого багажа", "Подходит для 4–7 пассажиров", "Удобно на межгород и в аэропорт"]}
             note="Сообщите количество пассажиров и багаж — подберём вариант."
             active={selectedClass === "minivan"}
             onClick={() => pickClass("minivan", true)}
           />
-        </div>
-
-        <div className="mt-4 rounded-2xl border border-sky-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
-          <div className="text-sm font-extrabold text-zinc-900">Подсказка</div>
-          <div className="mt-2 text-sm leading-6 text-zinc-700">
-            Можно выбрать класс в форме или нажать на карточку — мы синхронизируем выбор автоматически.
-          </div>
         </div>
       </section>
 
@@ -560,9 +545,7 @@ export default function HomePage() {
                 </span>
               </div>
             </summary>
-            <div className="mt-3 text-sm leading-6 text-zinc-600">
-              Обычно в течение 5–10 минут. Если срочно — лучше написать в мессенджер.
-            </div>
+            <div className="mt-3 text-sm leading-6 text-zinc-600">Обычно в течение 5–10 минут. Если срочно — лучше написать в мессенджер.</div>
           </details>
 
           <details className="group rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
@@ -574,37 +557,7 @@ export default function HomePage() {
                 </span>
               </div>
             </summary>
-            <div className="mt-3 text-sm leading-6 text-zinc-600">
-              Зависит от маршрута, времени и класса авто. Стоимость подтверждаем до подачи.
-            </div>
-          </details>
-
-          <details className="group rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-            <summary className="cursor-pointer list-none select-none text-sm font-extrabold text-zinc-900">
-              <div className="flex items-center justify-between gap-3">
-                <span>Можно ли детское кресло?</span>
-                <span className="text-zinc-500 transition group-open:rotate-45" aria-hidden>
-                  +
-                </span>
-              </div>
-            </summary>
-            <div className="mt-3 text-sm leading-6 text-zinc-600">
-              Да. Укажите это в комментарии к заявке — подтвердим наличие и условия.
-            </div>
-          </details>
-
-          <details className="group rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-            <summary className="cursor-pointer list-none select-none text-sm font-extrabold text-zinc-900">
-              <div className="flex items-center justify-between gap-3">
-                <span>Работаете межгород?</span>
-                <span className="text-zinc-500 transition group-open:rotate-45" aria-hidden>
-                  +
-                </span>
-              </div>
-            </summary>
-            <div className="mt-3 text-sm leading-6 text-zinc-600">
-              Да. Укажите откуда/куда и ориентировочное время — подтвердим поездку.
-            </div>
+            <div className="mt-3 text-sm leading-6 text-zinc-600">Зависит от маршрута, времени и класса авто. Стоимость подтверждаем до подачи.</div>
           </details>
         </div>
       </section>
@@ -616,36 +569,21 @@ export default function HomePage() {
               <LogoMark />
               <Wordmark />
             </div>
-
             <div className="flex flex-wrap gap-2">
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={`tel:${PHONE_TEL}`}
-              >
+              <a className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white" href={`tel:${PHONE_TEL}`}>
                 <IconPhone className="h-4 w-4 text-sky-700" />
                 {PHONE_DISPLAY}
               </a>
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={WHATSAPP}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white" href={WHATSAPP} target="_blank" rel="noreferrer">
                 <IconWhatsapp className="h-4 w-4 text-sky-700" />
                 WhatsApp
               </a>
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={TELEGRAM}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white" href={TELEGRAM} target="_blank" rel="noreferrer">
                 <IconTelegram className="h-4 w-4 text-sky-700" />
                 Telegram
               </a>
             </div>
           </div>
-
           <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
         </div>
       </footer>
