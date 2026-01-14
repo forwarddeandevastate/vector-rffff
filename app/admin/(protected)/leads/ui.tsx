@@ -62,12 +62,29 @@ function fmt(dt: string) {
 function digitsOnly(s: string) {
   return (s || "").replace(/[^\d]/g, "");
 }
+
+function telLink(phone: string) {
+  return phone ? `tel:${phone}` : null;
+}
+
 function waLink(phone: string) {
   const p = digitsOnly(phone);
   return p ? `https://wa.me/${p}` : null;
 }
-function telLink(phone: string) {
-  return phone ? `tel:${phone}` : null;
+
+/**
+ * Telegram deep link:
+ * - tg://resolve works great on mobile/desktop with Telegram installed
+ * - t.me works in browser too
+ */
+function tgDeepLink(phone: string) {
+  const p = digitsOnly(phone);
+  return p ? `tg://resolve?phone=${p}` : null;
+}
+function tgWebLink(phone: string) {
+  const p = digitsOnly(phone);
+  // t.me/+<phone> — часто открывает диалог/поиск контакта в Telegram
+  return p ? `https://t.me/+${p}` : null;
 }
 
 function StatusPill({ status }: { status: LeadStatus }) {
@@ -92,6 +109,7 @@ export default function LeadsClient() {
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+
   const [status, setStatus] = useState<"all" | LeadStatus>("all");
   const [q, setQ] = useState("");
   const [onlyDupes, setOnlyDupes] = useState(false);
@@ -241,6 +259,8 @@ export default function LeadsClient() {
         {leads.map((l) => {
           const wa = waLink(l.phone);
           const tel = telLink(l.phone);
+          const tg = tgDeepLink(l.phone);
+          const tgWeb = tgWebLink(l.phone);
           const isBusy = !!busy[l.id];
 
           return (
@@ -311,6 +331,19 @@ export default function LeadsClient() {
                         className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200 dark:hover:bg-emerald-950/50"
                       >
                         WhatsApp
+                      </a>
+                    )}
+
+                    {/* Telegram: сначала deep link, если не откроется — есть web link */}
+                    {(tg || tgWeb) && (
+                      <a
+                        href={tg || tgWeb!}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-900 hover:bg-sky-100 dark:border-sky-900/40 dark:bg-sky-950/30 dark:text-sky-200 dark:hover:bg-sky-950/50"
+                        title="Открыть Telegram"
+                      >
+                        Telegram
                       </a>
                     )}
                   </div>
