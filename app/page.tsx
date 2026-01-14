@@ -1,8 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import LeadForm from "./lead-form";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
+
+type CarClass = "standard" | "comfort" | "business" | "minivan";
 
 function LogoMark() {
   return (
@@ -31,7 +36,6 @@ function LogoMark() {
 function Wordmark() {
   return (
     <div className="leading-tight">
-      {/* “интереснее” — градиент + сильнее weight */}
       <div
         className={cn(
           "text-[15px] font-black tracking-tight",
@@ -115,13 +119,7 @@ function SectionTitle({ title, desc }: { title: string; desc: string }) {
   );
 }
 
-function Card({
-  title,
-  text,
-}: {
-  title: string;
-  text: string;
-}) {
+function Card({ title, text }: { title: string; text: string }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
       <div className="text-sm font-extrabold text-zinc-900">{title}</div>
@@ -138,16 +136,69 @@ function Badge({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ClassCard({
+  title,
+  priceHint,
+  features,
+  note,
+  active,
+}: {
+  title: string;
+  priceHint: string;
+  features: string[];
+  note?: string;
+  active?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur transition",
+        active
+          ? "border-sky-300 ring-2 ring-sky-200/70 shadow-md bg-white"
+          : "border-zinc-200 hover:border-sky-200/70"
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-extrabold text-zinc-900">{title}</div>
+          <div className="mt-1 text-xs text-zinc-600">{priceHint}</div>
+        </div>
+
+        <div
+          className={cn(
+            "grid h-9 w-9 place-items-center rounded-xl ring-1",
+            active ? "bg-sky-100 ring-sky-200" : "bg-sky-50 ring-sky-100"
+          )}
+        >
+          <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600" />
+        </div>
+      </div>
+
+      <ul className="mt-4 grid gap-2 text-sm text-zinc-700">
+        {features.map((f) => (
+          <li key={f} className="flex items-start gap-2">
+            <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
+            <span className="leading-6">{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      {note ? <div className="mt-4 text-xs text-zinc-500">{note}</div> : null}
+    </div>
+  );
+}
+
 export default function HomePage() {
-  // Заглушки — поменяешь на свои
   const PHONE_DISPLAY = "+7 (999) 123-45-67";
   const PHONE_TEL = "+79991234567";
   const WHATSAPP = "https://wa.me/79991234567";
   const TELEGRAM = "https://t.me/";
 
+  const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
+
   return (
     <div className="min-h-screen text-zinc-900">
-      {/* Фон более голубой, “дорогой”, не пустой */}
+      {/* Голубой фон */}
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
@@ -160,14 +211,13 @@ export default function HomePage() {
             <Wordmark />
           </a>
 
-          {/* Навигация "в форме" - pill buttons */}
           <nav className="hidden items-center gap-2 md:flex">
             <NavPill href="#order">Заявка</NavPill>
+            <NavPill href="#classes">Классы</NavPill>
             <NavPill href="#how">Как работаем</NavPill>
             <NavPill href="#faq">Вопросы</NavPill>
           </nav>
 
-          {/* Контакты - тоже формой */}
           <div className="flex items-center gap-2">
             <a
               href={`tel:${PHONE_TEL}`}
@@ -234,7 +284,6 @@ export default function HomePage() {
               Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
             </p>
 
-            {/* Наполненность — блоки в стиле "продукта" */}
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
                 <div className="text-sm font-extrabold text-zinc-900">Город</div>
@@ -280,13 +329,13 @@ export default function HomePage() {
               </a>
 
               <a
-                href="#how"
+                href="#classes"
                 className={cn(
                   "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
                   "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
                 )}
               >
-                Как мы работаем
+                Выбрать класс авто
               </a>
             </div>
           </div>
@@ -307,7 +356,10 @@ export default function HomePage() {
               </div>
 
               <div className="p-5">
-                <LeadForm />
+                <LeadForm
+                  carClass={selectedClass}
+                  onCarClassChange={(v) => setSelectedClass(v)}
+                />
               </div>
 
               <div className="border-t border-zinc-200 bg-white/70 p-5">
@@ -359,7 +411,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Доп. карточка чтобы не было пустоты справа */}
             <div className="mt-3 rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
               <div className="text-sm font-extrabold text-zinc-900">Что можно указать в заявке</div>
               <div className="mt-2 grid gap-2 text-sm text-zinc-700">
@@ -381,7 +432,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTIONS */}
+      {/* SERVICE */}
       <section className="mx-auto max-w-6xl px-4 py-12">
         <SectionTitle
           title="Сервис без лишних вопросов"
@@ -394,6 +445,73 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* CLASSES */}
+      <section id="classes" className="mx-auto max-w-6xl px-4 pb-12">
+        <SectionTitle
+          title="Классы авто"
+          desc="Подбираем автомобиль под задачу: город, аэропорт, межгород, багаж и количество пассажиров."
+        />
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <ClassCard
+            title="Стандарт"
+            priceHint="Оптимально для города"
+            features={[
+              "Базовый комфорт, аккуратная подача",
+              "Подходит для 1–3 пассажиров",
+              "Хороший выбор для коротких поездок",
+            ]}
+            note="Точную стоимость подтверждаем до подачи."
+            active={selectedClass === "standard"}
+          />
+
+          <ClassCard
+            title="Комфорт"
+            priceHint="Чаще выбирают для аэропортов"
+            features={[
+              "Больше пространства и мягче ход",
+              "Удобно с багажом",
+              "Подходит для деловых и семейных поездок",
+            ]}
+            note="Можно указать пожелания: детское кресло, остановки."
+            active={selectedClass === "comfort"}
+          />
+
+          <ClassCard
+            title="Бизнес"
+            priceHint="Максимально спокойно и представительно"
+            features={[
+              "Повышенный комфорт и тишина в салоне",
+              "Подходит для встреч и важных поездок",
+              "Акцент на сервис и пунктуальность",
+            ]}
+            note="Уточняем детали заранее и фиксируем заявку."
+            active={selectedClass === "business"}
+          />
+
+          <ClassCard
+            title="Минивэн"
+            priceHint="Когда нужно больше мест"
+            features={[
+              "Для семьи/компании и большого багажа",
+              "Подходит для 4–7 пассажиров",
+              "Удобно на межгород и в аэропорт",
+            ]}
+            note="Сообщите количество пассажиров и багаж — подберём вариант."
+            active={selectedClass === "minivan"}
+          />
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-sky-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
+          <div className="text-sm font-extrabold text-zinc-900">Важно</div>
+          <div className="mt-2 text-sm leading-6 text-zinc-700">
+            Если вы не уверены в классе — оставьте заявку, и мы подскажем подходящий вариант по маршруту и количеству
+            пассажиров.
+          </div>
+        </div>
+      </section>
+
+      {/* HOW */}
       <section id="how" className="mx-auto max-w-6xl px-4 pb-12">
         <SectionTitle title="Как работаем" desc="Три шага — и поездка организована." />
         <div className="grid gap-3 md:grid-cols-3">
@@ -403,6 +521,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FAQ */}
       <section id="faq" className="mx-auto max-w-6xl px-4 pb-12">
         <SectionTitle title="Частые вопросы" desc="Короткие ответы на популярные вопросы." />
         <div className="grid gap-3 md:grid-cols-2">

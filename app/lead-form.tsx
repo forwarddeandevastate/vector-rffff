@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type CarClass = "standard" | "comfort" | "business" | "minivan";
+
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
@@ -38,7 +40,13 @@ function Field({
   );
 }
 
-export default function LeadForm() {
+export default function LeadForm({
+  carClass,
+  onCarClassChange,
+}: {
+  carClass: CarClass;
+  onCarClassChange: (v: CarClass) => void;
+}) {
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -46,7 +54,6 @@ export default function LeadForm() {
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
   const [datetime, setDatetime] = useState("");
-  const [carClass, setCarClass] = useState("standard");
   const [roundTrip, setRoundTrip] = useState(false);
   const [comment, setComment] = useState("");
 
@@ -140,8 +147,12 @@ export default function LeadForm() {
           />
         </Field>
 
-        <Field label="Класс авто">
-          <select className={ControlBase()} value={carClass} onChange={(e) => setCarClass(e.target.value)}>
+        <Field label="Класс авто" hint="Подсветит карточку ниже">
+          <select
+            className={ControlBase()}
+            value={carClass}
+            onChange={(e) => onCarClassChange(e.target.value as CarClass)}
+          >
             <option value="standard">Стандарт</option>
             <option value="comfort">Комфорт</option>
             <option value="business">Бизнес</option>
