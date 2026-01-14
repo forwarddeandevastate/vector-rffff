@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { tgSend } from "@/lib/telegram";
+import { tgSendLead } from "@/lib/telegram";
 
 function normPhone(s: string) {
   return (s || "").replace(/[^\d+]/g, "").trim();
@@ -87,14 +87,15 @@ export async function POST(req: Request) {
     });
 
     // ---- Telegram уведомление (если env заданы) ----
-    await tgSend(
-      `🆕 Новый лид #${lead.id}${lead.isDuplicate ? " (дубликат)" : ""}\n` +
-        `${name}\n` +
-        `${phone}\n` +
-        `${fromText} → ${toText}` +
-        (datetime ? `\n🕒 ${datetime}` : "") +
-        (comment ? `\n💬 ${comment}` : "")
-    );
+    await tgSendLead({
+  id: lead.id,
+  name,
+  phone,
+  route: `${fromText} → ${toText}`,
+  datetime,
+  comment,
+  isDuplicate: lead.isDuplicate,
+});
 
     return NextResponse.json({ ok: true, lead });
   } catch (e: any) {
