@@ -1,10 +1,41 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
+}
+
+function onlyDigits(s: string) {
+  return (s || "").replace(/[^\d]/g, "");
+}
+
+// Простая маска под RU: +7 (999) 123-45-67
+function formatRuPhone(input: string) {
+  const d = onlyDigits(input);
+
+  // если пользователь начал с 8 или 7, считаем что RU
+  let digits = d;
+  if (digits.startsWith("8")) digits = "7" + digits.slice(1);
+  if (!digits.startsWith("7")) {
+    // если не 7 — просто возвращаем +<digits> или как есть
+    return digits ? "+" + digits : "";
+  }
+
+  const rest = digits.slice(1); // 10 цифр
+  const a = rest.slice(0, 3);
+  const b = rest.slice(3, 6);
+  const c = rest.slice(6, 8);
+  const e = rest.slice(8, 10);
+
+  let out = "+7";
+  if (a) out += ` (${a}`;
+  if (a.length === 3) out += ")";
+  if (b) out += ` ${b}`;
+  if (c) out += `-${c}`;
+  if (e) out += `-${e}`;
+  return out;
 }
 
 export default function LeadForm() {
@@ -19,12 +50,25 @@ export default function LeadForm() {
   const [roundTrip, setRoundTrip] = useState(false);
   const [comment, setComment] = useState("");
 
+  // UTM
+  const [utmSource, setUtmSource] = useState<string | null>(null);
+  const [utmMedium, setUtmMedium] = useState<string | null>(null);
+  const [utmCampaign, setUtmCampaign] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => {
     return name.trim() && phone.trim() && fromText.trim() && toText.trim();
   }, [name, phone, fromText, toText]);
+
+  useEffect(() => {
+    // безопасно: только на клиенте
+    const sp = new URLSearchParams(window.location.search);
+    setUtmSource(sp.get("utm_source"));
+    setUtmMedium(sp.get("utm_medium"));
+    setUtmCampaign(sp.get("utm_campaign"));
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +90,10 @@ export default function LeadForm() {
         carClass,
         roundTrip,
         comment: comment.trim() ? comment.trim() : null,
+
+        utmSource,
+        utmMedium,
+        utmCampaign,
       };
 
       const res = await fetch("/api/leads", {
@@ -57,6 +105,8 @@ export default function LeadForm() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка отправки");
 
+      // если это дубликат — всё равно “спасибо”, но можно показать сообщение
+      // (пока просто отправляем на thanks)
       router.push("/thanks");
     } catch (e: any) {
       setError(e?.message || "Ошибка отправки");
@@ -69,20 +119,16 @@ export default function LeadForm() {
     <form onSubmit={onSubmit} className="rounded-2xl border bg-white p-5 shadow-sm">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Ваше имя *">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="input"
-            placeholder="Иван"
-          />
+          <input value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Иван" />
         </Field>
 
         <Field label="Телефон *">
           <input
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(formatRuPhone(e.target.value))}
             className="input"
-            placeholder="+7 999 123-45-67"
+            placeholder="+7 (999) 123-45-67"
+            inputMode="tel"
           />
         </Field>
 
@@ -96,12 +142,7 @@ export default function LeadForm() {
         </Field>
 
         <Field label="Куда *" className="sm:col-span-2">
-          <input
-            value={toText}
-            onChange={(e) => setToText(e.target.value)}
-            className="input"
-            placeholder="Москва, центр"
-          />
+          <input value={toText} onChange={(e) => setToText(e.target.value)} className="input" placeholder="Москва, центр" />
         </Field>
 
         <Field label="Дата/время" className="sm:col-span-2">
@@ -124,12 +165,7 @@ export default function LeadForm() {
 
         <Field label="Туда-обратно">
           <label className="flex h-11 items-center gap-2 rounded-xl border px-3">
-            <input
-              type="checkbox"
-              checked={roundTrip}
-              onChange={(e) => setRoundTrip(e.target.checked)}
-              className="h-4 w-4"
-            />
+            <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} className="h-4 w-4" />
             <span className="text-sm">Нужен обратный трансфер</span>
           </label>
         </Field>
@@ -145,9 +181,7 @@ export default function LeadForm() {
       </div>
 
       {error ? (
-        <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">
-          {error}
-        </div>
+        <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
       ) : null}
 
       <button
@@ -160,9 +194,7 @@ export default function LeadForm() {
         {loading ? "Отправляем…" : "Отправить заявку"}
       </button>
 
-      <p className="mt-3 text-xs text-zinc-500">
-        Нажимая кнопку, вы соглашаетесь на обработку персональных данных.
-      </p>
+      <p className="mt-3 text-xs text-zinc-500">Нажимая кнопку, вы соглашаетесь на обработку персональных данных.</p>
 
       <style jsx>{`
         .input {
@@ -182,15 +214,7 @@ export default function LeadForm() {
   );
 }
 
-function Field({
-  label,
-  children,
-  className,
-}: {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={className}>
       <div className="mb-1 text-xs font-semibold text-zinc-600">{label}</div>
