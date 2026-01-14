@@ -3,7 +3,7 @@ import LoginClient from "./ui";
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 16 }}>Загрузка…</div>}>
+    <Suspense fallback={<div className="p-4">Загрузка…</div>}>
       <LoginClient />
     </Suspense>
   );

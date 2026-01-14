@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import LogoutButton from "./logout-button";
+import AdminNav from "./nav";
 
 export default async function AdminProtectedLayout({ children }: { children: ReactNode }) {
   const name = process.env.ADMIN_COOKIE_NAME || "admin_token";
@@ -12,40 +12,30 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
   if (!token) redirect("/admin/login");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fafafa" }}>
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          background: "#fff",
-          borderBottom: "1px solid #eee",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-            padding: "12px 16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <div style={{ fontWeight: 900 }}>Админ-панель</div>
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
+      {/* top bar */}
+      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+          <Link href="/admin/leads" className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-black">
+              ⚡
+            </div>
+            <div className="leading-tight">
+              <div className="text-sm font-extrabold tracking-tight">Вектор РФ</div>
+              <div className="text-xs text-zinc-600 dark:text-zinc-400">Админ-панель</div>
+            </div>
+          </Link>
 
-          <nav style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <Link href="/admin/leads">Лиды</Link>
-            <Link href="/admin/users">Пользователи</Link>
-            <Link href="/admin/settings">Настройки сайта</Link>
-          </nav>
-
-          <LogoutButton />
+          <AdminNav />
         </div>
       </header>
 
-      <main style={{ maxWidth: 1100, margin: "0 auto", padding: 16 }}>{children}</main>
+      {/* page */}
+      <main className="mx-auto max-w-6xl px-4 py-5">{children}</main>
+
+      <footer className="mx-auto max-w-6xl px-4 py-6 text-xs text-zinc-500 dark:text-zinc-500">
+        © {new Date().getFullYear()} Вектор РФ
+      </footer>
     </div>
   );
 }
