@@ -4,12 +4,13 @@ function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
-function LogoMark({ className }: { className?: string }) {
+function LogoMark() {
   return (
     <div
       className={cn(
-        "relative grid h-11 w-11 place-items-center rounded-2xl bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/20",
-        className
+        "relative grid h-11 w-11 place-items-center rounded-2xl",
+        "bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600",
+        "text-white shadow-sm ring-1 ring-white/20"
       )}
       aria-hidden
     >
@@ -23,6 +24,23 @@ function LogoMark({ className }: { className?: string }) {
         />
         <path d="M6.7 6.5h10.6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
       </svg>
+    </div>
+  );
+}
+
+function Wordmark() {
+  return (
+    <div className="leading-tight">
+      {/* “интереснее” — градиент + сильнее weight */}
+      <div
+        className={cn(
+          "text-[15px] font-black tracking-tight",
+          "bg-gradient-to-r from-sky-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent"
+        )}
+      >
+        Вектор РФ
+      </div>
+      <div className="text-xs text-zinc-600">Трансферы и поездки по России</div>
     </div>
   );
 }
@@ -52,7 +70,7 @@ function IconWhatsapp({ className }: { className?: string }) {
       <path
         d="M9.3 8.9c.2-.5.4-.5.7-.5h.6c.2 0 .4 0 .5.3l.7 1.7c.1.3.1.5-.1.7l-.5.6c-.1.2-.2.4 0 .6.4.8 1.5 1.9 2.3 2.3.2.1.4 0 .6 0l.6-.5c.2-.2.4-.2.7-.1l1.7.7c.3.1.3.3.3.5v.6c0 .3 0 .5-.5.7-.7.3-2.1.5-4.5-1.5-2.0-1.7-3.3-3.9-3.4-4.7-.1-.6.1-1.2.3-1.4Z"
         fill="currentColor"
-        opacity="0.16"
+        opacity="0.14"
       />
     </svg>
   );
@@ -72,50 +90,56 @@ function IconTelegram({ className }: { className?: string }) {
   );
 }
 
-function Pill({ children }: { children: React.ReactNode }) {
+function NavPill({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs font-semibold text-zinc-700 shadow-sm backdrop-blur">
+    <a
+      href={href}
+      className={cn(
+        "inline-flex items-center rounded-full px-3 py-2 text-sm font-semibold",
+        "text-zinc-700 hover:text-zinc-900",
+        "border border-zinc-200 bg-white/70 backdrop-blur shadow-sm",
+        "hover:bg-white"
+      )}
+    >
       {children}
-    </span>
+    </a>
   );
 }
 
-function InfoCard({ title, text }: { title: string; text: string }) {
+function SectionTitle({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="mb-5">
+      <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">{title}</h2>
+      <p className="mt-2 text-sm text-zinc-600">{desc}</p>
+    </div>
+  );
+}
+
+function Card({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
       <div className="text-sm font-extrabold text-zinc-900">{title}</div>
       <div className="mt-2 text-sm leading-6 text-zinc-600">{text}</div>
     </div>
   );
 }
 
-function Step({ n, title, text }: { n: string; title: string; text: string }) {
+function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="text-xs font-semibold text-indigo-700">{n}</div>
-      <div className="mt-1 text-sm font-extrabold text-zinc-900">{title}</div>
-      <div className="mt-2 text-sm leading-6 text-zinc-600">{text}</div>
-    </div>
-  );
-}
-
-function FAQItem({ q, a }: { q: string; a: string }) {
-  return (
-    <details className="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <summary className="cursor-pointer list-none select-none text-sm font-extrabold text-zinc-900">
-        <div className="flex items-center justify-between gap-3">
-          <span>{q}</span>
-          <span className="text-zinc-500 transition group-open:rotate-45" aria-hidden>
-            +
-          </span>
-        </div>
-      </summary>
-      <div className="mt-3 text-sm leading-6 text-zinc-600">{a}</div>
-    </details>
+    <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
+      {children}
+    </span>
   );
 }
 
 export default function HomePage() {
+  // Заглушки — поменяешь на свои
   const PHONE_DISPLAY = "+7 (999) 123-45-67";
   const PHONE_TEL = "+79991234567";
   const WHATSAPP = "https://wa.me/79991234567";
@@ -123,133 +147,160 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen text-zinc-900">
-      {/* Background (не белый) */}
-      <div className="fixed inset-0 -z-20 bg-[#f4f6fb]" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(1200px_500px_at_50%_-10%,rgba(99,102,241,0.22),transparent_60%),radial-gradient(900px_500px_at_10%_20%,rgba(59,130,246,0.10),transparent_55%),radial-gradient(900px_500px_at_90%_20%,rgba(14,165,233,0.08),transparent_55%)]" />
+      {/* Фон более голубой, “дорогой”, не пустой */}
+      <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
+      <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
 
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/70 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/65 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <a href="/" className="flex items-center gap-3">
             <LogoMark />
-            <div className="leading-tight">
-              <div className="text-sm font-extrabold tracking-tight">Вектор РФ</div>
-              <div className="text-xs text-zinc-600">Трансферы и поездки по России</div>
-            </div>
+            <Wordmark />
           </a>
 
+          {/* Навигация "в форме" - pill buttons */}
           <nav className="hidden items-center gap-2 md:flex">
-            <a href="#order" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100/70">
-              Заявка
-            </a>
-            <a href="#how" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100/70">
-              Как работаем
-            </a>
-            <a href="#faq" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100/70">
-              Вопросы
-            </a>
+            <NavPill href="#order">Заявка</NavPill>
+            <NavPill href="#how">Как работаем</NavPill>
+            <NavPill href="#faq">Вопросы</NavPill>
           </nav>
 
+          {/* Контакты - тоже формой */}
           <div className="flex items-center gap-2">
             <a
               href={`tel:${PHONE_TEL}`}
-              className="hidden items-center gap-2 rounded-xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold hover:bg-white md:inline-flex"
+              className={cn(
+                "hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold md:inline-flex",
+                "border border-zinc-200 bg-white/70 shadow-sm backdrop-blur hover:bg-white"
+              )}
               title="Позвонить"
             >
-              <IconPhone className="h-4 w-4 text-zinc-700" />
-              {PHONE_DISPLAY}
+              <IconPhone className="h-4 w-4 text-sky-700" />
+              <span className="text-zinc-800">{PHONE_DISPLAY}</span>
             </a>
+
             <a
-              href="/admin/login"
-              className="rounded-xl bg-zinc-900 px-3 py-2 text-sm font-extrabold text-white hover:bg-zinc-800"
+              href={WHATSAPP}
+              target="_blank"
+              rel="noreferrer"
+              className={cn(
+                "inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-semibold",
+                "border border-zinc-200 bg-white/70 shadow-sm backdrop-blur hover:bg-white"
+              )}
+              title="WhatsApp"
             >
-              Админка
+              <IconWhatsapp className="h-4 w-4 text-sky-700" />
+              <span className="hidden sm:inline">WhatsApp</span>
+            </a>
+
+            <a
+              href={TELEGRAM}
+              target="_blank"
+              rel="noreferrer"
+              className={cn(
+                "inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-semibold",
+                "border border-zinc-200 bg-white/70 shadow-sm backdrop-blur hover:bg-white"
+              )}
+              title="Telegram"
+            >
+              <IconTelegram className="h-4 w-4 text-sky-700" />
+              <span className="hidden sm:inline">Telegram</span>
             </a>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
+      {/* HERO */}
       <section className="relative">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-12 md:py-14">
           <div className="md:col-span-7">
             <div className="flex flex-wrap gap-2">
-              <Pill>Проверенные водители</Pill>
-              <Pill>Стоимость согласуем заранее</Pill>
-              <Pill>Город и межгород</Pill>
+              <Badge>Проверенные водители</Badge>
+              <Badge>Фиксация заявки</Badge>
+              <Badge>Стоимость заранее</Badge>
             </div>
 
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
-              Надёжный трансфер —
-              <span className="text-indigo-700"> спокойно и точно</span>
+              Трансфер, которому
+              <span className="bg-gradient-to-r from-sky-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                {" "}
+                доверяют
+              </span>
             </h1>
 
             <p className="mt-4 max-w-xl text-base leading-7 text-zinc-700">
-              Оставьте заявку за 1 минуту. Диспетчер уточнит маршрут и время, подтвердит стоимость и организует подачу.
+              Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
             </p>
 
+            {/* Наполненность — блоки в стиле "продукта" */}
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-                <div className="text-2xl font-extrabold tracking-tight">5–10 мин</div>
-                <div className="mt-1 text-sm text-zinc-600">обычно до связи</div>
+                <div className="text-sm font-extrabold text-zinc-900">Город</div>
+                <div className="mt-1 text-sm text-zinc-600">Встреча и поездки по городу</div>
               </div>
               <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-                <div className="text-2xl font-extrabold tracking-tight">24/7</div>
-                <div className="mt-1 text-sm text-zinc-600">приём заявок</div>
+                <div className="text-sm font-extrabold text-zinc-900">Межгород</div>
+                <div className="mt-1 text-sm text-zinc-600">Трансферы между городами</div>
               </div>
               <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-                <div className="text-2xl font-extrabold tracking-tight">Прозрачно</div>
-                <div className="mt-1 text-sm text-zinc-600">без сюрпризов</div>
+                <div className="text-sm font-extrabold text-zinc-900">Аэропорты</div>
+                <div className="mt-1 text-sm text-zinc-600">Встреча по времени прилёта</div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-sky-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
+              <div className="text-sm font-extrabold text-zinc-900">Гарантии</div>
+              <div className="mt-2 grid gap-2 text-sm text-zinc-700">
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
+                  <span>Стоимость согласуем до подачи автомобиля.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
+                  <span>Заявка фиксируется — ничего не теряется.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
+                  <span>Учитываем пожелания: багаж, кресло, рейс, остановки.</span>
+                </div>
               </div>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2">
               <a
                 href="#order"
-                className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:bg-indigo-500"
+                className={cn(
+                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
+                  "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
+                )}
               >
                 Оставить заявку
               </a>
-              <a
-                href={WHATSAPP}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-              >
-                <IconWhatsapp className="h-4 w-4 text-zinc-700" />
-                WhatsApp
-              </a>
-              <a
-                href={TELEGRAM}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-              >
-                <IconTelegram className="h-4 w-4 text-zinc-700" />
-                Telegram
-              </a>
-            </div>
 
-            <div className="mt-6 rounded-2xl border border-indigo-200/60 bg-white/70 p-4 text-sm text-zinc-700 shadow-sm backdrop-blur">
-              <div className="font-semibold text-zinc-900">Как подтверждаем заявку</div>
-              <ul className="mt-2 grid gap-1">
-                <li>Маршрут и время — фиксируем.</li>
-                <li>Стоимость — согласуем до подачи.</li>
-                <li>Пожелания — учитываем (багаж, кресло, рейс).</li>
-              </ul>
+              <a
+                href="#how"
+                className={cn(
+                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                )}
+              >
+                Как мы работаем
+              </a>
             </div>
           </div>
 
-          {/* Form / Contacts */}
+          {/* FORM CARD */}
           <div id="order" className="md:col-span-5">
-            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-lg backdrop-blur">
+            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
                     <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
                   </div>
-                  <div className="rounded-2xl bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100">
+                  <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
                     ~ 1 мин
                   </div>
                 </div>
@@ -260,35 +311,43 @@ export default function HomePage() {
               </div>
 
               <div className="border-t border-zinc-200 bg-white/70 p-5">
-                <div className="text-sm font-extrabold text-zinc-900">Контакты</div>
-
+                <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
                 <div className="mt-3 grid gap-2">
                   <a
-                    className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
                     href={`tel:${PHONE_TEL}`}
                   >
-                    <IconPhone className="h-4 w-4 text-zinc-700" />
+                    <IconPhone className="h-4 w-4 text-sky-700" />
                     {PHONE_DISPLAY}
                   </a>
 
                   <div className="grid grid-cols-2 gap-2">
                     <a
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                      className={cn(
+                        "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                        "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                      )}
                       href={WHATSAPP}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      <IconWhatsapp className="h-4 w-4 text-zinc-700" />
+                      <IconWhatsapp className="h-4 w-4 text-sky-700" />
                       WhatsApp
                     </a>
 
                     <a
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                      className={cn(
+                        "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                        "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                      )}
                       href={TELEGRAM}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      <IconTelegram className="h-4 w-4 text-zinc-700" />
+                      <IconTelegram className="h-4 w-4 text-sky-700" />
                       Telegram
                     </a>
                   </div>
@@ -299,97 +358,145 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+
+            {/* Доп. карточка чтобы не было пустоты справа */}
+            <div className="mt-3 rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+              <div className="text-sm font-extrabold text-zinc-900">Что можно указать в заявке</div>
+              <div className="mt-2 grid gap-2 text-sm text-zinc-700">
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
+                  <span>Номер рейса / время прилёта</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
+                  <span>Детское кресло / бустер</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
+                  <span>Багаж и дополнительные остановки</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Trust blocks */}
+      {/* SECTIONS */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="mb-5">
-          <h2 className="text-2xl font-extrabold tracking-tight">Почему нам доверяют</h2>
-          <p className="mt-2 text-sm text-zinc-600">
-            Мы работаем прозрачно: подтверждение, контроль заявки, понятные условия.
-          </p>
-        </div>
-
+        <SectionTitle
+          title="Сервис без лишних вопросов"
+          desc="Собираем детали, подтверждаем и ведём заявку до завершения поездки."
+        />
         <div className="grid gap-3 md:grid-cols-3">
-          <InfoCard title="Фиксация заявки" text="Заявка сохраняется, диспетчер ведёт её до завершения поездки." />
-          <InfoCard title="Подтверждение деталей" text="Уточняем время, маршрут, класс авто и пожелания по поездке." />
-          <InfoCard title="Комфорт и пунктуальность" text="Подбор авто под задачу, спокойная поездка без лишних вопросов." />
+          <Card title="Фиксация заявки" text="Каждая заявка сохраняется в системе и контролируется диспетчером." />
+          <Card title="Подтверждение стоимости" text="Стоимость согласуем до подачи автомобиля — заранее и прозрачно." />
+          <Card title="Удобная связь" text="Можно оставить заявку или написать напрямую в мессенджер." />
         </div>
       </section>
 
-      {/* How it works */}
       <section id="how" className="mx-auto max-w-6xl px-4 pb-12">
-        <div className="mb-5">
-          <h2 className="text-2xl font-extrabold tracking-tight">Как мы работаем</h2>
-          <p className="mt-2 text-sm text-zinc-600">Три понятных шага.</p>
-        </div>
-
+        <SectionTitle title="Как работаем" desc="Три шага — и поездка организована." />
         <div className="grid gap-3 md:grid-cols-3">
-          <Step n="ШАГ 1" title="Оставляете заявку" text="Укажите маршрут, телефон и пожелания — это быстро." />
-          <Step n="ШАГ 2" title="Подтверждаем" text="Диспетчер уточнит детали и согласует стоимость." />
-          <Step n="ШАГ 3" title="Подача авто" text="Машина приезжает в назначенное время, вы спокойно едете." />
+          <Card title="1. Заявка" text="Заполните маршрут и контакт — это занимает минуту." />
+          <Card title="2. Подтверждение" text="Уточним детали и подтвердим стоимость." />
+          <Card title="3. Подача" text="Автомобиль приезжает в назначенное время." />
         </div>
       </section>
 
-      {/* FAQ */}
       <section id="faq" className="mx-auto max-w-6xl px-4 pb-12">
-        <div className="mb-5">
-          <h2 className="text-2xl font-extrabold tracking-tight">Частые вопросы</h2>
-          <p className="mt-2 text-sm text-zinc-600">Короткие ответы на популярные вопросы.</p>
-        </div>
-
+        <SectionTitle title="Частые вопросы" desc="Короткие ответы на популярные вопросы." />
         <div className="grid gap-3 md:grid-cols-2">
-          <FAQItem
-            q="Когда вы свяжетесь после заявки?"
-            a="Обычно в течение 5–10 минут. Если срочно — удобнее написать в WhatsApp или Telegram."
-          />
-          <FAQItem
-            q="Как формируется стоимость?"
-            a="Зависит от маршрута, времени и класса авто. Стоимость согласуем до подачи автомобиля."
-          />
-          <FAQItem q="Можно ли детское кресло?" a="Да. Укажите это в комментарии — диспетчер подтвердит наличие и условия." />
-          <FAQItem q="Работаете межгород?" a="Да. Укажите откуда/куда и время — мы подтвердим поездку." />
+          <details className="group rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+            <summary className="cursor-pointer list-none select-none text-sm font-extrabold text-zinc-900">
+              <div className="flex items-center justify-between gap-3">
+                <span>Когда вы свяжетесь после заявки?</span>
+                <span className="text-zinc-500 transition group-open:rotate-45" aria-hidden>
+                  +
+                </span>
+              </div>
+            </summary>
+            <div className="mt-3 text-sm leading-6 text-zinc-600">
+              Обычно в течение 5–10 минут. Если срочно — лучше написать в мессенджер.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+            <summary className="cursor-pointer list-none select-none text-sm font-extrabold text-zinc-900">
+              <div className="flex items-center justify-between gap-3">
+                <span>Как формируется стоимость?</span>
+                <span className="text-zinc-500 transition group-open:rotate-45" aria-hidden>
+                  +
+                </span>
+              </div>
+            </summary>
+            <div className="mt-3 text-sm leading-6 text-zinc-600">
+              Зависит от маршрута, времени и класса авто. Стоимость подтверждаем до подачи.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+            <summary className="cursor-pointer list-none select-none text-sm font-extrabold text-zinc-900">
+              <div className="flex items-center justify-between gap-3">
+                <span>Можно ли детское кресло?</span>
+                <span className="text-zinc-500 transition group-open:rotate-45" aria-hidden>
+                  +
+                </span>
+              </div>
+            </summary>
+            <div className="mt-3 text-sm leading-6 text-zinc-600">
+              Да. Укажите это в комментарии к заявке — подтвердим наличие и условия.
+            </div>
+          </details>
+
+          <details className="group rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+            <summary className="cursor-pointer list-none select-none text-sm font-extrabold text-zinc-900">
+              <div className="flex items-center justify-between gap-3">
+                <span>Работаете межгород?</span>
+                <span className="text-zinc-500 transition group-open:rotate-45" aria-hidden>
+                  +
+                </span>
+              </div>
+            </summary>
+            <div className="mt-3 text-sm leading-6 text-zinc-600">
+              Да. Укажите откуда/куда и ориентировочное время — подтвердим поездку.
+            </div>
+          </details>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-white/70 backdrop-blur">
+      <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
-              <LogoMark className="h-10 w-10 rounded-2xl" />
-              <div className="text-sm text-zinc-600">
-                <div className="font-extrabold text-zinc-900">Вектор РФ</div>
-                <div>Трансферы и поездки по России</div>
-              </div>
+              <LogoMark />
+              <Wordmark />
             </div>
 
             <div className="flex flex-wrap gap-2">
               <a
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={`tel:${PHONE_TEL}`}
               >
-                <IconPhone className="h-4 w-4 text-zinc-700" />
+                <IconPhone className="h-4 w-4 text-sky-700" />
                 {PHONE_DISPLAY}
               </a>
               <a
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={WHATSAPP}
                 target="_blank"
                 rel="noreferrer"
               >
-                <IconWhatsapp className="h-4 w-4 text-zinc-700" />
+                <IconWhatsapp className="h-4 w-4 text-sky-700" />
                 WhatsApp
               </a>
               <a
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={TELEGRAM}
                 target="_blank"
                 rel="noreferrer"
               >
-                <IconTelegram className="h-4 w-4 text-zinc-700" />
+                <IconTelegram className="h-4 w-4 text-sky-700" />
                 Telegram
               </a>
             </div>
