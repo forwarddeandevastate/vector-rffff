@@ -79,13 +79,39 @@ function formatRub(n: number) {
 }
 
 /**
- * Средние "рыночные" ориентиры (диапазоны) + коэффициенты класса.
+ * Ориентир:
+ * - Межгород: точный тариф ₽/км по классу + расстояние
+ * - Город/Аэропорт: диапазон (как раньше)
  */
-function calcEstimate(routeType: RouteType, carClass: CarClass) {
+function calcEstimate(routeType: RouteType, carClass: CarClass, distanceKm?: number) {
+  // тарифы ₽/км
+  const perKm: Record<CarClass, number> = {
+    standard: 30,
+    comfort: 37,
+    minivan: 52,
+    business: 65,
+  };
+
+  // МЕЖГОРОД — точный расчёт
+  if (routeType === "intercity") {
+    if (distanceKm && distanceKm > 0) {
+      const price = Math.round(distanceKm * perKm[carClass]);
+      return {
+        text: `Межгород: ${formatRub(price)}`,
+        extra: `Тариф: ${perKm[carClass]} ₽/км · ${distanceKm} км`,
+      };
+    }
+
+    return {
+      text: `Межгород: укажите расстояние (км)`,
+      extra: `Тарифы: стандарт 30 · комфорт 37 · минивэн 52 · бизнес 65 ₽/км`,
+    };
+  }
+
+  // Город / Аэропорт — ориентиры диапазоном
   const base = {
     city: { min: 900, max: 2800 },
     airport: { min: 1200, max: 3800 },
-    intercity: { min: 8000, max: 22000 },
   }[routeType];
 
   const mult =
@@ -100,13 +126,15 @@ function calcEstimate(routeType: RouteType, carClass: CarClass) {
   const min = Math.round(base.min * mult);
   const max = Math.round(base.max * mult);
 
-  const label = routeType === "city" ? "По городу" : routeType === "airport" ? "Аэропорт" : "Межгород";
-  const extra = routeType === "intercity" ? "Межгород обычно считают от расстояния (условно ~25–27 ₽/км)." : null;
+  const label = routeType === "city" ? "По городу" : "Аэропорт";
 
-  return { text: `${label}: ${formatRub(min)} – ${formatRub(max)}`, extra };
+  return {
+    text: `${label}: ${formatRub(min)} – ${formatRub(max)}`,
+    extra: "Итог зависит от маршрута и времени поездки",
+  };
 }
 
-// --- Автоподсказки городов (можешь расширять) ---
+// --- Подсказки городов ---
 const POPULAR_CITIES = [
   "Москва",
   "Санкт-Петербург",
@@ -198,7 +226,6 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
-// datetime-local требует "YYYY-MM-DDTHH:mm"
 function toDatetimeLocal(d: Date) {
   const yyyy = d.getFullYear();
   const mm = pad2(d.getMonth() + 1);
@@ -239,8 +266,8 @@ export default function LeadForm({
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
 
-  // datetime-local хранится как строка "YYYY-MM-DDTHH:mm"
   const [datetimeLocal, setDatetimeLocal] = useState<string>("");
+  const [distanceKm, setDistanceKm] = useState<number | "">("");
 
   const [roundTrip, setRoundTrip] = useState(false);
   const [comment, setComment] = useState("");
@@ -250,7 +277,10 @@ export default function LeadForm({
 
   const [routeTypeTouched, setRouteTypeTouched] = useState(false);
 
-  const estimate = useMemo(() => calcEstimate(routeType, carClass), [routeType, carClass]);
+  const estimate = useMemo(
+    () => calcEstimate(routeType, carClass, typeof distanceKm === "number" ? distanceKm : undefined),
+    [routeType, carClass, distanceKm]
+  );
 
   const fromSuggestions = useMemo(() => pickSuggestions(fromText, routeType), [fromText, routeType]);
   const toSuggestions = useMemo(() => pickSuggestions(toText, routeType), [toText, routeType]);
@@ -314,6 +344,9 @@ export default function LeadForm({
         carClass,
         roundTrip,
         comment: comment.trim() ? comment.trim() : null,
+
+        // можно потом хранить в БД (если захочешь)
+        distanceKm: typeof distanceKm === "number" ? distanceKm : null,
       };
 
       const res = await fetch("/api/leads", {
@@ -396,7 +429,7 @@ export default function LeadForm({
                 ? "Для поездок по городу и встреч."
                 : routeType === "airport"
                 ? "Встреча по времени прилёта/вылета."
-                : "Трансферы между городами."}
+                : "Трансферы между городами — считаем по км."}
             </div>
           </div>
 
@@ -412,7 +445,7 @@ export default function LeadForm({
         <div className="mt-1 text-base font-extrabold text-zinc-900">{estimate.text}</div>
         {estimate.extra ? <div className="mt-1 text-[11px] leading-5 text-zinc-600">{estimate.extra}</div> : null}
         <div className="mt-1 text-[11px] leading-5 text-zinc-600">
-          Это ориентир. Итоговую стоимость подтвердим после уточнения маршрута и деталей.
+          Итоговую стоимость подтвердим после уточнения маршрута и деталей.
         </div>
       </div>
 
@@ -555,6 +588,20 @@ export default function LeadForm({
             ) : null}
           </div>
         </Field>
+
+        {/* Расстояние (км) только для межгорода */}
+        {routeType === "intercity" ? (
+          <Field label="Расстояние (км)" hint="Нужно для расчёта" className="sm:col-span-2">
+            <input
+              type="number"
+              min={1}
+              className={ControlBase()}
+              placeholder="Например: 420"
+              value={distanceKm}
+              onChange={(e) => setDistanceKm(e.target.value ? Number(e.target.value) : "")}
+            />
+          </Field>
+        ) : null}
 
         <Field label="Класс авто">
           <select className={ControlBase()} value={carClass} onChange={(e) => onCarClassChange(e.target.value as CarClass)}>
