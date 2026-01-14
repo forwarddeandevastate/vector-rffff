@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type User = {
   id: number;
@@ -56,13 +56,11 @@ function digitsOnly(s: string) {
 }
 
 function waLink(phone: string) {
-  // WhatsApp любит E.164 без плюса, но обычно ок и так
   const p = digitsOnly(phone);
   return p ? `https://wa.me/${p}` : null;
 }
 
 function tgLink(phone: string) {
-  // универсального tg:// по телефону нет, но можно открыть поиск
   const p = digitsOnly(phone);
   return p ? `https://t.me/+${p}` : null;
 }
@@ -78,10 +76,18 @@ export default function LeadsClient() {
 
   const [draft, setDraft] = useState<Record<number, { price?: string; comment?: string; datetime?: string }>>({});
 
+  // refs по leadId, чтобы "открыть оригинал" мог скроллить на карточку
+  const cardRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const setRef = (id: number) => (el: HTMLDivElement | null) => {
+    cardRefs.current[id] = el;
+  };
+
   const dispatchers = useMemo(
     () => users.filter((u) => u.role === "DISPATCHER" && u.isActive),
     [users]
   );
+
+  const singleDispatcherId = dispatchers.length === 1 ? dispatchers[0].id : null;
 
   async function loadUsers() {
     const res = await fetch("/api/admin/users");
@@ -154,9 +160,43 @@ export default function LeadsClient() {
       await navigator.clipboard.writeText(phone);
       alert("Телефон скопирован ✅");
     } catch {
-      // fallback
       prompt("Скопируй телефон:", phone);
     }
+  }
+
+  function openLead(id: number) {
+    const el = cardRefs.current[id];
+    if (!el) {
+      alert("Оригинал не найден в текущем списке (возможно, фильтр скрывает его).");
+      return;
+    }
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.style.outline = "3px solid #111";
+    el.style.outlineOffset = "2px";
+    setTimeout(() => {
+      // аккуратно убираем подсветку
+      if (el) el.style.outline = "";
+    }, 1400);
+  }
+
+  // --- Авто-назначение: если диспетчер один и есть новые неназначенные лиды ---
+  async function autoAssignIfNeeded(currentLeads: Lead[]) {
+    if (!singleDispatcherId) return;
+
+    const targets = currentLeads.filter((l) => l.status === "new" && !l.assignedToId);
+    if (targets.length === 0) return;
+
+    // назначим максимум первые 20, чтобы не долбить API бесконечно
+    const batch = targets.slice(0, 20);
+
+    // последовательно, чтобы не устроить шторм запросов
+    for (const l of batch) {
+      // eslint-disable-next-line no-await-in-loop
+      await patchLead(l.id, { assignedToId: singleDispatcherId });
+    }
+
+    // обновим список после автоназначения
+    await loadLeads();
   }
 
   useEffect(() => {
@@ -168,6 +208,14 @@ export default function LeadsClient() {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, q, onlyDupes]);
+
+  // когда меняется список leads или вычислился singleDispatcherId — попробуем автоназначение
+  useEffect(() => {
+    if (!loading && leads.length > 0) {
+      autoAssignIfNeeded(leads);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [singleDispatcherId, leads.length]);
 
   return (
     <div style={{ padding: 16 }}>
@@ -197,6 +245,12 @@ export default function LeadsClient() {
         <button onClick={loadLeads} disabled={loading}>
           {loading ? "Обновляем..." : "Обновить"}
         </button>
+
+        {singleDispatcherId && (
+          <span style={{ fontSize: 12, opacity: 0.75 }}>
+            Авто-назначение включено (единственный диспетчер).
+          </span>
+        )}
       </div>
 
       {loading && <div>Загрузка…</div>}
@@ -219,6 +273,7 @@ export default function LeadsClient() {
           return (
             <div
               key={l.id}
+              ref={setRef(l.id)}
               style={{
                 border: cardBorder,
                 borderRadius: 12,
@@ -240,8 +295,33 @@ export default function LeadsClient() {
                     )}
 
                     {l.isDuplicate && (
-                      <span style={{ fontSize: 12, padding: "2px 8px", borderRadius: 999, border: "1px solid #c33", color: "#c33" }}>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          padding: "2px 8px",
+                          borderRadius: 999,
+                          border: "1px solid #c33",
+                          color: "#c33",
+                          display: "inline-flex",
+                          gap: 8,
+                          alignItems: "center",
+                        }}
+                      >
                         ДУБЛИКАТ #{l.duplicateOfId ?? "—"}
+                        {l.duplicateOfId && (
+                          <button
+                            onClick={() => openLead(l.duplicateOfId!)}
+                            style={{
+                              padding: "2px 8px",
+                              borderRadius: 999,
+                              border: "1px solid #c33",
+                              cursor: "pointer",
+                              background: "transparent",
+                            }}
+                          >
+                            Открыть оригинал
+                          </button>
+                        )}
                       </span>
                     )}
                   </div>
@@ -253,13 +333,22 @@ export default function LeadsClient() {
 
                   <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{fmt(l.createdAt)}</div>
 
-                  {/* Быстрые контакты */}
                   <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <button onClick={() => copyPhone(l.phone)} style={{ padding: "6px 10px" }}>
                       📋 Скопировать телефон
                     </button>
                     {tel && (
-                      <a href={tel} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ddd", borderRadius: 10 }}>
+                      <a
+                        href={tel}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "6px 10px",
+                          border: "1px solid #ddd",
+                          borderRadius: 10,
+                        }}
+                      >
                         📞 Позвонить
                       </a>
                     )}
@@ -268,7 +357,14 @@ export default function LeadsClient() {
                         href={wa}
                         target="_blank"
                         rel="noreferrer"
-                        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ddd", borderRadius: 10 }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "6px 10px",
+                          border: "1px solid #ddd",
+                          borderRadius: 10,
+                        }}
                       >
                         💬 WhatsApp
                       </a>
@@ -278,7 +374,14 @@ export default function LeadsClient() {
                         href={tg}
                         target="_blank"
                         rel="noreferrer"
-                        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ddd", borderRadius: 10 }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "6px 10px",
+                          border: "1px solid #ddd",
+                          borderRadius: 10,
+                        }}
                       >
                         ✈️ Telegram
                       </a>
@@ -295,7 +398,6 @@ export default function LeadsClient() {
               </div>
 
               <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                {/* Назначение диспетчера */}
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                   <span style={{ fontSize: 13, opacity: 0.8 }}>Диспетчер:</span>
                   <select
@@ -315,7 +417,6 @@ export default function LeadsClient() {
                   </select>
                 </div>
 
-                {/* Inline редактирование */}
                 <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr", alignItems: "start" }}>
                   <div>
                     <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Дата/время</div>
@@ -369,7 +470,6 @@ export default function LeadsClient() {
                   </div>
                 </div>
 
-                {/* Быстрые статусы */}
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button onClick={() => quickStatus(l.id, "in_progress")}>🟡 В работу</button>
                   <button onClick={() => quickStatus(l.id, "done")}>✅ Завершить</button>
