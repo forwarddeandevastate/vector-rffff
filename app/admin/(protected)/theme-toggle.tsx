@@ -15,7 +15,6 @@ export default function ThemeToggle() {
     const saved = localStorage.getItem("admin_theme");
     const isDark = saved ? saved === "dark" : document.documentElement.classList.contains("dark");
     setDark(isDark);
-
     document.documentElement.classList.toggle("dark", isDark);
   }, []);
 
@@ -32,13 +31,32 @@ export default function ThemeToggle() {
     <button
       onClick={toggle}
       className={cn(
-        "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition",
+        "inline-flex items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition",
         "border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
       )}
       title="Переключить тему"
     >
-      <span aria-hidden>{dark ? "🌙" : "☀️"}</span>
-      <span className="hidden sm:inline">{dark ? "Тёмная" : "Светлая"}</span>
+      <span className="text-zinc-700 dark:text-zinc-200">
+        Тема: <span className="font-extrabold">{dark ? "Тёмная" : "Светлая"}</span>
+      </span>
+
+      {/* toggle */}
+      <span
+        className={cn(
+          "relative h-5 w-9 rounded-full border transition",
+          dark
+            ? "border-zinc-700 bg-zinc-900 dark:border-zinc-700 dark:bg-white"
+            : "border-zinc-300 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40"
+        )}
+        aria-hidden
+      >
+        <span
+          className={cn(
+            "absolute top-0.5 h-4 w-4 rounded-full transition",
+            dark ? "left-4 bg-zinc-900 dark:bg-black" : "left-0.5 bg-white dark:bg-zinc-200"
+          )}
+        />
+      </span>
     </button>
   );
 }
