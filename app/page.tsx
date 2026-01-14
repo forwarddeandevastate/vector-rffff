@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import LeadForm from "./lead-form";
 
 function cn(...xs: Array<string | false | null | undefined>) {
@@ -136,27 +136,33 @@ function Badge({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ClassCard({
+function ClassCardButton({
   title,
   priceHint,
   features,
   note,
   active,
+  onClick,
 }: {
   title: string;
   priceHint: string;
   features: string[];
   note?: string;
   active?: boolean;
+  onClick: () => void;
 }) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
       className={cn(
-        "rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur transition",
+        "text-left rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur transition w-full",
+        "focus:outline-none focus:ring-2 focus:ring-sky-200/80",
         active
           ? "border-sky-300 ring-2 ring-sky-200/70 shadow-md bg-white"
-          : "border-zinc-200 hover:border-sky-200/70"
+          : "border-zinc-200 hover:border-sky-200/70 hover:bg-white/90"
       )}
+      aria-pressed={active ? "true" : "false"}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -184,7 +190,7 @@ function ClassCard({
       </ul>
 
       {note ? <div className="mt-4 text-xs text-zinc-500">{note}</div> : null}
-    </div>
+    </button>
   );
 }
 
@@ -195,15 +201,21 @@ export default function HomePage() {
   const TELEGRAM = "https://t.me/";
 
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
+  const orderRef = useRef<HTMLDivElement | null>(null);
+
+  function pickClass(v: CarClass, scrollToForm = true) {
+    setSelectedClass(v);
+    if (scrollToForm) {
+      orderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
 
   return (
     <div className="min-h-screen text-zinc-900">
-      {/* Голубой фон */}
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
 
-      {/* Header */}
       <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/65 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <a href="/" className="flex items-center gap-3">
@@ -262,7 +274,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO */}
       <section className="relative">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-12 md:py-14">
           <div className="md:col-span-7">
@@ -340,8 +351,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* FORM CARD */}
-          <div id="order" className="md:col-span-5">
+          <div id="order" ref={orderRef} className="md:col-span-5">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -356,10 +366,7 @@ export default function HomePage() {
               </div>
 
               <div className="p-5">
-                <LeadForm
-                  carClass={selectedClass}
-                  onCarClassChange={(v) => setSelectedClass(v)}
-                />
+                <LeadForm carClass={selectedClass} onCarClassChange={(v) => pickClass(v, false)} />
               </div>
 
               <div className="border-t border-zinc-200 bg-white/70 p-5">
@@ -432,7 +439,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SERVICE */}
       <section className="mx-auto max-w-6xl px-4 py-12">
         <SectionTitle
           title="Сервис без лишних вопросов"
@@ -445,15 +451,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CLASSES */}
       <section id="classes" className="mx-auto max-w-6xl px-4 pb-12">
         <SectionTitle
           title="Классы авто"
-          desc="Подбираем автомобиль под задачу: город, аэропорт, межгород, багаж и количество пассажиров."
+          desc="Нажмите на карточку — класс подставится в форму и подсветится."
         />
 
         <div className="grid gap-3 md:grid-cols-2">
-          <ClassCard
+          <ClassCardButton
             title="Стандарт"
             priceHint="Оптимально для города"
             features={[
@@ -463,9 +468,10 @@ export default function HomePage() {
             ]}
             note="Точную стоимость подтверждаем до подачи."
             active={selectedClass === "standard"}
+            onClick={() => pickClass("standard", true)}
           />
 
-          <ClassCard
+          <ClassCardButton
             title="Комфорт"
             priceHint="Чаще выбирают для аэропортов"
             features={[
@@ -475,9 +481,10 @@ export default function HomePage() {
             ]}
             note="Можно указать пожелания: детское кресло, остановки."
             active={selectedClass === "comfort"}
+            onClick={() => pickClass("comfort", true)}
           />
 
-          <ClassCard
+          <ClassCardButton
             title="Бизнес"
             priceHint="Максимально спокойно и представительно"
             features={[
@@ -487,9 +494,10 @@ export default function HomePage() {
             ]}
             note="Уточняем детали заранее и фиксируем заявку."
             active={selectedClass === "business"}
+            onClick={() => pickClass("business", true)}
           />
 
-          <ClassCard
+          <ClassCardButton
             title="Минивэн"
             priceHint="Когда нужно больше мест"
             features={[
@@ -499,19 +507,18 @@ export default function HomePage() {
             ]}
             note="Сообщите количество пассажиров и багаж — подберём вариант."
             active={selectedClass === "minivan"}
+            onClick={() => pickClass("minivan", true)}
           />
         </div>
 
         <div className="mt-4 rounded-2xl border border-sky-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
-          <div className="text-sm font-extrabold text-zinc-900">Важно</div>
+          <div className="text-sm font-extrabold text-zinc-900">Подсказка</div>
           <div className="mt-2 text-sm leading-6 text-zinc-700">
-            Если вы не уверены в классе — оставьте заявку, и мы подскажем подходящий вариант по маршруту и количеству
-            пассажиров.
+            Можно выбрать класс в форме или нажать на карточку — мы синхронизируем выбор автоматически.
           </div>
         </div>
       </section>
 
-      {/* HOW */}
       <section id="how" className="mx-auto max-w-6xl px-4 pb-12">
         <SectionTitle title="Как работаем" desc="Три шага — и поездка организована." />
         <div className="grid gap-3 md:grid-cols-3">
@@ -521,7 +528,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section id="faq" className="mx-auto max-w-6xl px-4 pb-12">
         <SectionTitle title="Частые вопросы" desc="Короткие ответы на популярные вопросы." />
         <div className="grid gap-3 md:grid-cols-2">
@@ -583,7 +589,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
