@@ -40,13 +40,10 @@ export default function ThemeToggle() {
         Тема: <span className="font-extrabold">{dark ? "Тёмная" : "Светлая"}</span>
       </span>
 
-      {/* toggle */}
       <span
         className={cn(
           "relative h-5 w-9 rounded-full border transition",
-          dark
-            ? "border-zinc-700 bg-zinc-900 dark:border-zinc-700 dark:bg-white"
-            : "border-zinc-300 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40"
+          dark ? "border-zinc-700 bg-zinc-900 dark:bg-white" : "border-zinc-300 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40"
         )}
         aria-hidden
       >

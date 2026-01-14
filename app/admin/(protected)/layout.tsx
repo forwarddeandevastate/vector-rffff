@@ -29,22 +29,13 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
             </Link>
 
             <nav className="hidden items-center gap-2 md:flex">
-              <Link
-                className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40"
-                href="/admin/leads"
-              >
+              <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/leads">
                 Лиды
               </Link>
-              <Link
-                className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40"
-                href="/admin/users"
-              >
+              <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/users">
                 Пользователи
               </Link>
-              <Link
-                className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40"
-                href="/admin/settings"
-              >
+              <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/settings">
                 Настройки
               </Link>
             </nav>
