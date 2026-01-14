@@ -13,7 +13,6 @@ function LogoMark({ className }: { className?: string }) {
       )}
       aria-hidden
     >
-      {/* Простая “монограмма” */}
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
         <path
           d="M4.5 6.5l7.5 13 7.5-13"
@@ -22,12 +21,7 @@ function LogoMark({ className }: { className?: string }) {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path
-          d="M6.7 6.5h10.6"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
+        <path d="M6.7 6.5h10.6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -58,7 +52,7 @@ function IconWhatsapp({ className }: { className?: string }) {
       <path
         d="M9.3 8.9c.2-.5.4-.5.7-.5h.6c.2 0 .4 0 .5.3l.7 1.7c.1.3.1.5-.1.7l-.5.6c-.1.2-.2.4 0 .6.4.8 1.5 1.9 2.3 2.3.2.1.4 0 .6 0l.6-.5c.2-.2.4-.2.7-.1l1.7.7c.3.1.3.3.3.5v.6c0 .3 0 .5-.5.7-.7.3-2.1.5-4.5-1.5-2.0-1.7-3.3-3.9-3.4-4.7-.1-.6.1-1.2.3-1.4Z"
         fill="currentColor"
-        opacity="0.18"
+        opacity="0.16"
       />
     </svg>
   );
@@ -73,19 +67,14 @@ function IconTelegram({ className }: { className?: string }) {
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
-      <path
-        d="M8.1 15.4 18.4 7.9"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
+      <path d="M8.1 15.4 18.4 7.9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-sm">
+    <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs font-semibold text-zinc-700 shadow-sm backdrop-blur">
       {children}
     </span>
   );
@@ -127,16 +116,19 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function HomePage() {
-  // Заглушки — поменяешь на реальные
   const PHONE_DISPLAY = "+7 (999) 123-45-67";
   const PHONE_TEL = "+79991234567";
   const WHATSAPP = "https://wa.me/79991234567";
   const TELEGRAM = "https://t.me/";
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen text-zinc-900">
+      {/* Background (не белый) */}
+      <div className="fixed inset-0 -z-20 bg-[#f4f6fb]" />
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(1200px_500px_at_50%_-10%,rgba(99,102,241,0.22),transparent_60%),radial-gradient(900px_500px_at_10%_20%,rgba(59,130,246,0.10),transparent_55%),radial-gradient(900px_500px_at_90%_20%,rgba(14,165,233,0.08),transparent_55%)]" />
+
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/80 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/70 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <a href="/" className="flex items-center gap-3">
             <LogoMark />
@@ -147,13 +139,13 @@ export default function HomePage() {
           </a>
 
           <nav className="hidden items-center gap-2 md:flex">
-            <a href="#order" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">
+            <a href="#order" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100/70">
               Заявка
             </a>
-            <a href="#how" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">
+            <a href="#how" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100/70">
               Как работаем
             </a>
-            <a href="#faq" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">
+            <a href="#faq" className="rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100/70">
               Вопросы
             </a>
           </nav>
@@ -161,7 +153,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <a
               href={`tel:${PHONE_TEL}`}
-              className="hidden items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-zinc-50 md:inline-flex"
+              className="hidden items-center gap-2 rounded-xl border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold hover:bg-white md:inline-flex"
               title="Позвонить"
             >
               <IconPhone className="h-4 w-4 text-zinc-700" />
@@ -179,9 +171,6 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="relative">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-indigo-50 via-zinc-50 to-zinc-50" />
-        <div className="absolute left-1/2 top-[-140px] -z-10 h-[340px] w-[900px] -translate-x-1/2 rounded-full bg-indigo-200/35 blur-3xl" />
-
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-12 md:py-14">
           <div className="md:col-span-7">
             <div className="flex flex-wrap gap-2">
@@ -200,15 +189,15 @@ export default function HomePage() {
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
                 <div className="text-2xl font-extrabold tracking-tight">5–10 мин</div>
                 <div className="mt-1 text-sm text-zinc-600">обычно до связи</div>
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
                 <div className="text-2xl font-extrabold tracking-tight">24/7</div>
                 <div className="mt-1 text-sm text-zinc-600">приём заявок</div>
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
                 <div className="text-2xl font-extrabold tracking-tight">Прозрачно</div>
                 <div className="mt-1 text-sm text-zinc-600">без сюрпризов</div>
               </div>
@@ -225,7 +214,7 @@ export default function HomePage() {
                 href={WHATSAPP}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
               >
                 <IconWhatsapp className="h-4 w-4 text-zinc-700" />
                 WhatsApp
@@ -234,14 +223,14 @@ export default function HomePage() {
                 href={TELEGRAM}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
               >
                 <IconTelegram className="h-4 w-4 text-zinc-700" />
                 Telegram
               </a>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-indigo-100 bg-white/70 p-4 text-sm text-zinc-700 shadow-sm">
+            <div className="mt-6 rounded-2xl border border-indigo-200/60 bg-white/70 p-4 text-sm text-zinc-700 shadow-sm backdrop-blur">
               <div className="font-semibold text-zinc-900">Как подтверждаем заявку</div>
               <ul className="mt-2 grid gap-1">
                 <li>Маршрут и время — фиксируем.</li>
@@ -253,7 +242,7 @@ export default function HomePage() {
 
           {/* Form / Contacts */}
           <div id="order" className="md:col-span-5">
-            <div className="rounded-3xl border border-zinc-200 bg-white shadow-lg">
+            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-lg backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -270,12 +259,12 @@ export default function HomePage() {
                 <LeadForm />
               </div>
 
-              <div className="border-t border-zinc-200 bg-zinc-50 p-5">
+              <div className="border-t border-zinc-200 bg-white/70 p-5">
                 <div className="text-sm font-extrabold text-zinc-900">Контакты</div>
 
                 <div className="mt-3 grid gap-2">
                   <a
-                    className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+                    className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
                     href={`tel:${PHONE_TEL}`}
                   >
                     <IconPhone className="h-4 w-4 text-zinc-700" />
@@ -284,7 +273,7 @@ export default function HomePage() {
 
                   <div className="grid grid-cols-2 gap-2">
                     <a
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
                       href={WHATSAPP}
                       target="_blank"
                       rel="noreferrer"
@@ -294,7 +283,7 @@ export default function HomePage() {
                     </a>
 
                     <a
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
                       href={TELEGRAM}
                       target="_blank"
                       rel="noreferrer"
@@ -360,19 +349,13 @@ export default function HomePage() {
             q="Как формируется стоимость?"
             a="Зависит от маршрута, времени и класса авто. Стоимость согласуем до подачи автомобиля."
           />
-          <FAQItem
-            q="Можно ли детское кресло?"
-            a="Да. Укажите это в комментарии — диспетчер подтвердит наличие и условия."
-          />
-          <FAQItem
-            q="Работаете межгород?"
-            a="Да. Укажите откуда/куда и время — мы подтвердим поездку."
-          />
+          <FAQItem q="Можно ли детское кресло?" a="Да. Укажите это в комментарии — диспетчер подтвердит наличие и условия." />
+          <FAQItem q="Работаете межгород?" a="Да. Укажите откуда/куда и время — мы подтвердим поездку." />
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-white">
+      <footer className="border-t border-zinc-200 bg-white/70 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
@@ -385,14 +368,14 @@ export default function HomePage() {
 
             <div className="flex flex-wrap gap-2">
               <a
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-zinc-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={`tel:${PHONE_TEL}`}
               >
                 <IconPhone className="h-4 w-4 text-zinc-700" />
                 {PHONE_DISPLAY}
               </a>
               <a
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-zinc-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={WHATSAPP}
                 target="_blank"
                 rel="noreferrer"
@@ -401,7 +384,7 @@ export default function HomePage() {
                 WhatsApp
               </a>
               <a
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-zinc-50"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/80 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={TELEGRAM}
                 target="_blank"
                 rel="noreferrer"
@@ -412,9 +395,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-zinc-500">
-            © {new Date().getFullYear()} Вектор РФ. Все права защищены.
-          </div>
+          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
         </div>
       </footer>
     </div>

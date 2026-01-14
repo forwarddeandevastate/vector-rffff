@@ -12,7 +12,8 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={cn(
-        "h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none",
+        "h-11 w-full rounded-xl border border-zinc-200 bg-white/90 px-3 text-sm outline-none",
+        "shadow-[0_1px_0_rgba(16,24,40,0.04)]",
         "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
         props.className
       )}
@@ -25,7 +26,8 @@ function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
     <select
       {...props}
       className={cn(
-        "h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none",
+        "h-11 w-full rounded-xl border border-zinc-200 bg-white/90 px-3 text-sm outline-none",
+        "shadow-[0_1px_0_rgba(16,24,40,0.04)]",
         "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
         props.className
       )}
@@ -38,7 +40,8 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
     <textarea
       {...props}
       className={cn(
-        "min-h-[96px] w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none",
+        "min-h-[96px] w-full rounded-xl border border-zinc-200 bg-white/90 px-3 py-2 text-sm outline-none",
+        "shadow-[0_1px_0_rgba(16,24,40,0.04)]",
         "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
         props.className
       )}
@@ -159,13 +162,8 @@ export default function LeadForm() {
         </Field>
 
         <Field label="Опции">
-          <label className="flex h-11 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-800">
-            <input
-              type="checkbox"
-              checked={roundTrip}
-              onChange={(e) => setRoundTrip(e.target.checked)}
-              className="h-4 w-4 accent-indigo-600"
-            />
+          <label className="flex h-11 items-center gap-2 rounded-xl border border-zinc-200 bg-white/90 px-3 text-sm text-zinc-800 shadow-[0_1px_0_rgba(16,24,40,0.04)]">
+            <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} className="h-4 w-4 accent-indigo-600" />
             Туда-обратно
           </label>
         </Field>
@@ -176,9 +174,7 @@ export default function LeadForm() {
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">
-          {error}
-        </div>
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
       ) : null}
 
       <button
