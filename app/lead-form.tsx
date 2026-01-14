@@ -78,10 +78,7 @@ function formatRub(n: number) {
   return `${parts.join(" ")} ₽`;
 }
 
-/** --- Калькулятор межгорода --- */
-type Coords = { lat: number; lon: number };
-
-// Тариф ₽/км по классу
+// тариф ₽/км по классу
 const PER_KM: Record<CarClass, number> = {
   standard: 30,
   comfort: 37,
@@ -89,114 +86,7 @@ const PER_KM: Record<CarClass, number> = {
   business: 65,
 };
 
-// Координаты (можешь расширять сколько угодно)
-const COORDS: Record<string, Coords> = {
-  // Города (топ)
-  "Москва": { lat: 55.7558, lon: 37.6173 },
-  "Санкт-Петербург": { lat: 59.9343, lon: 30.3351 },
-  "Казань": { lat: 55.7961, lon: 49.1064 },
-  "Сочи": { lat: 43.5855, lon: 39.7231 },
-  "Екатеринбург": { lat: 56.8389, lon: 60.6057 },
-  "Новосибирск": { lat: 55.0084, lon: 82.9357 },
-  "Нижний Новгород": { lat: 56.2965, lon: 43.9361 },
-  "Самара": { lat: 53.1959, lon: 50.1008 },
-  "Ростов-на-Дону": { lat: 47.2357, lon: 39.7015 },
-  "Краснодар": { lat: 45.0355, lon: 38.9753 },
-  "Уфа": { lat: 54.7388, lon: 55.9721 },
-  "Красноярск": { lat: 56.0153, lon: 92.8932 },
-  "Воронеж": { lat: 51.6608, lon: 39.2003 },
-  "Пермь": { lat: 58.0105, lon: 56.2502 },
-  "Волгоград": { lat: 48.708, lon: 44.5133 },
-  "Омск": { lat: 54.9885, lon: 73.3242 },
-  "Челябинск": { lat: 55.1644, lon: 61.4368 },
-  "Калининград": { lat: 54.7104, lon: 20.4522 },
-  "Тюмень": { lat: 57.153, lon: 65.5343 },
-  "Иркутск": { lat: 52.286, lon: 104.305 },
-  "Хабаровск": { lat: 48.4802, lon: 135.0719 },
-  "Владивосток": { lat: 43.1155, lon: 131.8855 },
-
-  // ЛДНР + добавленные
-  "Донецк (ДНР)": { lat: 48.0159, lon: 37.8029 },
-  "Луганск (ЛНР)": { lat: 48.574, lon: 39.3078 },
-  "Макеевка (ДНР)": { lat: 48.055, lon: 37.9654 },
-  "Мариуполь (ДНР)": { lat: 47.0971, lon: 37.5434 },
-  "Горловка (ДНР)": { lat: 48.3062, lon: 38.0297 },
-  "Енакиево (ДНР)": { lat: 48.2333, lon: 38.2 },
-  "Алчевск (ЛНР)": { lat: 48.468, lon: 38.816 },
-  "Стаханов (ЛНР)": { lat: 48.568, lon: 38.648 },
-  "Северодонецк (ЛНР)": { lat: 48.9483, lon: 38.492 },
-  "Лисичанск (ЛНР)": { lat: 48.9049, lon: 38.442 },
-
-  "Запорожье": { lat: 47.8388, lon: 35.1396 },
-  "Мелитополь": { lat: 46.8489, lon: 35.3653 },
-  "Бердянск": { lat: 46.7661, lon: 36.7987 },
-
-  "Херсон": { lat: 46.6354, lon: 32.6169 },
-  "Геническ": { lat: 46.1737, lon: 34.8078 },
-  "Скадовск": { lat: 46.1167, lon: 32.9167 },
-  "Новая Каховка": { lat: 46.7546, lon: 33.3603 },
-
-  // Аэропорты (под подсказки)
-  "Шереметьево (SVO)": { lat: 55.9726, lon: 37.4146 },
-  "Домодедово (DME)": { lat: 55.4088, lon: 37.9063 },
-  "Внуково (VKO)": { lat: 55.5915, lon: 37.2615 },
-  "Пулково (LED)": { lat: 59.8003, lon: 30.2625 },
-  "Сочи (AER)": { lat: 43.4499, lon: 39.9566 },
-  "Кольцово (SVX)": { lat: 56.7431, lon: 60.8027 },
-  "Толмачёво (OVB)": { lat: 55.0126, lon: 82.6507 },
-  "Курумоч (KUF)": { lat: 53.5049, lon: 50.1643 },
-  "Казань (KZN)": { lat: 55.6062, lon: 49.2787 },
-  "Пашковский (KRR)": { lat: 45.0347, lon: 39.1705 },
-  "Храброво (KGD)": { lat: 54.889, lon: 20.5926 },
-};
-
-// нормализация ключа (чтобы устойчиво находить совпадения)
-function normKey(s: string) {
-  return s.trim().toLowerCase();
-}
-
-// Попытка “распознать” введённое место в COORDS
-function resolveCoords(text: string): Coords | null {
-  const t = text.trim();
-  if (!t) return null;
-
-  // 1) точное совпадение
-  if (COORDS[t]) return COORDS[t];
-
-  // 2) совпадение по нормализованному ключу
-  const n = normKey(t);
-  for (const k of Object.keys(COORDS)) {
-    if (normKey(k) === n) return COORDS[k];
-  }
-
-  // 3) если ввели "Донецк" без "(ДНР)" — попробуем найти начало ключа
-  for (const k of Object.keys(COORDS)) {
-    const kk = k.replace(/\s*\(.*?\)\s*/g, "").trim(); // убираем скобки
-    if (normKey(kk) === n) return COORDS[k];
-  }
-
-  return null;
-}
-
-// расстояние по земле (Haversine), км
-function haversineKm(a: Coords, b: Coords) {
-  const R = 6371;
-  const toRad = (x: number) => (x * Math.PI) / 180;
-
-  const dLat = toRad(b.lat - a.lat);
-  const dLon = toRad(b.lon - a.lon);
-  const lat1 = toRad(a.lat);
-  const lat2 = toRad(b.lat);
-
-  const s =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-
-  const c = 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
-  return R * c;
-}
-
-// --- Подсказки мест ---
+// --- Подсказки мест (для удобства, но НЕ обязательно выбирать из списка — можно вводить руками) ---
 const POPULAR_CITIES = [
   "Москва",
   "Санкт-Петербург",
@@ -284,7 +174,6 @@ function pickSuggestions(value: string, routeType: RouteType) {
 function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
-
 function toDatetimeLocal(d: Date) {
   const yyyy = d.getFullYear();
   const mm = pad2(d.getMonth() + 1);
@@ -293,13 +182,11 @@ function toDatetimeLocal(d: Date) {
   const mi = pad2(d.getMinutes());
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
-
 function addMinutes(base: Date, minutes: number) {
   const d = new Date(base.getTime());
   d.setMinutes(d.getMinutes() + minutes);
   return d;
 }
-
 function setTimeSameDay(base: Date, hh: number, mm: number) {
   const d = new Date(base.getTime());
   d.setHours(hh, mm, 0, 0);
@@ -314,7 +201,6 @@ export default function LeadForm({
 }: {
   carClass: CarClass;
   onCarClassChange: (v: CarClass) => void;
-
   routeType: RouteType;
   onRouteTypeChange: (v: RouteType) => void;
 }) {
@@ -332,7 +218,10 @@ export default function LeadForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [routeTypeTouched, setRouteTypeTouched] = useState(false);
+  // авто-расчёт
+  const [km, setKm] = useState<number | null>(null);
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [calcError, setCalcError] = useState<string | null>(null);
 
   const fromSuggestions = useMemo(() => pickSuggestions(fromText, routeType), [fromText, routeType]);
   const toSuggestions = useMemo(() => pickSuggestions(toText, routeType), [toText, routeType]);
@@ -351,10 +240,6 @@ export default function LeadForm({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
-
-  useEffect(() => {
-    setRouteTypeTouched(true);
-  }, [routeType]);
 
   const canSubmit = useMemo(() => {
     return name.trim() && phone.trim() && fromText.trim() && toText.trim();
@@ -376,27 +261,63 @@ export default function LeadForm({
     setDatetimeLocal(toDatetimeLocal(d));
   }
 
-  // --- АВТОКАЛЬКУЛЯТОР (межгород) ---
-  const calc = useMemo(() => {
-    if (routeType !== "intercity") return { ok: false as const };
+  // Авто-расчёт км только для межгорода, с debounce
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
 
-    const a = resolveCoords(fromText);
-    const b = resolveCoords(toText);
-    if (!a || !b) return { ok: false as const, reason: "Выберите откуда/куда из списка — рассчитаем автоматически." };
+    async function run() {
+      setCalcError(null);
+      setKm(null);
 
-    const km = haversineKm(a, b);
-    const kmRounded = Math.max(1, Math.round(km)); // округлим до км
-    let price = Math.round(kmRounded * PER_KM[carClass]);
-    if (roundTrip) price *= 2;
+      if (routeType !== "intercity") return;
+      if (!fromText.trim() || !toText.trim()) return;
 
-    return {
-      ok: true as const,
-      km: kmRounded,
-      price,
-      perKm: PER_KM[carClass],
-      roundTrip,
+      setCalcLoading(true);
+
+      try {
+        const url =
+          `/api/distance?from=${encodeURIComponent(fromText.trim())}` +
+          `&to=${encodeURIComponent(toText.trim())}`;
+
+        const res = await fetch(url, { signal: controller.signal });
+        const data = await res.json().catch(() => ({}));
+
+        if (cancelled) return;
+
+        if (!res.ok || !data.ok) {
+          setCalcError(data?.error || "Не удалось рассчитать расстояние");
+          setKm(null);
+          return;
+        }
+
+        setKm(Number(data.km) || null);
+      } catch (e: any) {
+        if (cancelled) return;
+        if (e?.name === "AbortError") return;
+        setCalcError("Не удалось рассчитать расстояние");
+        setKm(null);
+      } finally {
+        if (!cancelled) setCalcLoading(false);
+      }
+    }
+
+    const t = setTimeout(run, 450);
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(t);
     };
-  }, [routeType, fromText, toText, carClass, roundTrip]);
+  }, [routeType, fromText, toText]);
+
+  const finalPrice = useMemo(() => {
+    if (routeType !== "intercity") return null;
+    if (!km) return null;
+    let price = Math.round(km * PER_KM[carClass]);
+    if (roundTrip) price *= 2;
+    return price;
+  }, [routeType, km, carClass, roundTrip]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -409,6 +330,14 @@ export default function LeadForm({
 
     setLoading(true);
     try {
+      // Если межгород — добавим расчёт в комментарий (БД не трогаем)
+      const calcNote =
+        routeType === "intercity" && km && finalPrice
+          ? `\n\n[Авторасчёт] ${km} км · ${PER_KM[carClass]} ₽/км${roundTrip ? " · туда-обратно" : ""} = ${formatRub(
+              finalPrice
+            )}`
+          : "";
+
       const payload = {
         name: name.trim(),
         phone: phone.trim(),
@@ -417,10 +346,7 @@ export default function LeadForm({
         datetime: datetimeLocal ? datetimeLocal : null,
         carClass,
         roundTrip,
-        comment: comment.trim() ? comment.trim() : null,
-
-        // можно сохранить рассчитанную стоимость/км в comment или расширить БД позже
-        // сейчас БД не трогаем, чтобы не ломать миграции
+        comment: (comment.trim() ? comment.trim() : "") + calcNote || null,
       };
 
       const res = await fetch("/api/leads", {
@@ -442,78 +368,41 @@ export default function LeadForm({
 
   return (
     <form onSubmit={onSubmit} className="grid gap-3">
-      {/* Тип поездки (БЕЗ "ориентира"!) */}
+      {/* Тип поездки + итоговая стоимость (только итог, без ориентиров) */}
       <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-xs font-semibold text-zinc-700">Тип поездки</div>
 
             <div className="mt-2 flex flex-wrap gap-2">
-              <SegButton
-                active={routeType === "city"}
-                onClick={() => {
-                  setRouteTypeTouched(true);
-                  onRouteTypeChange("city");
-                }}
-              >
+              <SegButton active={routeType === "city"} onClick={() => onRouteTypeChange("city")}>
                 Город
               </SegButton>
-
-              <SegButton
-                active={routeType === "airport"}
-                onClick={() => {
-                  setRouteTypeTouched(true);
-                  onRouteTypeChange("airport");
-                }}
-              >
+              <SegButton active={routeType === "airport"} onClick={() => onRouteTypeChange("airport")}>
                 Аэропорт
               </SegButton>
-
-              <SegButton
-                active={routeType === "intercity"}
-                onClick={() => {
-                  setRouteTypeTouched(true);
-                  onRouteTypeChange("intercity");
-                }}
-              >
+              <SegButton active={routeType === "intercity"} onClick={() => onRouteTypeChange("intercity")}>
                 Межгород
               </SegButton>
-
-              {routeTypeTouched ? (
-                <button
-                  type="button"
-                  onClick={() => setRouteTypeTouched(false)}
-                  className={cn(
-                    "h-10 rounded-xl px-3 text-sm font-semibold",
-                    "border border-zinc-200 bg-white/85 text-zinc-700 hover:bg-white"
-                  )}
-                  title="Вернуть автоопределение"
-                >
-                  Авто
-                </button>
-              ) : (
-                <span className="inline-flex h-10 items-center rounded-xl border border-sky-200/70 bg-sky-50 px-3 text-sm font-semibold text-sky-900">
-                  Авто определение
-                </span>
-              )}
             </div>
 
-            {/* Итоговая стоимость (только для межгорода) */}
             {routeType === "intercity" ? (
               <div className="mt-3 rounded-xl border border-sky-200/70 bg-sky-50/60 px-3 py-2">
                 <div className="text-[11px] font-semibold text-sky-900">Итоговая стоимость (авторасчёт)</div>
 
-                {calc.ok ? (
+                {calcLoading ? (
+                  <div className="mt-1 text-[11px] text-zinc-700">Считаем маршрут…</div>
+                ) : calcError ? (
+                  <div className="mt-1 text-[11px] text-rose-700">{calcError}</div>
+                ) : finalPrice ? (
                   <>
-                    <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(calc.price)}</div>
+                    <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(finalPrice)}</div>
                     <div className="mt-0.5 text-[11px] text-zinc-600">
-                      {calc.km} км · {calc.perKm} ₽/км{calc.roundTrip ? " · туда-обратно" : ""}
+                      {km} км · {PER_KM[carClass]} ₽/км{roundTrip ? " · туда-обратно" : ""}
                     </div>
                   </>
                 ) : (
-                  <div className="mt-0.5 text-[11px] text-zinc-700">
-                    {calc.reason || "Выберите откуда/куда из списка — рассчитаем автоматически."}
-                  </div>
+                  <div className="mt-1 text-[11px] text-zinc-700">Введите “Откуда” и “Куда” — посчитаем автоматически.</div>
                 )}
               </div>
             ) : null}
@@ -543,7 +432,7 @@ export default function LeadForm({
         {/* ОТКУДА */}
         <Field
           label="Откуда *"
-          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Начните вводить город"}
+          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Город / адрес (можно вводить руками)"}
           className="sm:col-span-2"
         >
           <div ref={fromBoxRef} className="relative">
@@ -580,7 +469,7 @@ export default function LeadForm({
         {/* КУДА */}
         <Field
           label="Куда *"
-          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Начните вводить город"}
+          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Город / адрес (можно вводить руками)"}
           className="sm:col-span-2"
         >
           <div ref={toBoxRef} className="relative">
@@ -656,12 +545,6 @@ export default function LeadForm({
                 Завтра 10:00
               </button>
             </div>
-
-            {routeType === "airport" ? (
-              <div className="text-[11px] leading-5 text-zinc-600">
-                Для аэропорта удобно указать время прилёта/вылета и номер рейса в комментарии.
-              </div>
-            ) : null}
           </div>
         </Field>
 
@@ -714,10 +597,6 @@ export default function LeadForm({
       >
         {loading ? "Отправляем…" : "Отправить заявку"}
       </button>
-
-      <div className="text-[11px] leading-5 text-zinc-500">
-        Межгород рассчитывается автоматически по маршруту (км) и выбранному классу авто.
-      </div>
     </form>
   );
 }
