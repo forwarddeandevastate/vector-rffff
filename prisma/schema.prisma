@@ -123,3 +123,19 @@ model AuditLog {
   @@index([entity, entityId])
   @@map("audit_log")
 }
+model Review {
+  id        Int      @id @default(autoincrement())
+
+  name      String
+  rating    Int      @default(5) // 1..5
+  text      String
+
+  city      String?
+  source    String?  // например "site", "telegram", "google"
+  isPublic  Boolean  @default(false) // модерация
+
+  createdAt DateTime @default(now())
+
+  @@index([isPublic, createdAt])
+  @@map("reviews")
+}
