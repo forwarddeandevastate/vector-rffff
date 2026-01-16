@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { calcIntercityPrice, detectTripType, type CarClass } from "@/lib/trip";
 
+export type CarClass = "standard" | "comfort" | "minivan" | "business";
 export type RouteType = "city" | "intercity" | "airport";
 
 type Props = {
@@ -40,8 +40,32 @@ const CITIES = [
   "Геническ (Херсон)",
 ];
 
+const RATES_RUB_PER_KM: Record<CarClass, number> = {
+  standard: 30,
+  comfort: 37,
+  minivan: 52,
+  business: 65,
+};
+
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
+}
+
+function norm(s: string) {
+  return (s || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function detectTripType(fromCity?: string | null, toCity?: string | null) {
+  const a = norm(fromCity || "");
+  const b = norm(toCity || "");
+  if (!a || !b) return "city" as const;
+  return a !== b ? ("intercity" as const) : ("city" as const);
+}
+
+function calcIntercityPrice(distanceKm: number, carClass: CarClass) {
+  const rate = RATES_RUB_PER_KM[carClass] ?? RATES_RUB_PER_KM.standard;
+  const raw = distanceKm * rate;
+  return Math.round(raw / 10) * 10; // округление до 10 ₽
 }
 
 export default function LeadForm({
@@ -66,11 +90,11 @@ export default function LeadForm({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // 👇 Автоопределение: разные города -> межгород
+  // ✅ Автоопределение по городам: разные города -> межгород
   const autoTripType = useMemo(() => detectTripType(fromCity, toCity), [fromCity, toCity]);
 
-  // Если выбран "airport" вручную — не перетираем.
-  // Иначе: city/intercity управляется автоматически по городам
+  // Если пользователь выбрал "airport" — не перетираем.
+  // Если airport не выбран — routeType автоматически будет city/intercity по городам.
   useEffect(() => {
     if (routeType === "airport") return;
 
@@ -78,7 +102,7 @@ export default function LeadForm({
     if (next !== routeType) onRouteTypeChange(next);
   }, [autoTripType, routeType, onRouteTypeChange]);
 
-  // Авторасчет расстояния только для межгорода
+  // ✅ Авторасчет расстояния только для межгорода
   useEffect(() => {
     let cancelled = false;
 
@@ -108,7 +132,7 @@ export default function LeadForm({
         });
 
         const data = await r.json().catch(() => null);
-        if (!r.ok || !data?.ok) throw new Error(data?.error || "distance error");
+        if (!r.ok || !data?.ok) throw new Error(data?.error || "Ошибка расчёта расстояния");
 
         if (!cancelled) setDistanceKm(Number(data.distanceKm));
       } catch (e: any) {
@@ -126,7 +150,7 @@ export default function LeadForm({
     };
   }, [routeType, fromCity, toCity]);
 
-  // Авторасчет цены только для межгорода
+  // ✅ Авторасчет цены только для межгорода
   useEffect(() => {
     if (routeType !== "intercity") {
       setPrice(null);
@@ -177,7 +201,6 @@ export default function LeadForm({
 
   return (
     <div className="grid gap-4">
-      {/* Поля */}
       <div className="grid gap-3">
         <label className="grid gap-1">
           <span className="text-sm font-semibold text-zinc-800">Имя</span>
@@ -275,7 +298,6 @@ export default function LeadForm({
         </label>
       </div>
 
-      {/* Результат */}
       <div className="rounded-2xl border border-zinc-200 bg-white/70 p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm font-extrabold text-zinc-900">
