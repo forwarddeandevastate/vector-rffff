@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-api";
-import { sendTelegramText, leadKeyboard } from "@/lib/telegram";
+import { sendTelegramText } from "@/lib/telegram";
 
 export async function POST() {
   try {
@@ -11,11 +11,14 @@ export async function POST() {
       return NextResponse.json({ ok: false, error: "Missing TELEGRAM_CHAT_ID" }, { status: 500 });
     }
 
-    const r = await sendTelegramText(
-      chatId,
-      "<b>Тест кнопок</b>\nЕсли кнопки видны — всё ок ✅",
-      leadKeyboard(99999)
-    );
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: "✅ Кнопка 1", callback_data: "TEST:1" }],
+        [{ text: "✅ Кнопка 2", callback_data: "TEST:2" }],
+      ],
+    };
+
+    const r = await sendTelegramText(chatId, "<b>Тест кнопок</b>\nЕсли видишь кнопки — всё ок ✅", keyboard);
 
     return NextResponse.json({ ok: true, result: r });
   } catch (e: any) {

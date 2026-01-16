@@ -24,37 +24,26 @@ function escHtml(s: string) {
 }
 
 // ✅ Отправка сообщения (с кнопками)
-export async function sendTelegramText(
-  chatId: string,
-  htmlText: string,
-  keyboard?: { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> }
-) {
-  if (!tgEnabled()) return { ok: true, skipped: true as const };
+export async function sendTelegramText(chatId: string, htmlText: string, keyboard?: any) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) throw new Error("Missing TELEGRAM_BOT_TOKEN");
 
-  const payload: any = {
-    chat_id: chatId,
-    text: htmlText,
-    parse_mode: "HTML",
-    disable_web_page_preview: true,
-  };
-
-  if (keyboard) payload.reply_markup = keyboard;
-
-  const res = await fetch(`${tgBase()}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: htmlText,
+      parse_mode: "HTML",
+      reply_markup: keyboard || undefined,
+    }),
   });
 
-  const data = (await res.json().catch(() => null)) as TgApiResult | null;
-
-  if (!res.ok || !data?.ok) {
-    console.error("TG sendMessage failed:", res.status, data);
-    return { ok: false, status: res.status, data };
-  }
-
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) return { ok: false, status: res.status, data };
   return { ok: true, data };
 }
+
 
 // ✅ Кнопки управления лидом
 export function leadKeyboard(leadId: number) {
