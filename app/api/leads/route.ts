@@ -1,99 +1,83 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-function normPhone(phone: string) {
-  return (phone || "").replace(/[^\d]/g, "");
-}
-function normText(s: string) {
-  return (s || "").trim().toLowerCase();
-}
+import { sendTelegram, buildLeadTelegramMessage } from "@/lib/telegram";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
 
-    const name = typeof body.name === "string" ? body.name.trim() : "";
-    const phone = typeof body.phone === "string" ? body.phone.trim() : "";
-    const fromText = typeof body.fromText === "string" ? body.fromText.trim() : "";
-    const toText = typeof body.toText === "string" ? body.toText.trim() : "";
-    const carClass = typeof body.carClass === "string" ? body.carClass.trim() : "standard";
+    const name = String(body.name || "").trim();
+    const phone = String(body.phone || "").trim();
+    const fromText = String(body.fromText || body.from || "").trim();
+    const toText = String(body.toText || body.to || "").trim();
 
-    if (!name || !phone || !fromText || !toText) {
-      return NextResponse.json({ ok: false, error: "Заполни обязательные поля" }, { status: 400 });
+    const carClass = String(body.carClass || "standard").trim();
+    const roundTrip = Boolean(body.roundTrip);
+
+    const datetime = body.datetime ? String(body.datetime).trim() : null;
+    const comment = body.comment ? String(body.comment).trim() : null;
+
+    // price можно прислать с клиента (если ты считаешь там)
+    const price =
+      body.price === null || body.price === undefined
+        ? null
+        : Number.isFinite(Number(body.price))
+        ? Math.round(Number(body.price))
+        : null;
+
+    const pickupAddress = body.pickupAddress ? String(body.pickupAddress).trim() : null;
+    const dropoffAddress = body.dropoffAddress ? String(body.dropoffAddress).trim() : null;
+
+    if (!name || name.length < 2) {
+      return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
+    }
+    if (!phone || phone.length < 6) {
+      return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
+    }
+    if (!fromText || fromText.length < 2) {
+      return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
+    }
+    if (!toText || toText.length < 2) {
+      return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
     }
 
-    // ===== антидубликаты =====
-    // правило: если за последние 2 часа уже есть такой же телефон + маршрут (from/to) -> считаем дубликатом
-    const phoneN = normPhone(phone);
-    const fromN = normText(fromText);
-    const toN = normText(toText);
-
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-
-    const possibleDup = await prisma.lead.findFirst({
-      where: {
-        createdAt: { gte: twoHoursAgo },
-        // грубо: сравнение по нормализованным значениям делаем в коде ниже
-      },
-      orderBy: { id: "desc" },
-      select: { id: true, phone: true, fromText: true, toText: true },
-    });
-
-    let isDuplicate = false;
-    let duplicateOfId: number | null = null;
-
-    // Чтобы не делать дорогие запросы без индексов, берем последних N лидов и проверяем в JS
-    // (для старта проекта — норм; позже оптимизируем)
-    const recent = await prisma.lead.findMany({
-      where: { createdAt: { gte: twoHoursAgo } },
-      orderBy: { id: "desc" },
-      take: 200,
-      select: { id: true, phone: true, fromText: true, toText: true },
-    });
-
-    const found = recent.find((x) => {
-      return normPhone(x.phone) === phoneN && normText(x.fromText) === fromN && normText(x.toText) === toN;
-    });
-
-    if (found) {
-      isDuplicate = true;
-      duplicateOfId = found.id;
-    }
-
-    const created = await prisma.lead.create({
+    const lead = await prisma.lead.create({
       data: {
         name,
         phone,
         fromText,
         toText,
-
-        pickupAddress: typeof body.pickupAddress === "string" ? body.pickupAddress.trim() : null,
-        dropoffAddress: typeof body.dropoffAddress === "string" ? body.dropoffAddress.trim() : null,
-        datetime: typeof body.datetime === "string" ? body.datetime.trim() : null,
-
+        pickupAddress,
+        dropoffAddress,
+        datetime,
         carClass,
-        roundTrip: Boolean(body.roundTrip),
-        price: typeof body.price === "number" ? body.price : null,
-
-        comment: typeof body.comment === "string" ? body.comment.trim() : null,
-
-        isDuplicate,
-        duplicateOfId,
-
-        utmSource: typeof body.utmSource === "string" ? body.utmSource.trim() : null,
-        utmMedium: typeof body.utmMedium === "string" ? body.utmMedium.trim() : null,
-        utmCampaign: typeof body.utmCampaign === "string" ? body.utmCampaign.trim() : null,
+        roundTrip,
+        price,
+        comment,
+        status: "new",
       },
       select: {
         id: true,
-        isDuplicate: true,
-        duplicateOfId: true,
-        createdAt: true,
+        name: true,
+        phone: true,
+        fromText: true,
+        toText: true,
+        datetime: true,
+        carClass: true,
+        roundTrip: true,
+        comment: true,
+        price: true,
       },
     });
 
-    return NextResponse.json({ ok: true, lead: created });
+    // Telegram — не блокируем ответ клиенту
+    sendTelegram(buildLeadTelegramMessage(lead)).catch((e) =>
+      console.error("Telegram lead notify error:", e)
+    );
+
+    return NextResponse.json({ ok: true, leadId: lead.id });
   } catch (e: any) {
+    console.error(e);
     return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
   }
 }
