@@ -1,17 +1,8 @@
-import { prisma } from "@/lib/prisma";
-
 type TgApiResult = { ok: boolean; [k: string]: any };
 
 function env(name: string) {
   const v = process.env[name];
   return v && v.trim() ? v.trim() : null;
-}
-
-function escHtml(s: string) {
-  return s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
 }
 
 function tgEnabled() {
@@ -25,76 +16,48 @@ function tgBase() {
   return `https://api.telegram.org/bot${token}`;
 }
 
-export async function sendTelegramText(chatId: string, htmlText: string, keyboard?: any) {
+function escHtml(s: string) {
+  return s
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+// ✅ Отправка сообщения (с кнопками)
+export async function sendTelegramText(
+  chatId: string,
+  htmlText: string,
+  keyboard?: { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> }
+) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
+
+  const payload: any = {
+    chat_id: chatId,
+    text: htmlText,
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+  };
+
+  if (keyboard) payload.reply_markup = keyboard;
 
   const res = await fetch(`${tgBase()}/sendMessage`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: htmlText,
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-      reply_markup: keyboard ? keyboard : undefined,
-    }),
+    body: JSON.stringify(payload),
   });
 
   const data = (await res.json().catch(() => null)) as TgApiResult | null;
+
   if (!res.ok || !data?.ok) {
-    console.error("TG sendMessage failed", res.status, data);
+    console.error("TG sendMessage failed:", res.status, data);
     return { ok: false, status: res.status, data };
   }
+
   return { ok: true, data };
 }
 
-export async function editTelegramMessage(chatId: string, messageId: number, htmlText: string, keyboard?: any) {
-  if (!tgEnabled()) return { ok: true, skipped: true as const };
-
-  const res = await fetch(`${tgBase()}/editMessageText`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      message_id: messageId,
-      text: htmlText,
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-      reply_markup: keyboard ? keyboard : undefined,
-    }),
-  });
-
-  const data = (await res.json().catch(() => null)) as TgApiResult | null;
-  if (!res.ok || !data?.ok) {
-    console.error("TG editMessageText failed", res.status, data);
-    return { ok: false, status: res.status, data };
-  }
-  return { ok: true, data };
-}
-
-export async function answerCallbackQuery(callbackQueryId: string, text?: string) {
-  if (!tgEnabled()) return { ok: true, skipped: true as const };
-
-  const res = await fetch(`${tgBase()}/answerCallbackQuery`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      callback_query_id: callbackQueryId,
-      text: text || undefined,
-      show_alert: false,
-    }),
-  });
-
-  const data = (await res.json().catch(() => null)) as TgApiResult | null;
-  if (!res.ok || !data?.ok) {
-    console.error("TG answerCallbackQuery failed", res.status, data);
-    return { ok: false, status: res.status, data };
-  }
-  return { ok: true, data };
-}
-
+// ✅ Кнопки управления лидом
 export function leadKeyboard(leadId: number) {
-  // callback_data максимум 64 байта — делаем коротко
   return {
     inline_keyboard: [
       [
@@ -106,6 +69,7 @@ export function leadKeyboard(leadId: number) {
   };
 }
 
+// ✅ Текст заявки
 export function leadMessage(lead: {
   id: number;
   name: string;
@@ -142,30 +106,4 @@ export function leadMessage(lead: {
   if (typeof lead.price === "number") lines.push(`💰 Итог: <b>${lead.price} ₽</b>`);
   if (lead.comment) lines.push(`💬 ${escHtml(lead.comment)}`);
   return lines.join("\n");
-}
-
-export async function updateLeadStatusFromTelegram(leadId: number, status: string) {
-  // минимальная защита: разрешаем только наши статусы
-  const allowed = new Set(["new", "in_progress", "done", "canceled"]);
-  if (!allowed.has(status)) throw new Error("bad status");
-
-  const updated = await prisma.lead.update({
-    where: { id: leadId },
-    data: { status },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      fromText: true,
-      toText: true,
-      datetime: true,
-      carClass: true,
-      roundTrip: true,
-      comment: true,
-      price: true,
-      status: true,
-    },
-  });
-
-  return updated;
 }

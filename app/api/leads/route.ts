@@ -24,17 +24,10 @@ export async function POST(req: Request) {
         ? Math.round(Number(body.price))
         : null;
 
-    const pickupAddress = body.pickupAddress ? String(body.pickupAddress).trim() : null;
-    const dropoffAddress = body.dropoffAddress ? String(body.dropoffAddress).trim() : null;
-
-    if (!name || name.length < 2)
-      return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
-    if (!phone || phone.length < 6)
-      return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
-    if (!fromText)
-      return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
-    if (!toText)
-      return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
+    if (!name || name.length < 2) return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
+    if (!phone || phone.length < 6) return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
+    if (!fromText) return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
+    if (!toText) return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
 
     const lead = await prisma.lead.create({
       data: {
@@ -42,8 +35,6 @@ export async function POST(req: Request) {
         phone,
         fromText,
         toText,
-        pickupAddress,
-        dropoffAddress,
         datetime,
         carClass,
         roundTrip,
@@ -66,24 +57,17 @@ export async function POST(req: Request) {
       },
     });
 
-    // ✅ ВАЖНО: на Vercel лучше AWAIT, чтобы сообщение точно ушло
     const chatId = process.env.TELEGRAM_CHAT_ID || "";
     let telegramOk = false;
 
     if (chatId) {
-      const tgRes = await sendTelegramText(chatId, leadMessage(lead), leadKeyboard(lead.id));
-      telegramOk = !!tgRes?.ok;
-      if (!telegramOk) console.error("Telegram lead notify failed:", tgRes);
-    } else {
-      console.warn("Missing TELEGRAM_CHAT_ID");
+      const tg = await sendTelegramText(chatId, leadMessage(lead), leadKeyboard(lead.id));
+      telegramOk = !!tg?.ok;
     }
 
     return NextResponse.json({ ok: true, leadId: lead.id, telegramOk });
   } catch (e: any) {
     console.error("LEADS API ERROR:", e);
-    return NextResponse.json(
-      { ok: false, error: e?.message || "server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
   }
 }
