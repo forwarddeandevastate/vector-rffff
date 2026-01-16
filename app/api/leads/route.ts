@@ -12,8 +12,10 @@ export async function POST(req: Request) {
     const phone = String(body.phone || "").trim();
     const fromText = String(body.fromText || body.from || "").trim();
     const toText = String(body.toText || body.to || "").trim();
+
     const carClass = String(body.carClass || "standard").trim();
     const roundTrip = Boolean(body.roundTrip);
+
     const datetime = body.datetime ? String(body.datetime).trim() : null;
     const comment = body.comment ? String(body.comment).trim() : null;
 
@@ -24,13 +26,31 @@ export async function POST(req: Request) {
         ? Math.round(Number(body.price))
         : null;
 
-    if (!name || name.length < 2) return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
-    if (!phone || phone.length < 6) return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
-    if (!fromText) return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
-    if (!toText) return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
+    if (!name || name.length < 2)
+      return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
+
+    if (!phone || phone.length < 6)
+      return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
+
+    if (!fromText)
+      return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
+
+    if (!toText)
+      return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
 
     const lead = await prisma.lead.create({
-      data: { name, phone, fromText, toText, datetime, carClass, roundTrip, price, comment, status: "new" },
+      data: {
+        name,
+        phone,
+        fromText,
+        toText,
+        datetime,
+        carClass,
+        roundTrip,
+        price,
+        comment,
+        status: "new",
+      },
       select: {
         id: true,
         name: true,
@@ -46,24 +66,20 @@ export async function POST(req: Request) {
       },
     });
 
-    const chatId = process.env.TELEGRAM_CHAT_ID || "";
-    const enabled = process.env.TELEGRAM_ENABLED;
-    let telegramOk = false;
-
-    if (chatId) {
-      const tg = await sendTelegramText(chatId, leadMessage(lead), leadKeyboard(lead.id));
-      telegramOk = !!tg?.ok;
-    }
+    // ✅ ВАЖНО ДЛЯ VERCEL: await, чтобы функция не завершилась раньше времени
+    const tg = await sendTelegramText(leadMessage(lead), leadKeyboard(lead.id));
 
     return NextResponse.json({
       ok: true,
-      version: "leads_v2_buttons_await",
       leadId: lead.id,
-      telegramOk,
-      env: { hasChatId: !!chatId, enabled },
+      telegramOk: !!tg?.ok,
+      telegramResults: tg,
     });
   } catch (e: any) {
     console.error("LEADS API ERROR:", e);
-    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: e?.message || "server error" },
+      { status: 500 }
+    );
   }
 }

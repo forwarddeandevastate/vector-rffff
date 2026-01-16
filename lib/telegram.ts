@@ -10,6 +10,19 @@ function tgEnabled() {
   return !(enabled === "false" || enabled === "0");
 }
 
+/**
+ * TELEGRAM_CHAT_IDS="id1,id2,id3"
+ * Пример: "123456789,825985519,-100987654321"
+ */
+function getChatIds(): string[] {
+  const ids = env("TELEGRAM_CHAT_IDS") || env("TELEGRAM_CHAT_ID"); // поддержка старого ключа на всякий
+  if (!ids) return [];
+  return ids
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 function tgBase() {
   const token = env("TELEGRAM_BOT_TOKEN");
   if (!token) throw new Error("Missing TELEGRAM_BOT_TOKEN");
@@ -23,27 +36,46 @@ function escHtml(s: string) {
     .replaceAll(">", "&gt;");
 }
 
-// ✅ Отправка сообщения (с кнопками)
-export async function sendTelegramText(chatId: string, htmlText: string, keyboard?: any) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) throw new Error("Missing TELEGRAM_BOT_TOKEN");
+// ✅ Отправка сообщения (с кнопками) сразу во все чаты из TELEGRAM_CHAT_IDS
+export async function sendTelegramText(
+  htmlText: string,
+  keyboard?: { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> }
+) {
+  if (!tgEnabled()) return { ok: true, skipped: true as const };
 
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
+  const chatIds = getChatIds();
+  if (!chatIds.length) {
+    console.warn("Telegram: Missing TELEGRAM_CHAT_IDS (or TELEGRAM_CHAT_ID)");
+    return { ok: false, error: "no chat ids" };
+  }
+
+  const results: Array<{ chatId: string; ok: boolean; status?: number; data?: any }> = [];
+
+  for (const chatId of chatIds) {
+    const payload: any = {
       chat_id: chatId,
       text: htmlText,
       parse_mode: "HTML",
-      reply_markup: keyboard || undefined,
-    }),
-  });
+      disable_web_page_preview: true,
+    };
+    if (keyboard) payload.reply_markup = keyboard;
 
-  const data = await res.json().catch(() => null);
-  if (!res.ok || !data?.ok) return { ok: false, status: res.status, data };
-  return { ok: true, data };
+    const res = await fetch(`${tgBase()}/sendMessage`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await res.json().catch(() => null)) as TgApiResult | null;
+
+    const ok = !!(res.ok && data?.ok);
+    results.push({ chatId, ok, status: res.status, data });
+
+    if (!ok) console.error("TG sendMessage failed:", { chatId, status: res.status, data });
+  }
+
+  return { ok: results.every((r) => r.ok), results };
 }
-
 
 // ✅ Кнопки управления лидом
 export function leadKeyboard(leadId: number) {
@@ -58,7 +90,7 @@ export function leadKeyboard(leadId: number) {
   };
 }
 
-// ✅ Текст заявки
+// ✅ Текст заявки (HTML)
 export function leadMessage(lead: {
   id: number;
   name: string;
