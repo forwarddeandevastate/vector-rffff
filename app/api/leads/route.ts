@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { leadKeyboard, leadMessage, sendTelegramText } from "@/lib/telegram";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -10,10 +12,8 @@ export async function POST(req: Request) {
     const phone = String(body.phone || "").trim();
     const fromText = String(body.fromText || body.from || "").trim();
     const toText = String(body.toText || body.to || "").trim();
-
     const carClass = String(body.carClass || "standard").trim();
     const roundTrip = Boolean(body.roundTrip);
-
     const datetime = body.datetime ? String(body.datetime).trim() : null;
     const comment = body.comment ? String(body.comment).trim() : null;
 
@@ -30,18 +30,7 @@ export async function POST(req: Request) {
     if (!toText) return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
 
     const lead = await prisma.lead.create({
-      data: {
-        name,
-        phone,
-        fromText,
-        toText,
-        datetime,
-        carClass,
-        roundTrip,
-        price,
-        comment,
-        status: "new",
-      },
+      data: { name, phone, fromText, toText, datetime, carClass, roundTrip, price, comment, status: "new" },
       select: {
         id: true,
         name: true,
@@ -58,6 +47,7 @@ export async function POST(req: Request) {
     });
 
     const chatId = process.env.TELEGRAM_CHAT_ID || "";
+    const enabled = process.env.TELEGRAM_ENABLED;
     let telegramOk = false;
 
     if (chatId) {
@@ -65,7 +55,13 @@ export async function POST(req: Request) {
       telegramOk = !!tg?.ok;
     }
 
-    return NextResponse.json({ ok: true, leadId: lead.id, telegramOk });
+    return NextResponse.json({
+      ok: true,
+      version: "leads_v2_buttons_await",
+      leadId: lead.id,
+      telegramOk,
+      env: { hasChatId: !!chatId, enabled },
+    });
   } catch (e: any) {
     console.error("LEADS API ERROR:", e);
     return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
