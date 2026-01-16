@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { leadKeyboard, leadMessage, sendTelegramText } from "@/lib/telegram";
+import { leadKeyboard, leadMessage, sendTelegramToAll } from "@/lib/telegram";
 
 export const runtime = "nodejs";
 
@@ -28,13 +28,10 @@ export async function POST(req: Request) {
 
     if (!name || name.length < 2)
       return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
-
     if (!phone || phone.length < 6)
       return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
-
     if (!fromText)
       return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
-
     if (!toText)
       return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
 
@@ -66,20 +63,17 @@ export async function POST(req: Request) {
       },
     });
 
-    // ✅ ВАЖНО ДЛЯ VERCEL: await, чтобы функция не завершилась раньше времени
-    const tg = await sendTelegramText(leadMessage(lead), leadKeyboard(lead.id));
+    // ✅ await на Vercel — чтобы точно успеть отправить
+    const tg = await sendTelegramToAll(leadMessage(lead), leadKeyboard(lead.id));
 
     return NextResponse.json({
       ok: true,
       leadId: lead.id,
       telegramOk: !!tg?.ok,
-      telegramResults: tg,
+      telegram: tg,
     });
   } catch (e: any) {
     console.error("LEADS API ERROR:", e);
-    return NextResponse.json(
-      { ok: false, error: e?.message || "server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
   }
 }

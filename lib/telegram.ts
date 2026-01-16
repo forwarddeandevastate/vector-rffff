@@ -1,3 +1,5 @@
+import { prisma } from "@/lib/prisma";
+
 type TgApiResult = { ok: boolean; [k: string]: any };
 
 function env(name: string) {
@@ -11,11 +13,11 @@ function tgEnabled() {
 }
 
 /**
- * TELEGRAM_CHAT_IDS="id1,id2,id3"
- * Пример: "123456789,825985519,-100987654321"
+ * TELEGRAM_CHAT_IDS="id1,id2"
+ * Можно оставить старый TELEGRAM_CHAT_ID — он тоже будет учитываться.
  */
 function getChatIds(): string[] {
-  const ids = env("TELEGRAM_CHAT_IDS") || env("TELEGRAM_CHAT_ID"); // поддержка старого ключа на всякий
+  const ids = env("TELEGRAM_CHAT_IDS") || env("TELEGRAM_CHAT_ID");
   if (!ids) return [];
   return ids
     .split(",")
@@ -36,11 +38,42 @@ function escHtml(s: string) {
     .replaceAll(">", "&gt;");
 }
 
-// ✅ Отправка сообщения (с кнопками) сразу во все чаты из TELEGRAM_CHAT_IDS
+// -------------------- SEND / EDIT / CALLBACK --------------------
+
 export async function sendTelegramText(
+  chatId: string,
   htmlText: string,
-  keyboard?: { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> }
+  keyboard?: any
 ) {
+  if (!tgEnabled()) return { ok: true, skipped: true as const };
+
+  const payload: any = {
+    chat_id: chatId,
+    text: htmlText,
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+  };
+  if (keyboard) payload.reply_markup = keyboard;
+
+  const res = await fetch(`${tgBase()}/sendMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = (await res.json().catch(() => null)) as TgApiResult | null;
+  if (!res.ok || !data?.ok) {
+    console.error("TG sendMessage failed:", res.status, data);
+    return { ok: false, status: res.status, data };
+  }
+  return { ok: true, data };
+}
+
+/**
+ * Отправка сразу во все чаты из TELEGRAM_CHAT_IDS.
+ * Возвращает результаты по каждому чату.
+ */
+export async function sendTelegramToAll(htmlText: string, keyboard?: any) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
 
   const chatIds = getChatIds();
@@ -52,32 +85,67 @@ export async function sendTelegramText(
   const results: Array<{ chatId: string; ok: boolean; status?: number; data?: any }> = [];
 
   for (const chatId of chatIds) {
-    const payload: any = {
-      chat_id: chatId,
-      text: htmlText,
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-    };
-    if (keyboard) payload.reply_markup = keyboard;
-
-    const res = await fetch(`${tgBase()}/sendMessage`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = (await res.json().catch(() => null)) as TgApiResult | null;
-
-    const ok = !!(res.ok && data?.ok);
-    results.push({ chatId, ok, status: res.status, data });
-
-    if (!ok) console.error("TG sendMessage failed:", { chatId, status: res.status, data });
+    const r = await sendTelegramText(chatId, htmlText, keyboard);
+    results.push({ chatId, ok: !!r.ok, status: (r as any).status, data: (r as any).data });
   }
 
   return { ok: results.every((r) => r.ok), results };
 }
 
-// ✅ Кнопки управления лидом
+export async function editTelegramMessage(
+  chatId: string,
+  messageId: number,
+  htmlText: string,
+  keyboard?: any
+) {
+  if (!tgEnabled()) return { ok: true, skipped: true as const };
+
+  const payload: any = {
+    chat_id: chatId,
+    message_id: messageId,
+    text: htmlText,
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+  };
+  if (keyboard) payload.reply_markup = keyboard;
+
+  const res = await fetch(`${tgBase()}/editMessageText`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = (await res.json().catch(() => null)) as TgApiResult | null;
+  if (!res.ok || !data?.ok) {
+    console.error("TG editMessageText failed:", res.status, data);
+    return { ok: false, status: res.status, data };
+  }
+  return { ok: true, data };
+}
+
+export async function answerCallbackQuery(callbackQueryId: string, text?: string) {
+  if (!tgEnabled()) return { ok: true, skipped: true as const };
+
+  const res = await fetch(`${tgBase()}/answerCallbackQuery`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      callback_query_id: callbackQueryId,
+      text: text || undefined,
+      show_alert: false,
+    }),
+  });
+
+  const data = (await res.json().catch(() => null)) as TgApiResult | null;
+  if (!res.ok || !data?.ok) {
+    console.error("TG answerCallbackQuery failed:", res.status, data);
+    return { ok: false, status: res.status, data };
+  }
+  return { ok: true, data };
+}
+
+// -------------------- LEADS MESSAGE + KEYBOARD --------------------
+
 export function leadKeyboard(leadId: number) {
   return {
     inline_keyboard: [
@@ -90,7 +158,6 @@ export function leadKeyboard(leadId: number) {
   };
 }
 
-// ✅ Текст заявки (HTML)
 export function leadMessage(lead: {
   id: number;
   name: string;
@@ -127,4 +194,31 @@ export function leadMessage(lead: {
   if (typeof lead.price === "number") lines.push(`💰 Итог: <b>${lead.price} ₽</b>`);
   if (lead.comment) lines.push(`💬 ${escHtml(lead.comment)}`);
   return lines.join("\n");
+}
+
+// -------------------- UPDATE LEAD STATUS (for webhook buttons) --------------------
+
+export async function updateLeadStatusFromTelegram(leadId: number, status: string) {
+  const allowed = new Set(["new", "in_progress", "done", "canceled"]);
+  if (!allowed.has(status)) throw new Error("bad status");
+
+  const updated = await prisma.lead.update({
+    where: { id: leadId },
+    data: { status },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      fromText: true,
+      toText: true,
+      datetime: true,
+      carClass: true,
+      roundTrip: true,
+      comment: true,
+      price: true,
+      status: true,
+    },
+  });
+
+  return updated;
 }
