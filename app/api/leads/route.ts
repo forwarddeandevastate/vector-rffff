@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendTelegram, buildLeadTelegramMessage } from "@/lib/telegram";
+import { leadKeyboard, leadMessage, sendTelegramText } from "@/lib/telegram";
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +17,6 @@ export async function POST(req: Request) {
     const datetime = body.datetime ? String(body.datetime).trim() : null;
     const comment = body.comment ? String(body.comment).trim() : null;
 
-    // price можно прислать с клиента (если ты считаешь там)
     const price =
       body.price === null || body.price === undefined
         ? null
@@ -28,18 +27,10 @@ export async function POST(req: Request) {
     const pickupAddress = body.pickupAddress ? String(body.pickupAddress).trim() : null;
     const dropoffAddress = body.dropoffAddress ? String(body.dropoffAddress).trim() : null;
 
-    if (!name || name.length < 2) {
-      return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
-    }
-    if (!phone || phone.length < 6) {
-      return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
-    }
-    if (!fromText || fromText.length < 2) {
-      return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
-    }
-    if (!toText || toText.length < 2) {
-      return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
-    }
+    if (!name || name.length < 2) return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
+    if (!phone || phone.length < 6) return NextResponse.json({ ok: false, error: "Введите телефон" }, { status: 400 });
+    if (!fromText) return NextResponse.json({ ok: false, error: "Укажите откуда" }, { status: 400 });
+    if (!toText) return NextResponse.json({ ok: false, error: "Укажите куда" }, { status: 400 });
 
     const lead = await prisma.lead.create({
       data: {
@@ -67,13 +58,19 @@ export async function POST(req: Request) {
         roundTrip: true,
         comment: true,
         price: true,
+        status: true,
       },
     });
 
-    // Telegram — не блокируем ответ клиенту
-    sendTelegram(buildLeadTelegramMessage(lead)).catch((e) =>
-      console.error("Telegram lead notify error:", e)
-    );
+    // отправка в телеграм с кнопками
+    const chatId = process.env.TELEGRAM_CHAT_ID || "";
+    if (chatId) {
+      sendTelegramText(chatId, leadMessage(lead), leadKeyboard(lead.id)).catch((e) =>
+        console.error("Telegram notify error:", e)
+      );
+    } else {
+      console.warn("Missing TELEGRAM_CHAT_ID");
+    }
 
     return NextResponse.json({ ok: true, leadId: lead.id });
   } catch (e: any) {
