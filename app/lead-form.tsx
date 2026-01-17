@@ -363,10 +363,10 @@ export default function LeadForm({
 
     setLoading(true);
     try {
-      // ✅ СКРЫЛИ ₽/км: только км и итог
+      // ✅ СКРЫЛИ ВНУТРЕННИЕ ДЕТАЛИ: только итог (без ₽/км и без км)
       const calcNote =
-        routeType === "intercity" && km && finalPrice
-          ? `\n\n[Авторасчёт] ${km} км${roundTrip ? " · туда-обратно" : ""} = ${formatRub(finalPrice)}`
+        routeType === "intercity" && finalPrice
+          ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}: ${formatRub(finalPrice)}`
           : "";
 
       const payload = {
@@ -438,11 +438,9 @@ export default function LeadForm({
                 ) : finalPrice ? (
                   <>
                     <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(finalPrice)}</div>
-
-                    {/* ✅ СКРЫЛИ ₽/км В UI: оставили только км и туда-обратно */}
-                    <div className="mt-0.5 text-[11px] text-zinc-600">
-                      {km} км{roundTrip ? " · туда-обратно" : ""}
-                    </div>
+                    {roundTrip ? (
+                      <div className="mt-0.5 text-[11px] text-zinc-600">Туда-обратно</div>
+                    ) : null}
                   </>
                 ) : (
                   <div className="mt-1 text-[11px] text-zinc-700">
@@ -464,7 +462,6 @@ export default function LeadForm({
           <input className={ControlBase()} value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />
         </Field>
 
-        {/* ✅ ТУТ ТОЛЬКО УБРАЛ HINT */}
         <Field label="Телефон *">
           <input
             className={ControlBase()}

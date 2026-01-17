@@ -25,12 +25,7 @@ function LogoMark() {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path
-          d="M6.7 6.5h10.6"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
+        <path d="M6.7 6.5h10.6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -198,10 +193,10 @@ function ClassCardButton({
 }
 
 export default function HomePage() {
-  const PHONE_DISPLAY = "+7 (999) 123-45-67";
-  const PHONE_TEL = "+79991234567";
-  const WHATSAPP = "https://wa.me/79991234567";
-  const TELEGRAM = "https://t.me/";
+  const PHONE_DISPLAY = "+7 (831) 423-39-29";
+  const PHONE_TEL = "+78314233929";
+  const WHATSAPP = "https://wa.me/78314233929";
+  const TELEGRAM = "https://t.me/vector_rf52";
 
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
   const [selectedRouteType, setSelectedRouteType] = useState<RouteType>("city");
@@ -511,6 +506,89 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section id="corporate" className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+          <div className="md:flex md:items-start md:justify-between md:gap-8">
+            <div className="md:max-w-2xl">
+              <SectionTitle
+                title="Для корпоративных клиентов"
+                desc="Организуем регулярные поездки для сотрудников и гостей: быстрое согласование, единые правила, удобная отчётность."
+              />
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <Card
+                  title="Договор и безнал"
+                  text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу."
+                />
+                <Card
+                  title="Единые условия"
+                  text="Фиксируем правила подачи, ожидания, маршруты и требования к автомобилю. Всё прозрачно для вашей команды."
+                />
+                <Card
+                  title="Отчётность"
+                  text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования."
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur md:mt-0 md:w-[360px]">
+              <div className="text-sm font-extrabold text-zinc-900">Связаться по корпоративным поездкам</div>
+              <div className="mt-3 grid gap-2">
+                <a
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                    "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                  href={`tel:${PHONE_TEL}`}
+                >
+                  <IconPhone className="h-4 w-4 text-sky-700" />
+                  {PHONE_DISPLAY}
+                </a>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
+                    href={WHATSAPP}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <IconWhatsapp className="h-4 w-4 text-sky-700" />
+                    WhatsApp
+                  </a>
+
+                  <a
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
+                    href={TELEGRAM}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <IconTelegram className="h-4 w-4 text-sky-700" />
+                    Telegram
+                  </a>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={scrollToOrder}
+                  className={cn(
+                    "mt-1 inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm w-full",
+                    "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
+                  )}
+                >
+                  Оставить заявку
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -546,9 +624,7 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-          <div className="mt-6 text-xs text-zinc-500">
-            © {new Date().getFullYear()} Вектор РФ. Все права защищены.
-          </div>
+          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
         </div>
       </footer>
     </div>
