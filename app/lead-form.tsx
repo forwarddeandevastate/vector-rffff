@@ -82,9 +82,26 @@ function formatRub(n: number) {
 const PER_KM: Record<CarClass, number> = {
   standard: 30,
   comfort: 37,
-  minivan: 52,
+  minivan: 55,
   business: 65,
 };
+
+// ====== БАЗОВЫЕ ЦЕНЫ ДЛЯ ФОРМЫ (НЕ ФИНАЛ) ======
+const CITY_BASE_PRICE: Record<CarClass, number> = {
+  standard: 1000,
+  comfort: 1500,
+  business: 3000,
+  minivan: 3500,
+};
+
+function airportPriceFromCity(cityPrice: number) {
+  return Math.round(cityPrice * 1.1);
+}
+
+function formatFrom(n: number) {
+  return `от ${n.toLocaleString("ru-RU")} ₽`;
+}
+
 
 // --- Подсказки мест (можно вводить руками) ---
 const POPULAR_CITIES = [
@@ -389,6 +406,20 @@ export default function LeadForm({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-xs font-semibold text-zinc-700">Тип поездки</div>
+
+{/* Базовая цена для города / аэропорта */}
+{routeType !== "intercity" && (
+  <div className="mt-2 text-sm font-extrabold text-zinc-900">
+    {routeType === "city" &&
+      formatFrom(CITY_BASE_PRICE[carClass])}
+
+    {routeType === "airport" &&
+      formatFrom(
+        airportPriceFromCity(CITY_BASE_PRICE[carClass])
+      )}
+  </div>
+)}
+
 
             <div className="mt-2 flex flex-wrap gap-2">
               <SegButton active={routeType === "city"} onClick={() => onRouteTypeChange("city")}>
