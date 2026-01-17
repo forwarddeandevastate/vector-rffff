@@ -86,7 +86,7 @@ const PER_KM: Record<CarClass, number> = {
   business: 65,
 };
 
-// --- Подсказки мест (для удобства, но НЕ обязательно выбирать из списка — можно вводить руками) ---
+// --- Подсказки мест ---
 const POPULAR_CITIES = [
   "Москва",
   "Санкт-Петербург",
@@ -193,65 +193,56 @@ function setTimeSameDay(base: Date, hh: number, mm: number) {
   return d;
 }
 
-/** --- Телефон РФ: маска + автоподстановка +7 + нормализация --- */
-function digitsOnly(s: string) {
-  return (s || "").replace(/\D+/g, "");
-}
+// --------------------
+// ✅ ТЕЛЕФОН РФ
+// --------------------
 
-// делает строку типа "+7 (999) 123-45-67" из набора цифр (без +)
-function formatRuPhoneFromDigits(digits: string) {
-  // digits ожидаем как "7XXXXXXXXXX" или "XXXXXXXXXX"
-  let d = digitsOnly(digits);
+// оставляем только цифры, приводим к РФ (7xxxxxxxxxx)
+function normalizeRuDigits(input: string) {
+  let d = (input || "").replace(/\D+/g, "");
 
-  // привести к началу 7 если пользователь начал с 8
+  // если начинают вводить 8..., считаем как 7...
   if (d.startsWith("8")) d = "7" + d.slice(1);
 
-  // если пользователь ввёл 10 цифр без кода страны — считаем что это РФ
+  // если ввели 10 цифр (без кода страны) — добавим 7
   if (d.length === 10) d = "7" + d;
 
-  // ограничим максимумом 11
-  d = d.slice(0, 11);
+  // если начали с 9 (обычно мобильный без 7) — добавим 7
+  if (d.length > 0 && d.startsWith("9")) d = "7" + d;
 
-  // если пусто — возвращаем "+7"
-  if (!d) return "+7";
+  // ограничим РФ: максимум 11 цифр
+  if (d.length > 11) d = d.slice(0, 11);
 
-  // если первая цифра не 7 — всё равно показываем +7 и дальше как есть (для UX),
-  // но на отправке мы будем валидировать РФ.
-  const country = d[0] || "7";
-  const rest = d.slice(1);
+  // если уже есть 7 — ок, иначе если ввели что-то странное — оставим как есть (но cap уже сделан)
+  return d;
+}
 
-  const p1 = rest.slice(0, 3);
-  const p2 = rest.slice(3, 6);
-  const p3 = rest.slice(6, 8);
-  const p4 = rest.slice(8, 10);
+// красивое отображение +7 (999) 123-45-67, даже если введено частично
+function formatRuPhone(digits: string) {
+  const d = normalizeRuDigits(digits);
 
-  let out = `+${country}`;
-  if (p1) out += ` (${p1}`;
-  if (p1.length === 3) out += `)`;
-  if (p2) out += ` ${p2}`;
-  if (p3) out += `-${p3}`;
-  if (p4) out += `-${p4}`;
+  // показываем всегда с +7, даже если пока мало цифр
+  const rest = d.startsWith("7") ? d.slice(1) : d; // после кода страны
+  const a = rest.slice(0, 3);
+  const b = rest.slice(3, 6);
+  const c = rest.slice(6, 8);
+  const e = rest.slice(8, 10);
+
+  let out = "+7";
+  if (a.length) out += ` (${a}`;
+  if (a.length === 3) out += ")";
+  if (b.length) out += ` ${b}`;
+  if (c.length) out += `-${c}`;
+  if (e.length) out += `-${e}`;
 
   return out;
 }
 
-// нормализует к формату "+7XXXXXXXXXX" (или "" если не РФ/невалид)
-function normalizeRuPhoneForSubmit(input: string) {
-  let d = digitsOnly(input);
-
-  if (!d) return "";
-
-  // 8XXXXXXXXXX -> 7XXXXXXXXXX
-  if (d.startsWith("8")) d = "7" + d.slice(1);
-
-  // XXXXXXXXXX -> 7XXXXXXXXXX
-  if (d.length === 10) d = "7" + d;
-
-  // валидируем: строго 11 цифр и начинается с 7
-  if (d.length !== 11) return "";
-  if (!d.startsWith("7")) return "";
-
-  return `+${d}`;
+// для API: строго +7XXXXXXXXXX если есть 11 цифр, иначе пусто
+function toE164Ru(digits: string) {
+  const d = normalizeRuDigits(digits);
+  if (d.length === 11 && d.startsWith("7")) return `+${d}`;
+  return "";
 }
 
 export default function LeadForm({
@@ -268,7 +259,7 @@ export default function LeadForm({
   const router = useRouter();
 
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phoneDigits, setPhoneDigits] = useState(""); // ✅ храним только цифры
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
   const [datetimeLocal, setDatetimeLocal] = useState<string>("");
@@ -303,8 +294,9 @@ export default function LeadForm({
   }, []);
 
   const canSubmit = useMemo(() => {
-    return name.trim() && phone.trim() && fromText.trim() && toText.trim();
-  }, [name, phone, fromText, toText]);
+    // телефон считаем валидным, если получилось +7XXXXXXXXXX
+    return name.trim() && toE164Ru(phoneDigits) && fromText.trim() && toText.trim();
+  }, [name, phoneDigits, fromText, toText]);
 
   function applyQuickTime(kind: "plus1" | "plus2" | "today18" | "tomorrow10") {
     const now = new Date();
@@ -337,9 +329,7 @@ export default function LeadForm({
       setCalcLoading(true);
 
       try {
-        const url =
-          `/api/distance?from=${encodeURIComponent(fromText.trim())}` +
-          `&to=${encodeURIComponent(toText.trim())}`;
+        const url = `/api/distance?from=${encodeURIComponent(fromText.trim())}&to=${encodeURIComponent(toText.trim())}`;
 
         const res = await fetch(url, { signal: controller.signal });
         const data = await res.json().catch(() => ({}));
@@ -380,47 +370,18 @@ export default function LeadForm({
     return price;
   }, [routeType, km, carClass, roundTrip]);
 
-  // --- телефон: обработчики ввода ---
-  function onPhoneFocus() {
-    // если пользователь нажал и поле пустое — ставим +7
-    if (!phone) setPhone("+7");
-  }
-
-  function onPhoneChange(nextRaw: string) {
-    // сохраняем только цифры и ведущий плюс (для UX), дальше форматируем
-    const d = digitsOnly(nextRaw);
-
-    // если пользователь начинает вводить "7" или "8" или "9..." — форматируем
-    const formatted = formatRuPhoneFromDigits(d);
-
-    setPhone(formatted);
-  }
-
-  function onPhonePaste(e: React.ClipboardEvent<HTMLInputElement>) {
-    e.preventDefault();
-    const text = e.clipboardData.getData("text") || "";
-    const d = digitsOnly(text);
-    setPhone(formatRuPhoneFromDigits(d));
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!name.trim() || !fromText.trim() || !toText.trim()) {
-      setError("Заполните имя, телефон, откуда и куда.");
-      return;
-    }
-
-    const phoneNormalized = normalizeRuPhoneForSubmit(phone);
-    if (!phoneNormalized) {
-      setError("Введите телефон РФ в формате +7XXXXXXXXXX (например: +7 999 123-45-67).");
+    const phoneE164 = toE164Ru(phoneDigits);
+    if (!name.trim() || !phoneE164 || !fromText.trim() || !toText.trim()) {
+      setError("Заполните имя, телефон РФ, откуда и куда.");
       return;
     }
 
     setLoading(true);
     try {
-      // Если межгород — добавим расчёт в комментарий (БД не трогаем)
       const calcNote =
         routeType === "intercity" && km && finalPrice
           ? `\n\n[Авторасчёт] ${km} км · ${PER_KM[carClass]} ₽/км${roundTrip ? " · туда-обратно" : ""} = ${formatRub(
@@ -430,13 +391,13 @@ export default function LeadForm({
 
       const payload = {
         name: name.trim(),
-        phone: phoneNormalized, // ✅ всегда РФ: +7XXXXXXXXXX
+        phone: phoneE164, // ✅ всегда +7XXXXXXXXXX
         fromText: fromText.trim(),
         toText: toText.trim(),
         datetime: datetimeLocal ? datetimeLocal : null,
         carClass,
         roundTrip,
-        comment: (comment.trim() ? comment.trim() : "") + calcNote || null,
+        comment: ((comment.trim() ? comment.trim() : "") + calcNote) || null,
       };
 
       const res = await fetch("/api/leads", {
@@ -456,9 +417,11 @@ export default function LeadForm({
     }
   }
 
+  const phoneDisplay = useMemo(() => formatRuPhone(phoneDigits), [phoneDigits]);
+
   return (
     <form onSubmit={onSubmit} className="grid gap-3">
-      {/* Тип поездки + итоговая стоимость (только итог, без ориентиров) */}
+      {/* Тип поездки + стоимость */}
       <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -509,13 +472,15 @@ export default function LeadForm({
           <input className={ControlBase()} value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />
         </Field>
 
-        <Field label="Телефон *" hint="Только РФ (+7)">
+        <Field label="Телефон *" hint="Только РФ">
           <input
             className={ControlBase()}
-            value={phone}
-            onFocus={onPhoneFocus}
-            onChange={(e) => onPhoneChange(e.target.value)}
-            onPaste={onPhonePaste}
+            value={phoneDisplay}
+            onChange={(e) => {
+              // ✅ берём из того что ввели — только цифры
+              const d = normalizeRuDigits(e.target.value);
+              setPhoneDigits(d);
+            }}
             placeholder="+7 (999) 123-45-67"
             inputMode="tel"
             autoComplete="tel"
@@ -574,9 +539,7 @@ export default function LeadForm({
                 setToOpen(true);
               }}
               onFocus={() => setToOpen(true)}
-              placeholder={
-                routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"
-              }
+              placeholder={routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"}
             />
             {toOpen && toSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -690,6 +653,10 @@ export default function LeadForm({
       >
         {loading ? "Отправляем…" : "Отправить заявку"}
       </button>
+
+      <div className="text-[11px] text-zinc-500">
+        Пример: 9991234567 / 8XXXXXXXXXX / 7XXXXXXXXXX — автоматически станет +7 (…)
+      </div>
     </form>
   );
 }
