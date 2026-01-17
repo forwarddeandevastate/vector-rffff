@@ -193,6 +193,67 @@ function setTimeSameDay(base: Date, hh: number, mm: number) {
   return d;
 }
 
+/** --- Телефон РФ: маска + автоподстановка +7 + нормализация --- */
+function digitsOnly(s: string) {
+  return (s || "").replace(/\D+/g, "");
+}
+
+// делает строку типа "+7 (999) 123-45-67" из набора цифр (без +)
+function formatRuPhoneFromDigits(digits: string) {
+  // digits ожидаем как "7XXXXXXXXXX" или "XXXXXXXXXX"
+  let d = digitsOnly(digits);
+
+  // привести к началу 7 если пользователь начал с 8
+  if (d.startsWith("8")) d = "7" + d.slice(1);
+
+  // если пользователь ввёл 10 цифр без кода страны — считаем что это РФ
+  if (d.length === 10) d = "7" + d;
+
+  // ограничим максимумом 11
+  d = d.slice(0, 11);
+
+  // если пусто — возвращаем "+7"
+  if (!d) return "+7";
+
+  // если первая цифра не 7 — всё равно показываем +7 и дальше как есть (для UX),
+  // но на отправке мы будем валидировать РФ.
+  const country = d[0] || "7";
+  const rest = d.slice(1);
+
+  const p1 = rest.slice(0, 3);
+  const p2 = rest.slice(3, 6);
+  const p3 = rest.slice(6, 8);
+  const p4 = rest.slice(8, 10);
+
+  let out = `+${country}`;
+  if (p1) out += ` (${p1}`;
+  if (p1.length === 3) out += `)`;
+  if (p2) out += ` ${p2}`;
+  if (p3) out += `-${p3}`;
+  if (p4) out += `-${p4}`;
+
+  return out;
+}
+
+// нормализует к формату "+7XXXXXXXXXX" (или "" если не РФ/невалид)
+function normalizeRuPhoneForSubmit(input: string) {
+  let d = digitsOnly(input);
+
+  if (!d) return "";
+
+  // 8XXXXXXXXXX -> 7XXXXXXXXXX
+  if (d.startsWith("8")) d = "7" + d.slice(1);
+
+  // XXXXXXXXXX -> 7XXXXXXXXXX
+  if (d.length === 10) d = "7" + d;
+
+  // валидируем: строго 11 цифр и начинается с 7
+  if (d.length !== 11) return "";
+  if (!d.startsWith("7")) return "";
+
+  return `+${d}`;
+}
+
 export default function LeadForm({
   carClass,
   onCarClassChange,
@@ -319,12 +380,41 @@ export default function LeadForm({
     return price;
   }, [routeType, km, carClass, roundTrip]);
 
+  // --- телефон: обработчики ввода ---
+  function onPhoneFocus() {
+    // если пользователь нажал и поле пустое — ставим +7
+    if (!phone) setPhone("+7");
+  }
+
+  function onPhoneChange(nextRaw: string) {
+    // сохраняем только цифры и ведущий плюс (для UX), дальше форматируем
+    const d = digitsOnly(nextRaw);
+
+    // если пользователь начинает вводить "7" или "8" или "9..." — форматируем
+    const formatted = formatRuPhoneFromDigits(d);
+
+    setPhone(formatted);
+  }
+
+  function onPhonePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text") || "";
+    const d = digitsOnly(text);
+    setPhone(formatRuPhoneFromDigits(d));
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!canSubmit) {
+    if (!name.trim() || !fromText.trim() || !toText.trim()) {
       setError("Заполните имя, телефон, откуда и куда.");
+      return;
+    }
+
+    const phoneNormalized = normalizeRuPhoneForSubmit(phone);
+    if (!phoneNormalized) {
+      setError("Введите телефон РФ в формате +7XXXXXXXXXX (например: +7 999 123-45-67).");
       return;
     }
 
@@ -340,7 +430,7 @@ export default function LeadForm({
 
       const payload = {
         name: name.trim(),
-        phone: phone.trim(),
+        phone: phoneNormalized, // ✅ всегда РФ: +7XXXXXXXXXX
         fromText: fromText.trim(),
         toText: toText.trim(),
         datetime: datetimeLocal ? datetimeLocal : null,
@@ -419,13 +509,16 @@ export default function LeadForm({
           <input className={ControlBase()} value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />
         </Field>
 
-        <Field label="Телефон *" hint="Для связи">
+        <Field label="Телефон *" hint="Только РФ (+7)">
           <input
             className={ControlBase()}
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+7 999 123-45-67"
+            onFocus={onPhoneFocus}
+            onChange={(e) => onPhoneChange(e.target.value)}
+            onPaste={onPhonePaste}
+            placeholder="+7 (999) 123-45-67"
             inputMode="tel"
+            autoComplete="tel"
           />
         </Field>
 
