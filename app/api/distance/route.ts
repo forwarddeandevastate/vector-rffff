@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 type Coords = { lat: number; lon: number };
 
 function okJson(data: any) {
@@ -19,6 +21,7 @@ function norm(q: string) {
 async function geocode(q: string): Promise<Coords | null> {
   const key = norm(q);
   if (!key) return null;
+
   const cached = geoCache.get(key);
   if (cached) return cached;
 
@@ -29,10 +32,10 @@ async function geocode(q: string): Promise<Coords | null> {
 
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "vector-rf/1.0 (contact: admin@vectorrf.ru)",
+      "User-Agent": "vector-rf.ru distance (admin@vector-rf.ru)",
       "Accept-Language": "ru",
     },
-    // чуть кэшируем на стороне Next (можно убрать)
+    // лёгкий кэш на стороне Next (можно убрать, но так меньше запросов)
     next: { revalidate: 60 * 60 * 24 },
   });
 
@@ -59,7 +62,7 @@ async function routeKm(a: Coords, b: Coords): Promise<number | null> {
   const res = await fetch(url, { next: { revalidate: 60 * 60 } });
   if (!res.ok) return null;
 
-  const data = await res.json().catch(() => null) as any;
+  const data = (await res.json().catch(() => null)) as any;
   const meters = data?.routes?.[0]?.distance;
   if (!Number.isFinite(meters)) return null;
 
@@ -74,15 +77,19 @@ export async function GET(req: Request) {
 
     if (!from || !to) return errJson("Missing from/to", 400);
 
-    const a = await geocode(from);
-    const b = await geocode(to);
-    if (!a || !b) return errJson("Не удалось определить координаты. Уточните названия (например: 'Москва', 'Пулково (LED)')", 422);
+    const [a, b] = await Promise.all([geocode(from), geocode(to)]);
+    if (!a || !b) {
+      return errJson(
+        "Не удалось определить координаты. Уточните названия (например: 'Москва', 'Пулково (LED)')",
+        422
+      );
+    }
 
     const km = await routeKm(a, b);
-    if (!km) return errJson("Не удалось построить маршрут", 502);
+    if (km == null) return errJson("Не удалось построить маршрут", 502);
 
-    // округлим до целых км
-    const kmRounded = Math.max(1, Math.round(km));
+    // округлим до целых км (как было у тебя)
+    const kmRounded = Math.round(km);
     return okJson({ km: kmRounded });
   } catch (e: any) {
     return errJson(e?.message || "server error", 500);
