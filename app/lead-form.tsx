@@ -78,30 +78,13 @@ function formatRub(n: number) {
   return `${parts.join(" ")} ₽`;
 }
 
-// тариф ₽/км по классу
+// тариф ₽/км по классу (НЕ показываем клиенту, используется только для расчёта)
 const PER_KM: Record<CarClass, number> = {
   standard: 30,
   comfort: 37,
-  minivan: 55,
+  minivan: 52,
   business: 65,
 };
-
-// ====== БАЗОВЫЕ ЦЕНЫ ДЛЯ ФОРМЫ (НЕ ФИНАЛ) ======
-const CITY_BASE_PRICE: Record<CarClass, number> = {
-  standard: 1000,
-  comfort: 1500,
-  business: 3000,
-  minivan: 3500,
-};
-
-function airportPriceFromCity(cityPrice: number) {
-  return Math.round(cityPrice * 1.1);
-}
-
-function formatFrom(n: number) {
-  return `от ${n.toLocaleString("ru-RU")} ₽`;
-}
-
 
 // --- Подсказки мест (можно вводить руками) ---
 const POPULAR_CITIES = [
@@ -211,11 +194,10 @@ function setTimeSameDay(base: Date, hh: number, mm: number) {
 }
 
 /**
- * ✅ НОВОЕ: только правка телефона (РФ)
+ * Только правка телефона (РФ)
  * - 8xxxxxxxxxx -> +7xxxxxxxxxx
  * - 7xxxxxxxxxx -> +7xxxxxxxxxx
  * - +8xxxxxxxxxx -> +7xxxxxxxxxx
- * Остальное не трогаем.
  */
 function normalizePhoneLive(input: string) {
   let v = input;
@@ -364,11 +346,10 @@ export default function LeadForm({
 
     setLoading(true);
     try {
+      // ✅ Скрыли ₽/км: в заявку пишем только км и итог (без тарифа)
       const calcNote =
         routeType === "intercity" && km && finalPrice
-          ? `\n\n[Авторасчёт] ${km} км · ${PER_KM[carClass]} ₽/км${roundTrip ? " · туда-обратно" : ""} = ${formatRub(
-              finalPrice
-            )}`
+          ? `\n\n[Авторасчёт] ${km} км${roundTrip ? " · туда-обратно" : ""} = ${formatRub(finalPrice)}`
           : "";
 
       const payload = {
@@ -379,7 +360,7 @@ export default function LeadForm({
         datetime: datetimeLocal ? datetimeLocal : null,
         carClass,
         roundTrip,
-        comment: (comment.trim() ? comment.trim() : "") + calcNote || null,
+        comment: ((comment.trim() ? comment.trim() : "") + calcNote) || null,
       };
 
       const res = await fetch("/api/leads", {
@@ -407,20 +388,6 @@ export default function LeadForm({
           <div className="min-w-0">
             <div className="text-xs font-semibold text-zinc-700">Тип поездки</div>
 
-{/* Базовая цена для города / аэропорта */}
-{routeType !== "intercity" && (
-  <div className="mt-2 text-sm font-extrabold text-zinc-900">
-    {routeType === "city" &&
-      formatFrom(CITY_BASE_PRICE[carClass])}
-
-    {routeType === "airport" &&
-      formatFrom(
-        airportPriceFromCity(CITY_BASE_PRICE[carClass])
-      )}
-  </div>
-)}
-
-
             <div className="mt-2 flex flex-wrap gap-2">
               <SegButton active={routeType === "city"} onClick={() => onRouteTypeChange("city")}>
                 Город
@@ -444,9 +411,8 @@ export default function LeadForm({
                 ) : finalPrice ? (
                   <>
                     <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(finalPrice)}</div>
-                    <div className="mt-0.5 text-[11px] text-zinc-600">
-                      {km} км · {PER_KM[carClass]} ₽/км{roundTrip ? " · туда-обратно" : ""}
-                    </div>
+                    {/* ✅ Скрыли ₽/км — оставили только расстояние */}
+                    <div className="mt-0.5 text-[11px] text-zinc-600">{km} км{roundTrip ? " · туда-обратно" : ""}</div>
                   </>
                 ) : (
                   <div className="mt-1 text-[11px] text-zinc-700">
@@ -468,8 +434,8 @@ export default function LeadForm({
           <input className={ControlBase()} value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />
         </Field>
 
-        {/* ✅ ТУТ ТОЛЬКО УБРАЛ HINT */}
-        <Field label="Телефон *">
+        {/* ✅ Хинт про +7 убран */}
+        <Field label="Телефон *" hint="Для связи">
           <input
             className={ControlBase()}
             value={phone}
