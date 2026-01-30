@@ -3,9 +3,26 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-api";
 import { writeAudit } from "@/lib/audit";
 
+type RequireAdminResult =
+  | { ok: true; payload: { sub: string | number; email: string } }
+  | { ok: false; error: string };
+
+async function getAdminOrThrow() {
+  const res = (await requireAdmin()) as RequireAdminResult;
+
+  // Если requireAdmin у тебя кидает — этот код тоже ок (просто не дойдёт сюда)
+  if (!res || (typeof res === "object" && "ok" in res)) {
+    if (!res.ok) throw new Error("UNAUTHORIZED");
+    return res.payload;
+  }
+
+  // На случай если requireAdmin возвращает payload напрямую (старое поведение)
+  return res as any;
+}
+
 export async function GET() {
   try {
-    await requireAdmin();
+    await getAdminOrThrow();
 
     const settings = await prisma.siteSettings.findUnique({
       where: { id: 1 },
@@ -14,16 +31,13 @@ export async function GET() {
     return NextResponse.json({ ok: true, settings });
   } catch (e: any) {
     const status = e?.message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json(
-      { ok: false, error: e?.message || "server error" },
-      { status }
-    );
+    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const admin = await requireAdmin();
+    const admin = await getAdminOrThrow();
     const actorId = Number(admin.sub);
     const actorEmail = admin.email;
 
@@ -69,9 +83,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, settings: updated });
   } catch (e: any) {
     const status = e?.message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json(
-      { ok: false, error: e?.message || "server error" },
-      { status }
-    );
+    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status });
   }
 }
