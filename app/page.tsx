@@ -60,19 +60,14 @@ function IconPhone({ className }: { className?: string }) {
   );
 }
 
-function IconWhatsapp({ className }: { className?: string }) {
+function IconCall({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
-        d="M12 21a9 9 0 0 1-4.07-.97L3.75 21l1.06-3.98A9 9 0 1 1 12 21Z"
+        d="M8.9 5.2 7.7 4c-.5-.5-1.4-.5-1.9 0l-1 1c-.7.7-1 1.7-.8 2.7 1.1 4.9 4.9 8.7 9.8 9.8 1 .2 2-.1 2.7-.8l1-1c.5-.5.5-1.4 0-1.9l-1.2-1.2c-.5-.5-1.2-.6-1.8-.3l-1.3.7c-.5.3-1.1.2-1.5-.2l-2.2-2.2c-.4-.4-.5-1-.2-1.5l.7-1.3c.3-.6.2-1.3-.3-1.8Z"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinejoin="round"
-      />
-      <path
-        d="M9.3 8.9c.2-.5.4-.5.7-.5h.6c.2 0 .4 0 .5.3l.7 1.7c.1.3.1.5-.1.7l-.5.6c-.1.2-.2.4 0 .6.4.8 1.5 1.9 2.3 2.3.2.1.4 0 .6 0l.6-.5c.2-.2.4-.2.7-.1l1.7.7c.3.1.3.3.3.5v.6c0 .3 0 .5-.5.7-.7.3-2.1.5-4.5-1.5-2.0-1.7-3.3-3.9-3.4-4.7-.1-.6.1-1.2.3-1.4Z"
-        fill="currentColor"
-        opacity="0.14"
       />
     </svg>
   );
@@ -195,7 +190,6 @@ function ClassCardButton({
 export default function HomePage() {
   const PHONE_DISPLAY = "+7 (831) 423-39-29";
   const PHONE_TEL = "+78314233929";
-  const WHATSAPP = "https://wa.me/78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
 
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
@@ -233,6 +227,8 @@ export default function HomePage() {
           <nav className="hidden items-center gap-2 md:flex">
             <NavPill href="#order">Заявка</NavPill>
             <NavPill href="#classes">Классы</NavPill>
+            <NavPill href="/reviews">Отзывы</NavPill>
+            <NavPill href="#corporate">Корпоративным</NavPill>
             <NavPill href="#how">Как работаем</NavPill>
             <NavPill href="#faq">Вопросы</NavPill>
           </nav>
@@ -241,27 +237,14 @@ export default function HomePage() {
             <a
               href={`tel:${PHONE_TEL}`}
               className={cn(
-                "hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold md:inline-flex",
-                "border border-zinc-200 bg-white/70 shadow-sm backdrop-blur hover:bg-white"
-              )}
-              title="Позвонить"
-            >
-              <IconPhone className="h-4 w-4 text-sky-700" />
-              <span className="text-zinc-800">{PHONE_DISPLAY}</span>
-            </a>
-
-            <a
-              href={WHATSAPP}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(
                 "inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-semibold",
                 "border border-zinc-200 bg-white/70 shadow-sm backdrop-blur hover:bg-white"
               )}
-              title="WhatsApp"
+              title="Позвонить"
+              aria-label="Позвонить"
             >
-              <IconWhatsapp className="h-4 w-4 text-sky-700" />
-              <span className="hidden sm:inline">WhatsApp</span>
+              <IconCall className="h-4 w-4 text-sky-700" />
+              <span className="hidden md:inline text-zinc-800">{PHONE_DISPLAY}</span>
             </a>
 
             <a
@@ -374,6 +357,16 @@ export default function HomePage() {
               >
                 Выбрать класс авто
               </a>
+
+              <a
+                href="/reviews"
+                className={cn(
+                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                )}
+              >
+                Отзывы
+              </a>
             </div>
           </div>
 
@@ -414,33 +407,18 @@ export default function HomePage() {
                     {PHONE_DISPLAY}
                   </a>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <a
-                      className={cn(
-                        "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                        "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                      )}
-                      href={WHATSAPP}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <IconWhatsapp className="h-4 w-4 text-sky-700" />
-                      WhatsApp
-                    </a>
-
-                    <a
-                      className={cn(
-                        "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                        "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                      )}
-                      href={TELEGRAM}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <IconTelegram className="h-4 w-4 text-sky-700" />
-                      Telegram
-                    </a>
-                  </div>
+                  <a
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
+                    href={TELEGRAM}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <IconTelegram className="h-4 w-4 text-sky-700" />
+                    Telegram
+                  </a>
                 </div>
 
                 <div className="mt-4 text-xs text-zinc-500">
@@ -458,11 +436,7 @@ export default function HomePage() {
           <ClassCardButton
             title="Стандарт"
             priceHint="Оптимально для города"
-            features={[
-              "Базовый комфорт, аккуратная подача",
-              "Подходит для 1–3 пассажиров",
-              "Хороший выбор для коротких поездок",
-            ]}
+            features={["Базовый комфорт, аккуратная подача", "Подходит для 1–3 пассажиров", "Хороший выбор для коротких поездок"]}
             note="Точную стоимость подтверждаем до подачи."
             active={selectedClass === "standard"}
             onClick={() => pickClass("standard", true)}
@@ -470,11 +444,7 @@ export default function HomePage() {
           <ClassCardButton
             title="Комфорт"
             priceHint="Чаще выбирают для аэропортов"
-            features={[
-              "Больше пространства и мягче ход",
-              "Удобно с багажом",
-              "Подходит для деловых и семейных поездок",
-            ]}
+            features={["Больше пространства и мягче ход", "Удобно с багажом", "Подходит для деловых и семейных поездок"]}
             note="Можно указать пожелания: детское кресло, остановки."
             active={selectedClass === "comfort"}
             onClick={() => pickClass("comfort", true)}
@@ -482,11 +452,7 @@ export default function HomePage() {
           <ClassCardButton
             title="Бизнес"
             priceHint="Максимально спокойно и представительно"
-            features={[
-              "Повышенный комфорт и тишина в салоне",
-              "Подходит для встреч и важных поездок",
-              "Акцент на сервис и пунктуальность",
-            ]}
+            features={["Повышенный комфорт и тишина в салоне", "Подходит для встреч и важных поездок", "Акцент на сервис и пунктуальность"]}
             note="Уточняем детали заранее и фиксируем заявку."
             active={selectedClass === "business"}
             onClick={() => pickClass("business", true)}
@@ -494,15 +460,53 @@ export default function HomePage() {
           <ClassCardButton
             title="Минивэн"
             priceHint="Когда нужно больше мест"
-            features={[
-              "Для семьи/компании и большого багажа",
-              "Подходит для 4–7 пассажиров",
-              "Удобно на межгород и в аэропорт",
-            ]}
+            features={["Для семьи/компании и большого багажа", "Подходит для 4–7 пассажиров", "Удобно на межгород и в аэропорт"]}
             note="Сообщите количество пассажиров и багаж — подберём вариант."
             active={selectedClass === "minivan"}
             onClick={() => pickClass("minivan", true)}
           />
+        </div>
+      </section>
+
+      <section id="reviews" className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+          <div className="md:flex md:items-start md:justify-between md:gap-8">
+            <div className="md:max-w-2xl">
+              <SectionTitle title="Отзывы клиентов" desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше." />
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <Card title="Реальные отзывы" text="Публикуем отзывы после модерации, чтобы сохранять качество и честность." />
+                <Card title="Оставить отзыв" text="Имя, город и текст — достаточно. Отправка занимает меньше минуты." />
+                <Card title="Открытая обратная связь" text="Ваше мнение важно: учитываем пожелания и улучшаем сервис." />
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur md:mt-0 md:w-[360px]">
+              <div className="text-sm font-extrabold text-zinc-900">Перейти к отзывам</div>
+              <div className="mt-3 grid gap-2">
+                <a
+                  href="/reviews"
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm w-full",
+                    "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
+                  )}
+                >
+                  Смотреть и оставить отзыв
+                </a>
+
+                <button
+                  type="button"
+                  onClick={scrollToOrder}
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
+                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                >
+                  Оставить заявку
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -516,18 +520,12 @@ export default function HomePage() {
               />
 
               <div className="grid gap-3 md:grid-cols-3">
-                <Card
-                  title="Договор и безнал"
-                  text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу."
-                />
+                <Card title="Договор и безнал" text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу." />
                 <Card
                   title="Единые условия"
                   text="Фиксируем правила подачи, ожидания, маршруты и требования к автомобилю. Всё прозрачно для вашей команды."
                 />
-                <Card
-                  title="Отчётность"
-                  text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования."
-                />
+                <Card title="Отчётность" text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования." />
               </div>
             </div>
 
@@ -545,39 +543,34 @@ export default function HomePage() {
                   {PHONE_DISPLAY}
                 </a>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <a
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={WHATSAPP}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <IconWhatsapp className="h-4 w-4 text-sky-700" />
-                    WhatsApp
-                  </a>
+                <a
+                  className={cn(
+                    "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                    "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                  href={TELEGRAM}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <IconTelegram className="h-4 w-4 text-sky-700" />
+                  Telegram
+                </a>
 
-                  <a
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={TELEGRAM}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <IconTelegram className="h-4 w-4 text-sky-700" />
-                    Telegram
-                  </a>
-                </div>
+                <a
+                  href="/corporate"
+                  className={cn(
+                    "mt-1 inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
+                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                >
+                  Подробнее
+                </a>
 
                 <button
                   type="button"
                   onClick={scrollToOrder}
                   className={cn(
-                    "mt-1 inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm w-full",
+                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm w-full",
                     "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
                   )}
                 >
@@ -604,15 +597,7 @@ export default function HomePage() {
                 <IconPhone className="h-4 w-4 text-sky-700" />
                 {PHONE_DISPLAY}
               </a>
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={WHATSAPP}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <IconWhatsapp className="h-4 w-4 text-sky-700" />
-                WhatsApp
-              </a>
+
               <a
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={TELEGRAM}
@@ -621,6 +606,20 @@ export default function HomePage() {
               >
                 <IconTelegram className="h-4 w-4 text-sky-700" />
                 Telegram
+              </a>
+
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href="/reviews"
+              >
+                Отзывы
+              </a>
+
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href="/corporate"
+              >
+                Корпоративным
               </a>
             </div>
           </div>

@@ -6,7 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 enum UserRole {
   ADMIN
   DISPATCHER
@@ -29,38 +28,38 @@ model User {
 }
 
 model Lead {
-  id            Int      @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
 
-  name          String
-  phone         String
+  name           String
+  phone          String
 
-  fromText      String
-  toText        String
+  fromText       String
+  toText         String
 
-  pickupAddress String?
+  pickupAddress  String?
   dropoffAddress String?
-  datetime      String?
+  datetime       String?
 
-  carClass      String
-  roundTrip     Boolean  @default(false)
-  price         Int?
+  carClass       String
+  roundTrip      Boolean  @default(false)
+  price          Int?
 
-  comment       String?
+  comment        String?
 
-  status        String   @default("new") // new | in_progress | done | canceled
+  status         String   @default("new") // new | in_progress | done | canceled
 
-  assignedToId  Int?
-  assignedTo    User?    @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  assignedToId   Int?
+  assignedTo     User?    @relation("AssignedLeads", fields: [assignedToId], references: [id])
 
-  isDuplicate   Boolean  @default(false)
-  duplicateOfId Int?
+  isDuplicate    Boolean  @default(false)
+  duplicateOfId  Int?
 
-  utmSource     String?
-  utmMedium     String?
-  utmCampaign   String?
+  utmSource      String?
+  utmMedium      String?
+  utmCampaign    String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([status, createdAt])
   @@index([assignedToId])
@@ -68,73 +67,76 @@ model Lead {
 }
 
 model SiteSettings {
-  id            Int      @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
 
-  brandName     String   @default("Вектор РФ")
-  brandTagline  String   @default("трансферы и поездки по России")
+  brandName    String   @default("Вектор РФ")
+  brandTagline String   @default("трансферы и поездки по России")
 
-  phone         String?
-  whatsapp      String?
-  telegram      String?
-  email         String?
+  phone        String?
+  whatsapp     String?
+  telegram     String?
+  email        String?
 
-  workHours     String?
-  regionNote    String?
+  workHours    String?
+  regionNote   String?
 
-  companyName   String?
-  inn           String?
-  ogrn          String?
-  address       String?
-  notes         String?
+  companyName  String?
+  inn          String?
+  ogrn         String?
+  address      String?
+  notes        String?
 
-  updatedAt     DateTime @updatedAt
+  updatedAt    DateTime @updatedAt
 
   @@map("site_settings")
 }
+
 model AdminLoginAttempt {
-  id            Int      @id @default(autoincrement())
-  key           String   @unique  // email+ip
-  email         String
-  ip            String
-  attempts      Int      @default(0)
-  firstAttempt  DateTime @default(now())
-  blockedUntil  DateTime?
-  updatedAt     DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  key          String   @unique  // email+ip
+  email        String
+  ip           String
+  attempts     Int      @default(0)
+  firstAttempt DateTime @default(now())
+  blockedUntil DateTime?
+  updatedAt    DateTime @updatedAt
 
   @@map("admin_login_attempts")
 }
 
 model AuditLog {
-  id        Int      @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
 
-  actorId   Int?
+  actorId    Int?
   actorEmail String?
 
-  action    String   // например: "lead.update", "settings.update", "user.create"
-  entity    String?  // "Lead", "SiteSettings", "User"
-  entityId  Int?     // id сущности
+  action     String   // например: "lead.update", "settings.update", "user.create"
+  entity     String?  // "Lead", "SiteSettings", "User"
+  entityId   Int?     // id сущности
 
-  details   Json?    // что поменяли
+  details    Json?    // что поменяли
 
-  ip        String?
-  createdAt DateTime @default(now())
+  ip         String?
+  createdAt  DateTime @default(now())
 
   @@index([action, createdAt])
   @@index([entity, entityId])
   @@map("audit_log")
 }
+
 model Review {
   id        Int      @id @default(autoincrement())
 
   name      String
-  rating    Int      @default(5) // 1..5
   text      String
+  rating    Int?     // 1..5 (необязательно)
 
   city      String?
   source    String?  // например "site", "telegram", "google"
   isPublic  Boolean  @default(false) // модерация
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([isPublic, createdAt])
   @@map("reviews")

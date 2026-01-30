@@ -35,6 +35,9 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
               <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/users">
                 Пользователи
               </Link>
+              <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/reviews">
+                Отзывы
+              </Link>
               <Link className="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900/40" href="/admin/settings">
                 Настройки
               </Link>

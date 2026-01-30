@@ -6,11 +6,14 @@ export async function requireAdmin() {
   const cookieStore = await cookies();
   const token = cookieStore.get(name)?.value;
 
-  if (!token) throw new Error("UNAUTHORIZED");
+  if (!token) {
+    return { ok: false as const, error: "UNAUTHORIZED" };
+  }
 
   try {
-    return await verifyAdminJwt(token);
+    const payload = await verifyAdminJwt(token);
+    return { ok: true as const, payload };
   } catch {
-    throw new Error("UNAUTHORIZED");
+    return { ok: false as const, error: "UNAUTHORIZED" };
   }
 }
