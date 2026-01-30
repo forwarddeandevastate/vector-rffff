@@ -3,12 +3,36 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-api";
 import { writeAudit } from "@/lib/audit";
 
-export async function PATCH(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> }
-) {
+type AdminPayload = {
+  sub: string | number;
+  email: string;
+  role?: string;
+};
+
+type RequireAdminResult =
+  | { ok: true; payload: AdminPayload }
+  | { ok: false; error: string; payload?: undefined };
+
+async function getAdminPayloadOrThrow(): Promise<AdminPayload> {
+  const res = (await requireAdmin()) as any;
+
+  // Новый формат: { ok, payload }
+  if (res && typeof res === "object" && "ok" in res) {
+    if (!res.ok) throw new Error("UNAUTHORIZED");
+    return res.payload as AdminPayload;
+  }
+
+  // Старый формат (если когда-то был): payload напрямую
+  if (res && typeof res === "object" && "sub" in res && "email" in res) {
+    return res as AdminPayload;
+  }
+
+  throw new Error("UNAUTHORIZED");
+}
+
+export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const admin = await requireAdmin();
+    const admin = await getAdminPayloadOrThrow();
     const actorId = Number(admin.sub);
     const actorEmail = admin.email;
 
