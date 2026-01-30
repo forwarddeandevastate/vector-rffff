@@ -116,19 +116,30 @@ function avg(nums: number[]) {
   return s / nums.length;
 }
 
+function normalizeRating(v: number | null | undefined) {
+  const n = typeof v === "number" && Number.isFinite(v) ? v : 5;
+  return Math.max(1, Math.min(5, Math.round(n)));
+}
+
 export default async function ReviewsPage() {
   const PHONE_DISPLAY = "+7 (831) 423-39-29";
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  const rows = await prisma.review.findMany({
+  const rawRows = await prisma.review.findMany({
     where: { isPublic: true },
     orderBy: { createdAt: "desc" },
     take: 30,
     select: { id: true, name: true, rating: true, text: true, city: true, createdAt: true },
   });
 
-  const ratings = rows.map((r) => Math.max(1, Math.min(5, Number(r.rating) || 5)));
+  // ✅ ВАЖНО: делаем rating ВСЕГДА number, чтобы не ломать типы ReviewsClient
+  const rows = rawRows.map((r) => ({
+    ...r,
+    rating: normalizeRating(r.rating),
+  }));
+
+  const ratings = rows.map((r) => normalizeRating(r.rating));
   const ratingValue = Number(avg(ratings).toFixed(1));
   const ratingCount = rows.length;
 
@@ -151,7 +162,7 @@ export default async function ReviewsPage() {
             reviewBody: r.text,
             reviewRating: {
               "@type": "Rating",
-              ratingValue: Math.max(1, Math.min(5, Number(r.rating) || 5)),
+              ratingValue: normalizeRating(r.rating),
               bestRating: 5,
             },
           })),
@@ -314,8 +325,8 @@ export default async function ReviewsPage() {
                     </div>
 
                     <div className="mt-1 text-sm text-zinc-700">
-                      {"★".repeat(Math.max(1, Math.min(5, Number(r.rating) || 5)))}{" "}
-                      <span className="text-zinc-400">({Math.max(1, Math.min(5, Number(r.rating) || 5))}/5)</span>
+                      {"★".repeat(normalizeRating(r.rating))}{" "}
+                      <span className="text-zinc-400">({normalizeRating(r.rating)}/5)</span>
                     </div>
 
                     <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.text}</div>
