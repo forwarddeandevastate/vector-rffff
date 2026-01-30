@@ -1,8 +1,12 @@
-import { defineConfig, env } from "prisma/config";
-
-// Если у тебя dotenv уже подключается где-то в проекте — можно убрать следующую строку.
-// Но она не мешает, и локально удобно.
+import { defineConfig } from "prisma/config";
 import "dotenv/config";
+
+const DATABASE_URL = process.env.DATABASE_URL;
+const DIRECT_URL = process.env.DIRECT_URL;
+
+if (!DATABASE_URL) {
+  throw new Error("Missing env DATABASE_URL");
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -12,11 +16,10 @@ export default defineConfig({
   },
 
   datasource: {
-    // DATABASE_URL — основной (обычно pooled/обычный), используется Prisma CLI и клиентом через config
-    url: env("DATABASE_URL"),
+    url: DATABASE_URL,
 
-    // DIRECT_URL — прямое подключение (обычно unpooled) для миграций/DDL
-    // Если DIRECT_URL не задан — просто удали эту строку.
-    directUrl: env("DIRECT_URL"),
+    // DIRECT_URL делаем необязательным:
+    // если не задан — используем DATABASE_URL
+    directUrl: DIRECT_URL || DATABASE_URL,
   },
 });
