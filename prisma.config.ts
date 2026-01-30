@@ -1,25 +1,9 @@
 import { defineConfig } from "prisma/config";
-import "dotenv/config";
-
-const DATABASE_URL = process.env.DATABASE_URL;
-const DIRECT_URL = process.env.DIRECT_URL;
-
-if (!DATABASE_URL) {
-  throw new Error("Missing env DATABASE_URL");
-}
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
-
-  migrations: {
-    path: "prisma/migrations",
-  },
-
+  // Prisma 7: connection URLs больше не задаются в schema.prisma.
+  // Здесь достаточно одного url.
   datasource: {
-    url: DATABASE_URL,
-
-    // DIRECT_URL делаем необязательным:
-    // если не задан — используем DATABASE_URL
-    directUrl: DIRECT_URL || DATABASE_URL,
+    url: process.env.DATABASE_URL,
   },
 });
