@@ -4,9 +4,24 @@ import { requireAdmin } from "@/lib/admin-api";
 import bcrypt from "bcryptjs";
 import { writeAudit } from "@/lib/audit";
 
+type AdminJwtPayload = {
+  sub: string | number;
+  email: string;
+  role?: string;
+};
+
+async function getAdminOrThrow(): Promise<AdminJwtPayload> {
+  const res = (await requireAdmin()) as
+    | { ok: true; payload: AdminJwtPayload }
+    | { ok: false; error: string };
+
+  if (!res?.ok) throw new Error("UNAUTHORIZED");
+  return res.payload;
+}
+
 export async function GET() {
   try {
-    await requireAdmin();
+    await getAdminOrThrow();
 
     const users = await prisma.user.findMany({
       orderBy: [{ role: "asc" }, { name: "asc" }],
@@ -22,7 +37,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const admin = await requireAdmin();
+    const admin = await getAdminOrThrow();
     const actorId = Number(admin.sub);
     const actorEmail = admin.email;
 
