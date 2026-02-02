@@ -116,30 +116,29 @@ function avg(nums: number[]) {
   return s / nums.length;
 }
 
-function normalizeRating(v: number | null | undefined) {
-  const n = typeof v === "number" && Number.isFinite(v) ? v : 5;
-  return Math.max(1, Math.min(5, Math.round(n)));
-}
-
 export default async function ReviewsPage() {
   const PHONE_DISPLAY = "+7 (831) 423-39-29";
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  const rawRows = await prisma.review.findMany({
+  const rows = await prisma.review.findMany({
     where: { isPublic: true },
     orderBy: { createdAt: "desc" },
     take: 30,
     select: { id: true, name: true, rating: true, text: true, city: true, createdAt: true },
   });
 
-  // ✅ ВАЖНО: делаем rating ВСЕГДА number, чтобы не ломать типы ReviewsClient
-  const rows = rawRows.map((r) => ({
-    ...r,
-    rating: normalizeRating(r.rating),
+  // ✅ для client-компонента: rating без null и createdAt строкой
+  const rowsForClient = rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    text: r.text,
+    city: r.city,
+    rating: Math.max(1, Math.min(5, Number(r.rating) || 5)),
+    createdAt: r.createdAt.toISOString(),
   }));
 
-  const ratings = rows.map((r) => normalizeRating(r.rating));
+  const ratings = rows.map((r) => Math.max(1, Math.min(5, Number(r.rating) || 5)));
   const ratingValue = Number(avg(ratings).toFixed(1));
   const ratingCount = rows.length;
 
@@ -162,7 +161,7 @@ export default async function ReviewsPage() {
             reviewBody: r.text,
             reviewRating: {
               "@type": "Rating",
-              ratingValue: normalizeRating(r.rating),
+              ratingValue: Math.max(1, Math.min(5, Number(r.rating) || 5)),
               bestRating: 5,
             },
           })),
@@ -225,11 +224,13 @@ export default async function ReviewsPage() {
         </div>
 
         <div className="mt-6">
-          <SectionTitle title="Отзывы о «Вектор РФ»" desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки." />
+          <SectionTitle
+            title="Отзывы о «Вектор РФ»"
+            desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки."
+          />
         </div>
 
         <div className="grid gap-6 md:grid-cols-12">
-          {/* ✅ МОБИЛКА: ФОРМА ПЕРВОЙ */}
           <div id="leave" className="order-1 md:order-2 md:col-span-5">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-xl backdrop-blur md:p-7">
               <div className="flex items-start justify-between gap-3">
@@ -243,7 +244,7 @@ export default async function ReviewsPage() {
               </div>
 
               <div className="mt-5">
-                <ReviewsClient initialReviews={rows} />
+                <ReviewsClient initialReviews={rowsForClient} />
               </div>
 
               <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur">
@@ -287,7 +288,6 @@ export default async function ReviewsPage() {
             </div>
           </div>
 
-          {/* ✅ МОБИЛКА: ОТЗЫВЫ ВТОРЫМИ */}
           <div className="order-2 md:order-1 md:col-span-7">
             <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-7">
               <div className="flex items-start justify-between gap-3">
@@ -325,8 +325,8 @@ export default async function ReviewsPage() {
                     </div>
 
                     <div className="mt-1 text-sm text-zinc-700">
-                      {"★".repeat(normalizeRating(r.rating))}{" "}
-                      <span className="text-zinc-400">({normalizeRating(r.rating)}/5)</span>
+                      {"★".repeat(Math.max(1, Math.min(5, Number(r.rating) || 5)))}{" "}
+                      <span className="text-zinc-400">({Math.max(1, Math.min(5, Number(r.rating) || 5))}/5)</span>
                     </div>
 
                     <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.text}</div>

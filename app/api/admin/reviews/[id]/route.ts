@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-api";
+import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
 
-export async function PATCH(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();
   if (!auth.ok) {
     return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
@@ -25,19 +23,24 @@ export async function PATCH(
   const data: any = {};
   if (typeof body.isPublic === "boolean") data.isPublic = body.isPublic;
 
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ ok: false, error: "no fields to update" }, { status: 400 });
+  }
+
   const updated = await prisma.review.update({
     where: { id: reviewId },
     data,
     select: { id: true, isPublic: true },
   });
 
+  // ✅ важно: после модерации обновляем страницы, где показываются отзывы
+  revalidatePath("/reviews");
+  revalidatePath("/");
+
   return NextResponse.json({ ok: true, review: updated });
 }
 
-export async function DELETE(
-  _req: Request,
-  ctx: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();
   if (!auth.ok) {
     return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
@@ -51,6 +54,10 @@ export async function DELETE(
   }
 
   await prisma.review.delete({ where: { id: reviewId } });
+
+  // ✅ после удаления тоже обновим
+  revalidatePath("/reviews");
+  revalidatePath("/");
 
   return NextResponse.json({ ok: true });
 }
