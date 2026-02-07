@@ -1,84 +1,209 @@
-// app/route/[from]/[to]/page.tsx
 import type { Metadata } from "next";
-import Link from "next/link";
-import { buildSeoRoutes } from "@/lib/seo-routes";
+import Script from "next/script";
+import ServicePage from "../../../ui/service-page";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
-function prettifyCity(slug?: string) {
+// Аккуратный fallback: если города нет в маппинге — показываем как есть, но безопасно
+function safePretty(slug: string) {
   const s = (slug ?? "").trim();
-  if (!s) return "—";
-  return s
+  if (!s) return "Город";
+
+  // если вдруг прилетит %D0... — декодируем
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(s);
+    } catch {
+      return s;
+    }
+  })();
+
+  // "rostov-na-donu" -> "rostov na donu"
+  return decoded
     .split("-")
     .filter(Boolean)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 
-// Маппинг чтобы города нормально назывались
+// Маппинг slug -> нормальное русское название
 const CITY_MAP: Record<string, string> = {
-  "nizhniy-novgorod": "Нижний Новгород",
+  // хабы
   moskva: "Москва",
   "sankt-peterburg": "Санкт-Петербург",
+  "nizhniy-novgorod": "Нижний Новгород",
   kazan: "Казань",
   samara: "Самара",
-  sochi: "Сочи",
-  "rostov-na-donu": "Ростов-на-Дону",
-  krasnodar: "Краснодар",
+  saratov: "Саратов",
   volgograd: "Волгоград",
+  krasnodar: "Краснодар",
+  "rostov-na-donu": "Ростов-на-Дону",
   voronezh: "Воронеж",
+  tula: "Тула",
+  ryazan: "Рязань",
+  yaroslavl: "Ярославль",
+  tver: "Тверь",
+  smolensk: "Смоленск",
+  kaliningrad: "Калининград",
+  "velikiy-novgorod": "Великий Новгород",
+  pskov: "Псков",
+  astrakhan: "Астрахань",
+  chelyabinsk: "Челябинск",
+  novosibirsk: "Новосибирск",
+  krasnoyarsk: "Красноярск",
+
+  // Москва и МО
+  balashikha: "Балашиха",
+  khimki: "Химки",
+  podolsk: "Подольск",
+  mytishchi: "Мытищи",
+  korolev: "Королёв",
+  lyubertsy: "Люберцы",
+  elektrostal: "Электросталь",
+  kolomna: "Коломна",
+  odintsovo: "Одинцово",
+  krasnogorsk: "Красногорск",
+  serpukhov: "Серпухов",
+  "orekhovo-zuevo": "Орехово-Зуево",
+  "shchyolkovo": "Щёлково",
+  ramenskoye: "Раменское",
+  domodedovo: "Домодедово",
+  pushkino: "Пушкино",
+  zhukovskiy: "Жуковский",
+  reutov: "Реутов",
+  noginsk: "Ногинск",
+
+  // Белгородская
   belgorod: "Белгород",
+  "staryy-oskol": "Старый Оскол",
+  gubkin: "Губкин",
+
+  // Брянская
+  bryansk: "Брянск",
+  klintsy: "Клинцы",
+
+  // Владимирская
+  vladimir: "Владимир",
+  kovrov: "Ковров",
+  murom: "Муром",
+
+  // Ивановская
+  ivanovo: "Иваново",
+
+  // Калужская
+  kaluga: "Калуга",
+  obninsk: "Обнинск",
+
+  // Костромская
+  kostroma: "Кострома",
+
+  // Курская
   kursk: "Курск",
+  "zheleznogorsk-kursk": "Железногорск",
+
+  // Липецкая
+  lipetsk: "Липецк",
+  yelets: "Елец",
+
+  // Орловская
+  orel: "Орёл",
+
+  // Тамбовская
+  tambov: "Тамбов",
+
+  // Архангельская
+  arkhangelsk: "Архангельск",
+  severodvinsk: "Северодвинск",
+
+  // Вологодская
+  vologda: "Вологда",
+  cherepovets: "Череповец",
+
+  // Волгоградская (добавочно)
+  volzhskiy: "Волжский",
+  kamyshin: "Камышин",
+
+  // Краснодарский край
+  sochi: "Сочи",
+  novorossiysk: "Новороссийск",
+  armavir: "Армавир",
+  anapa: "Анапа",
+
+  // Адыгея
+  maykop: "Майкоп",
+
+  // Ростовская (добавочно)
+  taganrog: "Таганрог",
+  shakhty: "Шахты",
+  novocherkassk: "Новочеркасск",
+  volgodonsk: "Волгодонск",
+  bataysk: "Батайск",
+  "kamensk-shakhtinskiy": "Каменск-Шахтинский",
+
+  // Крым / Севастополь
+  simferopol: "Симферополь",
+  sevastopol: "Севастополь",
+  kerch: "Керчь",
+  evpatoriya: "Евпатория",
+
+  // Ставропольский край
+  stavropol: "Ставрополь",
+  pyatigorsk: "Пятигорск",
+  kislovodsk: "Кисловодск",
+  essentuki: "Ессентуки",
+  nevinnomyssk: "Невинномысск",
+
+  // Челябинская (добавочно)
+  magnitogorsk: "Магнитогорск",
+  zlatoust: "Златоуст",
+  miass: "Миасс",
+  kopeysk: "Копейск",
+
+  // Новосибирская (добавочно)
+  berdsk: "Бердск",
+
+  // Красноярский край (добавочно)
+  norilsk: "Норильск",
+  achinsk: "Ачинск",
+  kansk: "Канск",
+  "zheleznogorsk-krasnoyarsk": "Железногорск",
 
   // Новые территории
   donetsk: "Донецк",
   makeyevka: "Макеевка",
   mariupol: "Мариуполь",
   gorlovka: "Горловка",
-  enakiyevo: "Енакиево",
-  khartsyzk: "Харцызск",
-
   lugansk: "Луганск",
-  alchevsk: "Алчевск",
-  krasnodon: "Краснодон",
-  severodonetsk: "Северодонецк",
-
   melitopol: "Мелитополь",
   berdyansk: "Бердянск",
-  tokmak: "Токмак",
-
   kherson: "Херсон",
-  genichesk: "Геническ",
-  skadovsk: "Скадовск",
 };
 
-function cityName(slug?: string) {
+function cityName(slug: string) {
   const s = (slug ?? "").trim();
-  if (!s) return "—";
-  return CITY_MAP[s] ?? prettifyCity(s);
+  if (!s) return "Город";
+  return CITY_MAP[s] ?? safePretty(s);
 }
 
-type Props = { params: { from?: string; to?: string } };
-
-// 500 SEO-маршрутов
-export async function generateStaticParams() {
-  return buildSeoRoutes(500).map((r) => ({ from: r.from, to: r.to }));
-}
+type Props = {
+  params: {
+    from: string;
+    to: string;
+  };
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const fromSlug = params?.from ?? "";
-  const toSlug = params?.to ?? "";
+  const from = cityName(params.from);
+  const to = cityName(params.to);
 
-  const from = cityName(fromSlug);
-  const to = cityName(toSlug);
-
-  const url = `${SITE_URL}/route/${fromSlug}/${toSlug}`;
+  const url = `${SITE_URL}/route/${params.from}/${params.to}`;
 
   return {
     title: `Такси ${from} — ${to} | Межгород | Вектор РФ`,
     description: `Междугороднее такси ${from} — ${to}. Комфорт, бизнес, минивэн. Фиксируем заявку и согласуем стоимость заранее. Онлайн-заявка 24/7.`,
     alternates: { canonical: url },
+
     openGraph: {
       type: "website",
       url,
@@ -88,24 +213,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "ru_RU",
       images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
     },
+
     twitter: {
       card: "summary_large_image",
       title: `Такси ${from} — ${to} | Вектор РФ`,
       description: `Междугородний трансфер ${from} — ${to}. Онлайн-заявка 24/7.`,
       images: ["/og.jpg"],
     },
-    robots: { index: true, follow: true },
   };
 }
 
 export default function Page({ params }: Props) {
-  const fromSlug = params?.from ?? "";
-  const toSlug = params?.to ?? "";
+  const from = cityName(params.from);
+  const to = cityName(params.to);
 
-  const from = cityName(fromSlug);
-  const to = cityName(toSlug);
-
-  const canonical = `${SITE_URL}/route/${fromSlug}/${toSlug}`;
+  const canonical = `${SITE_URL}/route/${params.from}/${params.to}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -118,66 +240,43 @@ export default function Page({ params }: Props) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <>
+      <Script
+        id={`ld-${params.from}-${params.to}`}
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      <div className="mx-auto max-w-3xl px-4 py-14">
-        <div className="text-sm text-slate-600">
-          <Link href="/" className="hover:underline">
-            Главная
-          </Link>{" "}
-          / <span className="text-slate-900 font-semibold">{from} — {to}</span>
-        </div>
-
-        <h1 className="mt-4 text-3xl font-extrabold tracking-tight">
-          Такси {from} — {to}
-        </h1>
-
-        <p className="mt-4 text-slate-700 leading-7">
-          Междугородняя поездка {from} — {to}. Подберём класс авто, уточним маршрут и согласуем стоимость до подачи.
-          Работаем 24/7.
-        </p>
-
-        <ul className="mt-6 grid gap-2 text-slate-700">
-          <li>• Комфорт / Бизнес / Минивэн</li>
-          <li>• Стоимость согласуем заранее</li>
-          <li>• Можно указать остановки и пожелания</li>
-          <li>• Заявка онлайн за 1 минуту</li>
-        </ul>
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/#order"
-            className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-extrabold text-white hover:opacity-95"
-          >
-            Оставить заявку
-          </Link>
-          <Link
-            href="/intercity-taxi"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold hover:bg-slate-50"
-          >
-            Подробнее про межгород
-          </Link>
-        </div>
-
-        <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="font-extrabold">FAQ</div>
-          <div className="mt-3 grid gap-4 text-sm text-slate-700">
-            <div>
-              <div className="font-semibold">Можно ли заказать поездку заранее?</div>
-              <div className="mt-1">Да. Укажите дату/время — зафиксируем заявку и подтвердим подачу.</div>
-            </div>
-            <div>
-              <div className="font-semibold">Можно ли добавить остановки по пути?</div>
-              <div className="mt-1">Да. Напишите остановки — учтём при согласовании стоимости.</div>
-            </div>
-            <div>
-              <div className="font-semibold">Какие классы доступны?</div>
-              <div className="mt-1">Стандарт, Комфорт, Бизнес и Минивэн.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+      <ServicePage
+        breadcrumbs={[
+          { name: "Главная", href: "/" },
+          { name: `${from} — ${to}`, href: `/route/${params.from}/${params.to}` },
+        ]}
+        title={`Такси ${from} — ${to}`}
+        subtitle={`Междугородняя поездка ${from} — ${to}. Подбор класса авто, согласование маршрута и стоимости заранее. Работаем 24/7.`}
+        bullets={[
+          `Поездка ${from} — ${to} на комфортном автомобиле`,
+          "Комфорт / Бизнес / Минивэн",
+          "Стоимость согласуем до подачи автомобиля",
+          "Можно указать остановки и пожелания",
+          "Работаем 24/7, заявка онлайн за 1 минуту",
+        ]}
+        faq={[
+          {
+            q: "Можно ли заказать поездку заранее?",
+            a: "Да. Укажите дату и время — мы зафиксируем заявку и подтвердим подачу автомобиля.",
+          },
+          {
+            q: "Можно ли добавить остановки по пути?",
+            a: "Да. Просто напишите остановки в комментарии — мы учтём это при согласовании стоимости.",
+          },
+          {
+            q: "Какие классы доступны?",
+            a: "Стандарт, Комфорт, Бизнес и Минивэн. Выберите класс в форме — мы подтвердим доступность.",
+          },
+        ]}
+      />
+    </>
   );
 }
