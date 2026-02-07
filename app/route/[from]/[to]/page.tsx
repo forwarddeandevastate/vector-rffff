@@ -6,13 +6,17 @@ import { buildSeoRoutes } from "@/lib/seo-routes";
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
-function prettifyCity(slug: string) {
-  return slug
+function prettifyCity(slug?: string) {
+  const s = (slug ?? "").trim();
+  if (!s) return "—";
+  return s
     .split("-")
-    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 
+// Маппинг чтобы города нормально назывались
 const CITY_MAP: Record<string, string> = {
   "nizhniy-novgorod": "Нижний Новгород",
   moskva: "Москва",
@@ -27,7 +31,7 @@ const CITY_MAP: Record<string, string> = {
   belgorod: "Белгород",
   kursk: "Курск",
 
-  // новые территории (как у тебя)
+  // Новые территории
   donetsk: "Донецк",
   makeyevka: "Макеевка",
   mariupol: "Мариуполь",
@@ -49,21 +53,27 @@ const CITY_MAP: Record<string, string> = {
   skadovsk: "Скадовск",
 };
 
-function cityName(slug: string) {
-  return CITY_MAP[slug] ?? prettifyCity(slug);
+function cityName(slug?: string) {
+  const s = (slug ?? "").trim();
+  if (!s) return "—";
+  return CITY_MAP[s] ?? prettifyCity(s);
 }
 
-type Props = { params: { from: string; to: string } };
+type Props = { params: { from?: string; to?: string } };
 
-// Делаем статические params для 500 маршрутов (как в sitemap)
+// 500 SEO-маршрутов
 export async function generateStaticParams() {
   return buildSeoRoutes(500).map((r) => ({ from: r.from, to: r.to }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const from = cityName(params.from);
-  const to = cityName(params.to);
-  const url = `${SITE_URL}/route/${params.from}/${params.to}`;
+  const fromSlug = params?.from ?? "";
+  const toSlug = params?.to ?? "";
+
+  const from = cityName(fromSlug);
+  const to = cityName(toSlug);
+
+  const url = `${SITE_URL}/route/${fromSlug}/${toSlug}`;
 
   return {
     title: `Такси ${from} — ${to} | Межгород | Вектор РФ`,
@@ -89,9 +99,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function Page({ params }: Props) {
-  const from = cityName(params.from);
-  const to = cityName(params.to);
-  const canonical = `${SITE_URL}/route/${params.from}/${params.to}`;
+  const fromSlug = params?.from ?? "";
+  const toSlug = params?.to ?? "";
+
+  const from = cityName(fromSlug);
+  const to = cityName(toSlug);
+
+  const canonical = `${SITE_URL}/route/${fromSlug}/${toSlug}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -105,10 +119,7 @@ export default function Page({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="mx-auto max-w-3xl px-4 py-14">
         <div className="text-sm text-slate-600">
