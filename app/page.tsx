@@ -731,30 +731,30 @@ export default function HomePage() {
     </div>
 
     {/* SEO ссылки (аккуратно, не мешают дизайну) */}
-    <div className="mt-6 border-t border-zinc-200/70 pt-5">
-      <div className="text-xs font-semibold text-zinc-700">Услуги</div>
+<div className="mt-6 border-t border-zinc-200/70 pt-5">
+  <div className="text-xs font-semibold text-zinc-700">Услуги</div>
 
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-zinc-600">
-        <a href="/intercity" className="hover:text-zinc-900 hover:underline">
-          Междугородние поездки
-        </a>
-        <a href="/airport" className="hover:text-zinc-900 hover:underline">
-          Трансфер в аэропорт
-        </a>
-        <a href="/city" className="hover:text-zinc-900 hover:underline">
-          Поездки по городу
-        </a>
-        <a href="/minivan" className="hover:text-zinc-900 hover:underline">
-          Минивэн / групповые поездки
-        </a>
-        <a href="/corporate" className="hover:text-zinc-900 hover:underline">
-          Корпоративные перевозки
-        </a>
-        <a href="/driver" className="hover:text-zinc-900 hover:underline">
-          Авто с водителем
-        </a>
-      </div>
-    </div>
+  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-zinc-600">
+    <a href="/intercity-taxi" className="hover:text-zinc-900 hover:underline">
+      Междугородние поездки
+    </a>
+    <a href="/airport-transfer" className="hover:text-zinc-900 hover:underline">
+      Трансфер в аэропорт
+    </a>
+    <a href="/city-transfer" className="hover:text-zinc-900 hover:underline">
+      Поездки по городу
+    </a>
+    <a href="/minivan-transfer" className="hover:text-zinc-900 hover:underline">
+      Минивэн / групповые поездки
+    </a>
+    <a href="/corporate" className="hover:text-zinc-900 hover:underline">
+      Корпоративные перевозки
+    </a>
+    <a href="/reviews" className="hover:text-zinc-900 hover:underline">
+      Отзывы
+    </a>
+  </div>
+</div>
 
     <div className="mt-6 text-xs text-zinc-500">
       © {new Date().getFullYear()} Вектор РФ. Все права защищены.
