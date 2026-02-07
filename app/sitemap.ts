@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { buildSeoRouteUrls } from "@/lib/seo-routes";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://vector-rf.ru";
   const now = new Date();
 
-  return [
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/`,
       lastModified: now,
@@ -70,4 +71,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.2,
     },
   ];
+
+  // 500 SEO-маршрутов /route/from/to
+  const routeUrls = buildSeoRouteUrls(baseUrl, 500);
+
+  const routePages: MetadataRoute.Sitemap = routeUrls.map((url) => ({
+    url,
+    lastModified: now,
+    changeFrequency: "weekly",
+    // не ставим 1.0, чтобы не “конфликтовать” с главной
+    priority: 0.45,
+  }));
+
+  return [...staticPages, ...routePages];
 }
