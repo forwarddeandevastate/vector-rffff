@@ -25,7 +25,12 @@ function LogoMark() {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path d="M6.7 6.5h10.6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+        <path
+          d="M6.7 6.5h10.6"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
       </svg>
     </div>
   );
@@ -578,6 +583,106 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ✅ ДОБАВИЛ: Как работаем (якорь #how) */}
+      <section id="how" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
+        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+          <SectionTitle
+            title="Как работаем"
+            desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее."
+          />
+
+          <div className="grid gap-3 md:grid-cols-4">
+            <Card title="1) Оставляете заявку" text="Заполняете форму: маршрут, дата/время, класс авто и пожелания." />
+            <Card title="2) Уточняем детали" text="Мы связываемся, подтверждаем стоимость и время подачи. Всё фиксируем." />
+            <Card title="3) Подача авто" text="Автомобиль приезжает к адресу или встречаем в аэропорту/на вокзале." />
+            <Card title="4) Поездка" text="Едете спокойно. Учтём багаж, кресло, остановки по пути." />
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={scrollToOrder}
+              className={cn(
+                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
+                "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
+              )}
+            >
+              Оставить заявку
+            </button>
+
+            <a
+              href={`tel:${PHONE_TEL}`}
+              className={cn(
+                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+              )}
+            >
+              Позвонить
+            </a>
+
+            <a
+              href={TELEGRAM}
+              target="_blank"
+              rel="noreferrer"
+              className={cn(
+                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+              )}
+            >
+              Telegram
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ✅ ДОБАВИЛ: FAQ (якорь #faq) */}
+      <section id="faq" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
+        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+          <SectionTitle title="Вопросы и ответы" desc="Коротко о стоимости, подаче, встрече и корпоративных поездках." />
+
+          <div className="space-y-3">
+            {[
+              {
+                q: "Сколько стоит трансфер и как считается цена?",
+                a: "Цена зависит от маршрута и класса авто (Стандарт/Комфорт/Бизнес/Минивэн). После заявки мы подтверждаем стоимость до подачи автомобиля — без сюрпризов.",
+              },
+              {
+                q: "Как быстро подаётся машина?",
+                a: "По городу обычно 15–30 минут (зависит от района и времени). В аэропорт/межгород — подача к согласованному времени.",
+              },
+              {
+                q: "Встречаете в аэропорту с табличкой?",
+                a: "Да. Водитель встречает в зоне прилёта с табличкой. Можно указать номер рейса в комментарии к заявке.",
+              },
+              {
+                q: "Можно ли заказать межгород туда-обратно?",
+                a: "Да, отметьте «Туда-обратно» в форме (или напишите в комментарии) — согласуем детали обратной поездки.",
+              },
+              {
+                q: "Работаете с компаниями?",
+                a: "Да. Корпоративные перевозки для сотрудников и гостей. Работаем по договору, возможен безнал и закрывающие документы.",
+              },
+            ].map((it) => (
+              <details
+                key={it.q}
+                className="group rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+                  <span className="text-sm font-extrabold text-zinc-900">{it.q}</span>
+                  <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 group-open:hidden">
+                    +
+                  </span>
+                  <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 hidden group-open:inline">
+                    —
+                  </span>
+                </summary>
+                <div className="mt-3 text-sm leading-6 text-zinc-600">{it.a}</div>
+              </details>
+            ))}
           </div>
         </div>
       </section>
