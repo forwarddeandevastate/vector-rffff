@@ -8,32 +8,12 @@ const manrope = Manrope({
   weight: ["500", "600", "700", "800"],
 });
 
-const YM_ID = 106629239;
-
-// Можно оставить как есть, но лучше задать базу сайта (каноникал, OG)
-// Если не хочешь — можно удалить metadataBase/alternates/openGraph/twitter/robots, ничего не сломается.
-const SITE_URL = "https://vector-rf.ru";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
   title: "Вектор РФ — трансферы и поездки по России",
   description: "Трансферы по городу, межгород, аэропорты. По России.",
-  alternates: { canonical: "/" },
-  robots: { index: true, follow: true },
-  openGraph: {
-    type: "website",
-    url: SITE_URL,
-    siteName: "Вектор РФ",
-    title: "Вектор РФ — трансферы и поездки по России",
-    description: "Трансферы по городу, межгород, аэропорты. По России.",
-    locale: "ru_RU",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Вектор РФ — трансферы и поездки по России",
-    description: "Трансферы по городу, межгород, аэропорты. По России.",
-  },
 };
+
+const YM_ID = 106629239;
 
 export default function RootLayout({
   children,
@@ -57,30 +37,33 @@ export default function RootLayout({
   }
   k=e.createElement(t),a=e.getElementsByTagName(t)[0],
   k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-})(window, document,'script','https://mc.yandex.ru/metrika/tag.js', 'ym');
+})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=${YM_ID}', 'ym');
 
 ym(${YM_ID}, 'init', {
+  webvisor:true,
   clickmap:true,
-  trackLinks:true,
   accurateTrackBounce:true,
-  webvisor:true
+  trackLinks:true
 });
             `,
           }}
         />
-        <noscript>
-          <div>
-            <img
-              src="https://mc.yandex.ru/watch/${YM_ID}"
-              style="position:absolute;left:-9999px"
-              alt=""
-            />
-          </div>
-        </noscript>
         {/* /Yandex.Metrika */}
       </head>
 
       <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
+        {/* Yandex.Metrika noscript */}
+        <noscript>
+          <div>
+            <img
+              src={`https://mc.yandex.ru/watch/${YM_ID}`}
+              style={{ position: "absolute", left: "-9999px" }}
+              alt=""
+            />
+          </div>
+        </noscript>
+        {/* /Yandex.Metrika noscript */}
+
         {children}
       </body>
     </html>
