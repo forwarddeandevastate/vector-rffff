@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     "междугороднее такси",
     "такси межгород",
     "трансфер в аэропорт",
+    "трансфер из аэропорта",
     "такси по россии",
     "корпоративное такси",
     "аренда авто с водителем",
@@ -77,15 +78,12 @@ export const metadata: Metadata = {
     },
   },
 
-  // ✅ Вот тут самое важное: подключаем иконки из /public
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
+
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -116,17 +114,25 @@ export default function RootLayout({
         "@id": `${SITE_URL}/#website`,
         url: SITE_URL,
         name: SITE_NAME,
-        publisher: { "@id": `${SITE_URL}/#organization` },
+        publisher: {
+          "@id": `${SITE_URL}/#organization`,
+        },
         inLanguage: "ru-RU",
       },
       {
         "@type": "Service",
         "@id": `${SITE_URL}/#service`,
         name: "Трансферы и междугородние поездки",
-        provider: { "@id": `${SITE_URL}/#organization` },
-        areaServed: { "@type": "Country", name: "Россия" },
+        provider: {
+          "@id": `${SITE_URL}/#organization`,
+        },
+        areaServed: {
+          "@type": "Country",
+          name: "Россия",
+        },
         serviceType: [
           "Трансфер в аэропорт",
+          "Трансфер из аэропорта",
           "Междугороднее такси",
           "Корпоративное такси",
           "Аренда автомобиля с водителем",
@@ -138,7 +144,10 @@ export default function RootLayout({
         name: SITE_NAME,
         url: SITE_URL,
         telephone: "+7-831-423-39-29",
-        address: { "@type": "PostalAddress", addressCountry: "RU" },
+        address: {
+          "@type": "PostalAddress",
+          addressCountry: "RU",
+        },
         priceRange: "₽₽",
       },
     ],
@@ -152,7 +161,9 @@ export default function RootLayout({
           id="schema-org"
           type="application/ld+json"
           strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(schemaOrg),
+          }}
         />
 
         {/* Yandex.Metrika */}
@@ -188,7 +199,7 @@ ym(${YM_ID}, 'init', {
         <noscript>
           <div>
             <img
-              src={`https://mc.yandex.ru/watch/${YM_ID}`}
+              src="https://mc.yandex.ru/watch/106629239"
               style={{ position: "absolute", left: "-9999px" }}
               alt=""
             />
