@@ -1,6 +1,7 @@
 "use client";
 
-import LeadForm, { type CarClass } from "../lead-form";
+import { useState } from "react";
+import LeadForm, { type CarClass, type RouteType } from "../lead-form";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -73,15 +74,6 @@ function IconTelegram({ className }: { className?: string }) {
   );
 }
 
-function SectionTitle({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="mb-5">
-      <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">{title}</h1>
-      <p className="mt-2 text-sm text-zinc-600">{desc}</p>
-    </div>
-  );
-}
-
 function SmallCard({ title, text }: { title: string; text: string }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
@@ -96,11 +88,8 @@ export default function CityPageClient() {
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  // На /city фиксируем тип маршрута "city"
-  const routeType = "city" as const;
-
-  // Класс по умолчанию — стандарт (как ты и хотел)
-  const carClass: CarClass = "standard";
+  const [carClass, setCarClass] = useState<CarClass>("standard");
+  const [routeType, setRouteType] = useState<RouteType>("city");
 
   return (
     <div className="min-h-screen text-zinc-900">
@@ -148,37 +137,15 @@ export default function CityPageClient() {
       <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
         <div className="grid gap-8 md:grid-cols-12">
           <div className="md:col-span-7">
-            <SectionTitle
-              title="Трансферы по городу"
-              desc="Поездки по городу и встречи: подача авто по согласованию, стоимость заранее. Оставьте заявку — перезвоним и подтвердим цену."
-            />
+            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">Трансферы по городу</h1>
+            <p className="mt-2 text-sm text-zinc-600">
+              Поездки по городу и встречи: подача авто по согласованию, стоимость заранее. Заявка онлайн 24/7.
+            </p>
 
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
               <SmallCard title="Стоимость заранее" text="Согласуем цену до подачи автомобиля — без сюрпризов." />
               <SmallCard title="Подача по времени" text="Укажете время/адрес — подстроимся под ваш график." />
               <SmallCard title="Классы авто" text="Стандарт / комфорт / бизнес / минивэн — под задачу." />
-            </div>
-
-            <div className="mt-6 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
-              <h2 className="text-lg font-extrabold tracking-tight text-zinc-900">Когда это удобно</h2>
-              <ul className="mt-3 grid gap-2 text-sm text-zinc-700">
-                <li className="flex items-start gap-2">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
-                  <span>Встреча на вокзале / в отеле / у офиса</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
-                  <span>Поездки по делам, в клинику, по магазинам</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
-                  <span>Командировки, встреча гостей, корпоративные поездки</span>
-                </li>
-              </ul>
-
-              <div className="mt-5 text-xs text-zinc-500">
-                Для межгорода и аэропортов у нас отдельные страницы — их тоже можно добавить позже для SEO.
-              </div>
             </div>
           </div>
 
@@ -190,109 +157,17 @@ export default function CityPageClient() {
               </div>
 
               <div className="p-5">
-                <LeadForm carClass={carClass} routeType={routeType} />
-              </div>
-
-              <div className="border-t border-zinc-200 bg-white/70 p-5">
-                <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
-                <div className="mt-3 grid gap-2">
-                  <a
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={`tel:${PHONE_TEL}`}
-                  >
-                    <IconPhone className="h-4 w-4 text-sky-700" />
-                    {PHONE_DISPLAY}
-                  </a>
-
-                  <a
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={TELEGRAM}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <IconTelegram className="h-4 w-4 text-sky-700" />
-                    Telegram
-                  </a>
-                </div>
-
-                <div className="mt-4 text-xs text-zinc-500">
-                  Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.
-                </div>
+                <LeadForm
+                  carClass={carClass}
+                  onCarClassChange={setCarClass}
+                  routeType={routeType}
+                  onRouteTypeChange={setRouteType}
+                />
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="mt-10 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
-          <h2 className="text-lg font-extrabold tracking-tight text-zinc-900">Частые вопросы</h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <SmallCard title="Сколько стоит поездка по городу?" text="Стоимость зависит от адресов и класса авто. Подтверждаем до подачи." />
-            <SmallCard title="Можно детское кресло и багаж?" text="Да. Укажите в комментарии — учтём заранее." />
-            <SmallCard title="Работаете ночью?" text="Да, заявки принимаем 24/7. Время подачи согласуем." />
-            <SmallCard title="Можно по договору для компании?" text="Да, корпоративные поездки — по договору и с отчётностью." />
           </div>
         </div>
       </main>
-
-      <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
-              <LogoMark />
-              <Wordmark />
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={`tel:${PHONE_TEL}`}
-              >
-                <IconPhone className="h-4 w-4 text-sky-700" />
-                {PHONE_DISPLAY}
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={TELEGRAM}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <IconTelegram className="h-4 w-4 text-sky-700" />
-                Telegram
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/reviews"
-              >
-                Отзывы
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/corporate"
-              >
-                Корпоративным
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/city"
-              >
-                По городу
-              </a>
-            </div>
-          </div>
-
-          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
-        </div>
-      </footer>
     </div>
   );
 }
