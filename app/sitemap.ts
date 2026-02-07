@@ -14,6 +14,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // SEO услуги
     {
+      url: `${baseUrl}/city`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
+    {
       url: `${baseUrl}/city-transfer`,
       lastModified: now,
       changeFrequency: "weekly",
