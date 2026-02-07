@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -12,6 +13,8 @@ export const metadata: Metadata = {
   description: "Трансферы по городу, межгород, аэропорты. По России.",
 };
 
+const YM_ID = 106629239;
+
 export default function RootLayout({
   children,
 }: {
@@ -21,7 +24,9 @@ export default function RootLayout({
     <html lang="ru">
       <head>
         {/* Yandex.Metrika */}
-        <script
+        <Script
+          id="yandex-metrika"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
 (function(m,e,t,r,i,k,a){
@@ -32,32 +37,33 @@ export default function RootLayout({
   }
   k=e.createElement(t),a=e.getElementsByTagName(t)[0],
   k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106295117', 'ym');
+})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=${YM_ID}', 'ym');
 
-ym(106295117, 'init', {
-  ssr:true,
+ym(${YM_ID}, 'init', {
   webvisor:true,
   clickmap:true,
   accurateTrackBounce:true,
-  trackLinks:true,
-  ecommerce:"dataLayer"
+  trackLinks:true
 });
             `,
           }}
         />
+        {/* /Yandex.Metrika */}
+      </head>
+
+      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
+        {/* Yandex.Metrika noscript */}
         <noscript>
           <div>
             <img
-              src="https://mc.yandex.ru/watch/106295117"
+              src={`https://mc.yandex.ru/watch/${YM_ID}`}
               style={{ position: "absolute", left: "-9999px" }}
               alt=""
             />
           </div>
         </noscript>
-        {/* /Yandex.Metrika */}
-      </head>
+        {/* /Yandex.Metrika noscript */}
 
-      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
         {children}
       </body>
     </html>
