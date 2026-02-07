@@ -1,16 +1,22 @@
+// app/route/[from]/[to]/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
+export const runtime = "nodejs"; // важно: убирает edge-косяки
+export const dynamic = "force-static"; // SEO: статично, если есть generateStaticParams ниже
+export const revalidate = 60 * 60 * 24 * 7; // раз в неделю
+
 function prettifyCity(slug: string) {
   return slug
     .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
     .join(" ");
 }
 
+// Маппинг (можно расширять)
 const CITY_MAP: Record<string, string> = {
   "nizhniy-novgorod": "Нижний Новгород",
   moskva: "Москва",
@@ -25,7 +31,7 @@ const CITY_MAP: Record<string, string> = {
   belgorod: "Белгород",
   kursk: "Курск",
 
-  // Новые территории
+  // Новые территории (как у тебя)
   donetsk: "Донецк",
   makeyevka: "Макеевка",
   mariupol: "Мариуполь",
@@ -52,11 +58,15 @@ function cityName(slug: string) {
 }
 
 type Props = {
-  params: {
-    from: string;
-    to: string;
-  };
+  params: { from: string; to: string };
 };
+
+// ВАЖНО: если хочешь 500 страниц — сделаем их статическими
+import { buildSeoRoutes } from "@/lib/seo-routes";
+export async function generateStaticParams() {
+  // те же 500 маршрутов, что в сайтмапе
+  return buildSeoRoutes(500).map((r) => ({ from: r.from, to: r.to }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const from = cityName(params.from);
@@ -67,7 +77,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `Такси ${from} — ${to} | Межгород | Вектор РФ`,
     description: `Междугороднее такси ${from} — ${to}. Комфорт, бизнес, минивэн. Фиксируем заявку и согласуем стоимость заранее. Онлайн-заявка 24/7.`,
     alternates: { canonical: url },
-
     openGraph: {
       type: "website",
       url,
@@ -77,12 +86,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "ru_RU",
       images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
     },
-
     twitter: {
       card: "summary_large_image",
       title: `Такси ${from} — ${to} | Вектор РФ`,
       description: `Междугородний трансфер ${from} — ${to}. Онлайн-заявка 24/7.`,
       images: ["/og.jpg"],
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   };
 }
@@ -90,11 +102,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default function Page({ params }: Props) {
   const from = cityName(params.from);
   const to = cityName(params.to);
-  const canonical = `${SITE_URL}/route/${params.from}/${params.to}`;
 
-  const PHONE_DISPLAY = "+7 (831) 423-39-29";
-  const PHONE_TEL = "+78314233929";
-  const TELEGRAM = "https://t.me/vector_rf52";
+  const canonical = `${SITE_URL}/route/${params.from}/${params.to}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -108,77 +117,63 @@ export default function Page({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      {/* JSON-LD без next/script, просто обычный <script> */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
+        // безопаснее, чем next/script для таких SEO-страниц
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       <div className="mx-auto max-w-3xl px-4 py-14">
-        <nav className="text-sm text-slate-600">
-          <Link className="hover:underline" href="/">
-            Главная
-          </Link>{" "}
-          <span className="text-slate-400">/</span>{" "}
+        <div className="text-sm text-slate-600">
+          <Link href="/" className="hover:underline">Главная</Link> /{" "}
           <span className="text-slate-900 font-semibold">{from} — {to}</span>
-        </nav>
+        </div>
 
-        <h1 className="mt-6 text-3xl font-extrabold tracking-tight">
+        <h1 className="mt-4 text-3xl font-extrabold tracking-tight">
           Такси {from} — {to}
         </h1>
 
-        <p className="mt-4 text-base leading-7 text-slate-700">
-          Междугородняя поездка {from} — {to}. Подберём класс авто, согласуем маршрут и стоимость заранее.
+        <p className="mt-4 text-slate-700 leading-7">
+          Междугородняя поездка {from} — {to}. Подберём класс авто, уточним маршрут и согласуем стоимость до подачи.
           Работаем 24/7.
         </p>
 
-        <ul className="mt-6 grid gap-2 text-sm text-slate-700">
+        <ul className="mt-6 grid gap-2 text-slate-700">
           <li>• Комфорт / Бизнес / Минивэн</li>
-          <li>• Стоимость согласуем до подачи автомобиля</li>
+          <li>• Стоимость согласуем заранее</li>
           <li>• Можно указать остановки и пожелания</li>
-          <li>• Онлайн-заявка за 1 минуту</li>
+          <li>• Заявка онлайн за 1 минуту</li>
         </ul>
 
-        <div className="mt-8 flex flex-wrap gap-2">
+        <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/#order"
             className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-extrabold text-white hover:opacity-95"
           >
             Оставить заявку
           </Link>
-
-          <a
-            href={`tel:${PHONE_TEL}`}
+          <Link
+            href="/intercity-taxi"
             className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold hover:bg-slate-50"
           >
-            Позвонить: {PHONE_DISPLAY}
-          </a>
-
-          <a
-            href={TELEGRAM}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold hover:bg-slate-50"
-          >
-            Telegram
-          </a>
+            Подробнее про межгород
+          </Link>
         </div>
 
         <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="text-sm font-extrabold">Вопросы</div>
-          <div className="mt-3 grid gap-3 text-sm text-slate-700">
+          <div className="font-extrabold">FAQ</div>
+          <div className="mt-3 grid gap-4 text-sm text-slate-700">
             <div>
-              <div className="font-semibold">Можно заказать поездку заранее?</div>
-              <div className="mt-1">Да. Укажите дату и время — зафиксируем заявку и подтвердим подачу.</div>
+              <div className="font-semibold">Можно ли заказать поездку заранее?</div>
+              <div className="mt-1">Да. Укажите дату/время — зафиксируем заявку и подтвердим подачу.</div>
             </div>
             <div>
-              <div className="font-semibold">Можно добавить остановки по пути?</div>
-              <div className="mt-1">Да. Перечислите остановки в комментарии — учтём при согласовании стоимости.</div>
+              <div className="font-semibold">Можно ли добавить остановки по пути?</div>
+              <div className="mt-1">Да. Напишите остановки в комментарии — учтём при согласовании стоимости.</div>
             </div>
             <div>
               <div className="font-semibold">Какие классы доступны?</div>
-              <div className="mt-1">Стандарт, Комфорт, Бизнес и Минивэн — подтвердим доступность после заявки.</div>
+              <div className="mt-1">Стандарт, Комфорт, Бизнес и Минивэн.</div>
             </div>
           </div>
         </div>
