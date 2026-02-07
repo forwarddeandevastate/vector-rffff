@@ -688,49 +688,79 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
-              <LogoMark />
-              <Wordmark />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={`tel:${PHONE_TEL}`}
-              >
-                <IconPhone className="h-4 w-4 text-sky-700" />
-                {PHONE_DISPLAY}
-              </a>
+  <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex items-center gap-3">
+        <LogoMark />
+        <Wordmark />
+      </div>
 
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={TELEGRAM}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <IconTelegram className="h-4 w-4 text-sky-700" />
-                Telegram
-              </a>
+      <div className="flex flex-wrap gap-2">
+        <a
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+          href={`tel:${PHONE_TEL}`}
+        >
+          <IconPhone className="h-4 w-4 text-sky-700" />
+          {PHONE_DISPLAY}
+        </a>
 
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/reviews"
-              >
-                Отзывы
-              </a>
+        <a
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+          href={TELEGRAM}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <IconTelegram className="h-4 w-4 text-sky-700" />
+          Telegram
+        </a>
 
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/corporate"
-              >
-                Корпоративным
-              </a>
-            </div>
-          </div>
-          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
-        </div>
-      </footer>
+        <a
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+          href="/reviews"
+        >
+          Отзывы
+        </a>
+
+        <a
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+          href="/corporate"
+        >
+          Корпоративным
+        </a>
+      </div>
+    </div>
+
+    {/* SEO ссылки (аккуратно, не мешают дизайну) */}
+    <div className="mt-6 border-t border-zinc-200/70 pt-5">
+      <div className="text-xs font-semibold text-zinc-700">Услуги</div>
+
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-zinc-600">
+        <a href="/intercity" className="hover:text-zinc-900 hover:underline">
+          Междугородние поездки
+        </a>
+        <a href="/airport" className="hover:text-zinc-900 hover:underline">
+          Трансфер в аэропорт
+        </a>
+        <a href="/city" className="hover:text-zinc-900 hover:underline">
+          Поездки по городу
+        </a>
+        <a href="/minivan" className="hover:text-zinc-900 hover:underline">
+          Минивэн / групповые поездки
+        </a>
+        <a href="/corporate" className="hover:text-zinc-900 hover:underline">
+          Корпоративные перевозки
+        </a>
+        <a href="/driver" className="hover:text-zinc-900 hover:underline">
+          Авто с водителем
+        </a>
+      </div>
+    </div>
+
+    <div className="mt-6 text-xs text-zinc-500">
+      © {new Date().getFullYear()} Вектор РФ. Все права защищены.
+    </div>
+  </div>
+</footer>
     </div>
   );
 }
