@@ -2,7 +2,6 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://vector-rf.ru";
-
   const now = new Date();
 
   return [
@@ -12,6 +11,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
+
+    // SEO услуги
+    {
+      url: `${baseUrl}/city-transfer`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/airport-transfer`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/intercity-taxi`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/minivan-transfer`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/corporate-taxi`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+
+    // Остальные страницы
     {
       url: `${baseUrl}/reviews`,
       lastModified: now,
