@@ -6,19 +6,35 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Трансфер в аэропорт и из аэропорта",
+  title: "Трансфер в аэропорт и из аэропорта — заказать | Вектор РФ",
   description:
     "Трансфер в аэропорт и из аэропорта: встреча по времени прилёта, помощь с багажом, согласование стоимости заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/airport-transfer` },
+
   openGraph: {
     type: "website",
     url: `${SITE_URL}/airport-transfer`,
-    title: "Трансфер в аэропорт — Вектор РФ",
+    title: "Трансфер в аэропорт и из аэропорта — Вектор РФ",
     description:
-      "Встреча по времени прилёта, подача авто, помощь с багажом. Стоимость согласуем заранее. 24/7.",
+      "Встреча по времени прилёта, подача авто, помощь с багажом. Стоимость согласуем заранее. Работаем 24/7.",
     siteName: SITE_NAME,
     locale: "ru_RU",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+    images: [
+      {
+        url: "/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Трансфер в аэропорт и из аэропорта — Вектор РФ",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Трансфер в аэропорт и из аэропорта — Вектор РФ",
+    description:
+      "Встреча по времени прилёта, подача авто, помощь с багажом. Стоимость согласуем заранее. Работаем 24/7.",
+    images: ["/og.jpg"],
   },
 };
 
@@ -27,7 +43,11 @@ export default function Page() {
     "@context": "https://schema.org",
     "@type": "Service",
     name: "Трансфер в аэропорт и из аэропорта",
-    provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    provider: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
     areaServed: { "@type": "Country", name: "Россия" },
     serviceType: ["Трансфер в аэропорт", "Трансфер из аэропорта"],
     url: `${SITE_URL}/airport-transfer`,
@@ -41,13 +61,14 @@ export default function Page() {
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
       <ServicePage
         breadcrumbs={[
           { name: "Главная", href: "/" },
           { name: "Трансфер в аэропорт", href: "/airport-transfer" },
         ]}
         title="Трансфер в аэропорт и из аэропорта"
-        subtitle="Встречаем по времени прилёта и подаём автомобиль к нужному терминалу. Помогаем с багажом, стоимость согласуем заранее. 24/7."
+        subtitle="Встречаем по времени прилёта и подаём автомобиль к нужному терминалу. Помогаем с багажом, стоимость согласуем заранее. Работаем 24/7."
         bullets={[
           "Встреча по времени прилёта (или подача к вылету)",
           "Можно указать номер рейса и комментарии",

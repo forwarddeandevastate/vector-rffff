@@ -6,7 +6,7 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Трансфер по городу",
+  title: "Трансфер по городу — заказать поездку | Вектор РФ",
   description:
     "Городской трансфер и поездки по городу: подача авто, фиксируем заявку, стоимость согласуем заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/city-transfer` },
@@ -18,7 +18,21 @@ export const metadata: Metadata = {
       "Городской трансфер: подача авто, фиксируем заявку, стоимость согласуем заранее. Онлайн-заявка 24/7.",
     siteName: SITE_NAME,
     locale: "ru_RU",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+    images: [
+      {
+        url: "/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Трансфер по городу — Вектор РФ",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Трансфер по городу — Вектор РФ",
+    description:
+      "Городской трансфер: подача авто, фиксируем заявку, стоимость согласуем заранее. Онлайн-заявка 24/7.",
+    images: ["/og.jpg"],
   },
 };
 
@@ -41,6 +55,7 @@ export default function Page() {
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
       <ServicePage
         breadcrumbs={[
           { name: "Главная", href: "/" },

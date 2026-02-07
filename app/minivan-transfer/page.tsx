@@ -6,19 +6,30 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Минивэн и групповой трансфер",
+  title: "Минивэн и групповой трансфер — 4–7 мест | Вектор РФ",
   description:
     "Минивэн и групповой трансфер: для семьи/компании и большого багажа. В аэропорт, по городу и на межгород. Согласуем стоимость заранее. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/minivan-transfer` },
+
   openGraph: {
     type: "website",
     url: `${SITE_URL}/minivan-transfer`,
     title: "Минивэн / групповой трансфер — Вектор РФ",
     description:
-      "Групповые поездки и трансферы на минивэне: больше мест и багажа. 24/7.",
+      "Групповые поездки и трансферы на минивэне: больше мест и багажа. Согласуем стоимость до подачи. 24/7.",
     siteName: SITE_NAME,
     locale: "ru_RU",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+    images: [
+      { url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Минивэн / групповой трансфер — Вектор РФ",
+    description:
+      "Групповые поездки и трансферы на минивэне: больше мест и багажа. 24/7.",
+    images: ["/og.jpg"],
   },
 };
 
@@ -27,9 +38,22 @@ export default function Page() {
     "@context": "https://schema.org",
     "@type": "Service",
     name: "Минивэн и групповой трансфер",
-    provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    description:
+      "Трансфер на минивэне для 4–7 пассажиров и большого багажа: по городу, в аэропорт и на межгород. Стоимость согласуем до подачи автомобиля. 24/7.",
+    provider: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      telephone: "+7-831-423-39-29",
+    },
     areaServed: { "@type": "Country", name: "Россия" },
-    serviceType: ["Минивэн", "Групповой трансфер", "Трансфер с багажом"],
+    serviceType: [
+      "Минивэн",
+      "Групповой трансфер",
+      "Трансфер с багажом",
+      "Трансфер в аэропорт",
+      "Междугородний трансфер",
+    ],
     url: `${SITE_URL}/minivan-transfer`,
   };
 
@@ -41,6 +65,7 @@ export default function Page() {
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
       <ServicePage
         breadcrumbs={[
           { name: "Главная", href: "/" },

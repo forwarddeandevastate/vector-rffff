@@ -1,39 +1,99 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Script from "next/script";
+import ServicePage from "../ui/service-page";
 
 const SITE_URL = "https://vector-rf.ru";
+const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Корпоративное такси",
+  title: "Корпоративное такси и перевозки для компаний | Вектор РФ",
   description:
-    "Корпоративные перевозки и трансферы для компаний: договор, безнал, отчётность. Регулярные поездки для сотрудников и гостей.",
+    "Корпоративные перевозки и трансферы для компаний: договор, безнал, отчётность. Регулярные поездки для сотрудников и гостей. Встреча в аэропорту. 24/7.",
   alternates: { canonical: `${SITE_URL}/corporate-taxi` },
+
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/corporate-taxi`,
+    title: "Корпоративное такси — Вектор РФ",
+    description:
+      "Перевозки для компаний: договор, безнал, отчётность. Поездки сотрудников и гостей, встречи в аэропорту. 24/7.",
+    siteName: SITE_NAME,
+    locale: "ru_RU",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Корпоративное такси — Вектор РФ",
+    description:
+      "Перевозки для компаний: договор, безнал, отчётность. Поездки сотрудников и гостей. 24/7.",
+    images: ["/og.jpg"],
+  },
 };
 
 export default function Page() {
-  return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto max-w-2xl px-4 py-16">
-        <h1 className="text-3xl font-extrabold tracking-tight">Корпоративное такси</h1>
-        <p className="mt-4 text-slate-700">
-          Страница создана для запросов “корпоративное такси”. Основная информация у нас на странице для корпоративных клиентов.
-        </p>
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "Корпоративное такси и перевозки",
+    description:
+      "Корпоративные перевозки для компаний: регулярные поездки сотрудников и гостей, встречи в аэропорту, фиксируем заявки и согласуем условия. Договор, безнал, отчётность. 24/7.",
+    provider: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      telephone: "+7-831-423-39-29",
+    },
+    areaServed: { "@type": "Country", name: "Россия" },
+    serviceType: [
+      "Корпоративное такси",
+      "Корпоративные перевозки",
+      "Трансфер в аэропорт",
+      "Трансфер из аэропорта",
+      "Аренда автомобиля с водителем",
+      "Деловые поездки",
+    ],
+    url: `${SITE_URL}/corporate-taxi`,
+  };
 
-        <div className="mt-6 flex gap-2">
-          <Link
-            href="/corporate"
-            className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-extrabold text-white hover:opacity-95"
-          >
-            Перейти на корпоративную страницу
-          </Link>
-          <Link
-            href="/#order"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold hover:bg-slate-50"
-          >
-            Оставить заявку
-          </Link>
-        </div>
-      </div>
-    </main>
+  return (
+    <>
+      <Script
+        id="ld-corporate-taxi"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <ServicePage
+        breadcrumbs={[
+          { name: "Главная", href: "/" },
+          { name: "Корпоративное такси", href: "/corporate-taxi" },
+        ]}
+        title="Корпоративное такси и перевозки для компаний"
+        subtitle="Регулярные поездки для сотрудников и гостей: договор, безнал, единые условия и удобная отчётность. Встречи в аэропорту и межгород. 24/7."
+        bullets={[
+          "Договор / безналичный расчёт",
+          "Отчётность для бухгалтерии (по запросу)",
+          "Единые правила подачи и ожидания",
+          "Встреча в аэропорту по рейсу, помощь с багажом",
+          "Город / аэропорты / межгород / минивэн",
+        ]}
+        faq={[
+          {
+            q: "Работаете по договору и безналу?",
+            a: "Да. Согласуем условия, подготовим договор и реквизиты. Закрывающие документы — по запросу.",
+          },
+          {
+            q: "Можно организовать поездки сотрудников по заявкам?",
+            a: "Да. Настроим понятный формат заявок: кто, куда, когда, контакт. Можно централизованно через ответственного.",
+          },
+          {
+            q: "Встречаете в аэропорту по рейсу?",
+            a: "Да. Если укажете номер рейса, ориентируемся по фактическому времени прилёта. По запросу — встреча с табличкой.",
+          },
+        ]}
+      />
+    </>
   );
 }

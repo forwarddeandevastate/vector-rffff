@@ -6,10 +6,11 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Междугороднее такси",
+  title: "Междугороднее такси — поездки между городами | Вектор РФ",
   description:
     "Междугороднее такси по России: поездки между городами, комфортные автомобили, фиксируем заявку и согласуем стоимость заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/intercity-taxi` },
+
   openGraph: {
     type: "website",
     url: `${SITE_URL}/intercity-taxi`,
@@ -18,7 +19,17 @@ export const metadata: Metadata = {
       "Поездки между городами по России: комфорт, безопасность, согласование стоимости заранее. 24/7.",
     siteName: SITE_NAME,
     locale: "ru_RU",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+    images: [
+      { url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Междугороднее такси — Вектор РФ",
+    description:
+      "Поездки между городами по России: комфорт, безопасность, согласование стоимости заранее. 24/7.",
+    images: ["/og.jpg"],
   },
 };
 
@@ -27,9 +38,21 @@ export default function Page() {
     "@context": "https://schema.org",
     "@type": "Service",
     name: "Междугороднее такси",
-    provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    description:
+      "Междугородние поездки между городами по России. Согласование маршрута и стоимости до подачи автомобиля. Комфорт, бизнес, минивэн. 24/7.",
+    provider: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      telephone: "+7-831-423-39-29",
+    },
     areaServed: { "@type": "Country", name: "Россия" },
-    serviceType: ["Междугороднее такси", "Поездка в другой город", "Трансфер между городами"],
+    serviceType: [
+      "Междугороднее такси",
+      "Трансфер между городами",
+      "Поездка в другой город",
+      "Такси на дальнее расстояние",
+    ],
     url: `${SITE_URL}/intercity-taxi`,
   };
 
@@ -41,6 +64,7 @@ export default function Page() {
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
       <ServicePage
         breadcrumbs={[
           { name: "Главная", href: "/" },
