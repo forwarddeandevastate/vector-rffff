@@ -1,13 +1,10 @@
 // app/route/[from]/[to]/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buildSeoRoutes } from "@/lib/seo-routes";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
-
-export const runtime = "nodejs"; // важно: убирает edge-косяки
-export const dynamic = "force-static"; // SEO: статично, если есть generateStaticParams ниже
-export const revalidate = 60 * 60 * 24 * 7; // раз в неделю
 
 function prettifyCity(slug: string) {
   return slug
@@ -16,7 +13,6 @@ function prettifyCity(slug: string) {
     .join(" ");
 }
 
-// Маппинг (можно расширять)
 const CITY_MAP: Record<string, string> = {
   "nizhniy-novgorod": "Нижний Новгород",
   moskva: "Москва",
@@ -31,7 +27,7 @@ const CITY_MAP: Record<string, string> = {
   belgorod: "Белгород",
   kursk: "Курск",
 
-  // Новые территории (как у тебя)
+  // новые территории (как у тебя)
   donetsk: "Донецк",
   makeyevka: "Макеевка",
   mariupol: "Мариуполь",
@@ -57,14 +53,10 @@ function cityName(slug: string) {
   return CITY_MAP[slug] ?? prettifyCity(slug);
 }
 
-type Props = {
-  params: { from: string; to: string };
-};
+type Props = { params: { from: string; to: string } };
 
-// ВАЖНО: если хочешь 500 страниц — сделаем их статическими
-import { buildSeoRoutes } from "@/lib/seo-routes";
+// Делаем статические params для 500 маршрутов (как в sitemap)
 export async function generateStaticParams() {
-  // те же 500 маршрутов, что в сайтмапе
   return buildSeoRoutes(500).map((r) => ({ from: r.from, to: r.to }));
 }
 
@@ -92,17 +84,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: `Междугородний трансфер ${from} — ${to}. Онлайн-заявка 24/7.`,
       images: ["/og.jpg"],
     },
-    robots: {
-      index: true,
-      follow: true,
-    },
+    robots: { index: true, follow: true },
   };
 }
 
 export default function Page({ params }: Props) {
   const from = cityName(params.from);
   const to = cityName(params.to);
-
   const canonical = `${SITE_URL}/route/${params.from}/${params.to}`;
 
   const jsonLd = {
@@ -119,14 +107,15 @@ export default function Page({ params }: Props) {
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <script
         type="application/ld+json"
-        // безопаснее, чем next/script для таких SEO-страниц
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       <div className="mx-auto max-w-3xl px-4 py-14">
         <div className="text-sm text-slate-600">
-          <Link href="/" className="hover:underline">Главная</Link> /{" "}
-          <span className="text-slate-900 font-semibold">{from} — {to}</span>
+          <Link href="/" className="hover:underline">
+            Главная
+          </Link>{" "}
+          / <span className="text-slate-900 font-semibold">{from} — {to}</span>
         </div>
 
         <h1 className="mt-4 text-3xl font-extrabold tracking-tight">
@@ -169,7 +158,7 @@ export default function Page({ params }: Props) {
             </div>
             <div>
               <div className="font-semibold">Можно ли добавить остановки по пути?</div>
-              <div className="mt-1">Да. Напишите остановки в комментарии — учтём при согласовании стоимости.</div>
+              <div className="mt-1">Да. Напишите остановки — учтём при согласовании стоимости.</div>
             </div>
             <div>
               <div className="font-semibold">Какие классы доступны?</div>
