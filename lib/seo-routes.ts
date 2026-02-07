@@ -2,257 +2,310 @@
 export type SeoRoute = { from: string; to: string };
 
 /**
- * Города (и крупные пригороды/города-спутники) из регионов на скриншоте,
- * ориентир: население ~100k+.
+ * Города 100k+ (плюс ключевые хабы) — по регионам со скрина.
+ * Списки можно расширять/править — это “ядро” для SEO-маршрутов.
  *
- * СЛАГИ: латиница + дефисы, как у тебя в проекте.
+ * ВАЖНО: слаг = латиница + дефисы (как у тебя в /route/[from]/[to])
  */
-const CITIES_100K: string[] = [
-  // Москва и МО
+const CITIES: string[] = [
+  // --- Хабы федерального уровня ---
   "moskva",
+  "sankt-peterburg",
+  "nizhniy-novgorod",
+  "kazan",
+  "samara",
+  "saratov",
+  "volgograd",
+  "krasnodar",
+  "rostov-na-donu",
+  "voronezh",
+  "tula",
+  "ryazan",
+  "yaroslavl",
+  "tver",
+  "smolensk",
+  "kaliningrad",
+  "velikiy-novgorod",
+  "pskov",
+  "astrakhan",
+  "chelyabinsk",
+  "novosibirsk",
+  "krasnoyarsk",
+
+  // --- Москва и область (крупные города МО) ---
   "balashikha",
   "khimki",
   "podolsk",
   "mytishchi",
-  "korolyov",
+  "korolev",
   "lyubertsy",
   "elektrostal",
   "kolomna",
   "odintsovo",
-  "domodedovo",
   "krasnogorsk",
   "serpukhov",
-  "ramenskoye",
-  "dolgoprudny",
-  "pushkino",
-  "zhukovskiy",
   "orekhovo-zuevo",
   "shchyolkovo",
+  "ramenskoye",
+  "domodedovo",
+  "pushkino",
+  "zhukovskiy",
+  "reutov",
   "noginsk",
 
-  // Белгородская область
+  // --- Белгородская область ---
   "belgorod",
   "staryy-oskol",
   "gubkin",
 
-  // Брянская область
+  // --- Брянская область ---
   "bryansk",
+  "klintsy",
 
-  // Владимирская область
+  // --- Владимирская область ---
   "vladimir",
   "kovrov",
   "murom",
 
-  // Воронежская область
+  // --- Воронежская область ---
   "voronezh",
 
-  // Ивановская область
+  // --- Ивановская область ---
   "ivanovo",
-  "kineshma",
 
-  // Калужская область
+  // --- Калужская область ---
   "kaluga",
   "obninsk",
 
-  // Костромская область
+  // --- Костромская область ---
   "kostroma",
 
-  // Курская область
+  // --- Курская область ---
   "kursk",
   "zheleznogorsk-kursk",
 
-  // Липецкая область
+  // --- Липецкая область ---
   "lipetsk",
   "yelets",
 
-  // Орловская область
+  // --- Орловская область ---
   "orel",
 
-  // Рязанская область
+  // --- Рязанская область ---
   "ryazan",
 
-  // Смоленская область
+  // --- Смоленская область ---
   "smolensk",
 
-  // Тамбовская область
+  // --- Тамбовская область ---
   "tambov",
 
-  // Тверская область
+  // --- Тверская область ---
   "tver",
 
-  // Тульская область
+  // --- Тульская область ---
   "tula",
   "novomoskovsk",
 
-  // Ярославская область
+  // --- Ярославская область ---
   "yaroslavl",
   "rybinsk",
 
-  // Санкт-Петербург и ЛО (в ЛО 100k+ городов мало; СПб точно нужен)
+  // --- Санкт-Петербург и Ленобласть (из 100k+ фактически СПб) ---
   "sankt-peterburg",
 
-  // Архангельская область
+  // --- Архангельская область ---
   "arkhangelsk",
   "severodvinsk",
 
-  // Вологодская область
+  // --- Вологодская область ---
   "vologda",
   "cherepovets",
 
-  // Калининградская область
+  // --- Калининградская область ---
   "kaliningrad",
 
-  // Новгородская область
+  // --- Новгородская область ---
   "velikiy-novgorod",
 
-  // Псковская область
+  // --- Псковская область ---
   "pskov",
 
-  // Астраханская область
+  // --- Астраханская область ---
   "astrakhan",
 
-  // Волгоградская область
+  // --- Волгоградская область ---
   "volgograd",
   "volzhskiy",
   "kamyshin",
 
-  // Краснодарский край
+  // --- Краснодарский край ---
   "krasnodar",
   "sochi",
   "novorossiysk",
   "armavir",
+  "anapa",
 
-  // Республика Адыгея
+  // --- Республика Адыгея ---
   "maykop",
 
-  // Ростовская область
+  // --- Ростовская область ---
   "rostov-na-donu",
   "taganrog",
   "shakhty",
   "novocherkassk",
   "volgodonsk",
   "bataysk",
-  "kamensk-shakhtinsky",
+  "kamensk-shakhtinskiy",
 
-  // Красноярский край
-  "krasnoyarsk",
-  "norilsk",
-  "achinsk",
-  "kansk",
+  // --- Республика Крым / Севастополь ---
+  "simferopol",
+  "sevastopol",
+  "kerch",
+  "evpatoriya",
 
-  // Новосибирская область
-  "novosibirsk",
-  "berdsk",
-
-  // Ставропольский край
+  // --- Ставропольский край ---
   "stavropol",
   "pyatigorsk",
   "kislovodsk",
   "essentuki",
   "nevinnomyssk",
 
-  // Челябинская область
+  // --- Челябинская область ---
   "chelyabinsk",
   "magnitogorsk",
   "zlatoust",
   "miass",
   "kopeysk",
-];
 
-/**
- * Новые территории РФ (как ты просил) — держим отдельным блоком,
- * они добавляются в "источники" и в приоритетные пары.
- */
-const NEW_TERRITORIES: string[] = [
-  // ДНР
+  // --- Новосибирская область ---
+  "novosibirsk",
+  "berdsk",
+
+  // --- Красноярский край ---
+  "krasnoyarsk",
+  "norilsk",
+  "achinsk",
+  "kansk",
+  "zheleznogorsk-krasnoyarsk",
+
+  // --- Новые территории (как ты просил) ---
   "donetsk",
   "makeyevka",
   "mariupol",
   "gorlovka",
-  "enakiyevo",
-  "khartsyzk",
-
-  // ЛНР
   "lugansk",
-  "alchevsk",
-  "krasnodon",
-  "severodonetsk",
-
-  // Запорожье
   "melitopol",
   "berdyansk",
-  "tokmak",
-
-  // Херсон
   "kherson",
-  "genichesk",
-  "skadovsk",
 ];
 
 /**
- * Приоритетные пары — хиты (новые территории + юг + столицы).
- * Остальное добиваем генератором.
+ * “Источники” — откуда чаще строить маршруты (сокращаем, чтобы не было мусора).
+ * Чем меньше, тем “чище” 2000 маршрутов.
+ */
+const ORIGINS: string[] = [
+  // хабы
+  "moskva",
+  "sankt-peterburg",
+  "nizhniy-novgorod",
+  "kazan",
+  "samara",
+  "saratov",
+  "krasnodar",
+  "rostov-na-donu",
+  "voronezh",
+  "volgograd",
+  "kaliningrad",
+  "chelyabinsk",
+  "novosibirsk",
+  "krasnoyarsk",
+
+  // важные региональные центры
+  "tula",
+  "ryazan",
+  "yaroslavl",
+  "tver",
+  "smolensk",
+  "kursk",
+  "belgorod",
+  "lipetsk",
+  "bryansk",
+  "vladimir",
+  "kaluga",
+  "arkhangelsk",
+  "cherepovets",
+  "astrakhan",
+  "sochi",
+  "novorossiysk",
+
+  // новые территории
+  "donetsk",
+  "lugansk",
+  "melitopol",
+  "kherson",
+  "mariupol",
+];
+
+/**
+ * Приоритетные пары (хиты). Сначала они, потом добиваем до лимита генератором.
  */
 const PRIORITY_PAIRS: SeoRoute[] = [
-  // ДНР
-  { from: "donetsk", to: "rostov-na-donu" },
-  { from: "donetsk", to: "moskva" },
-  { from: "donetsk", to: "voronezh" },
-  { from: "donetsk", to: "krasnodar" },
-  { from: "donetsk", to: "taganrog" },
-  { from: "makeyevka", to: "rostov-na-donu" },
-  { from: "makeyevka", to: "moskva" },
-  { from: "mariupol", to: "rostov-na-donu" },
-  { from: "mariupol", to: "taganrog" },
-  { from: "mariupol", to: "krasnodar" },
-
-  // ЛНР
-  { from: "lugansk", to: "rostov-na-donu" },
-  { from: "lugansk", to: "moskva" },
-  { from: "lugansk", to: "voronezh" },
-  { from: "lugansk", to: "krasnodar" },
-  { from: "alchevsk", to: "rostov-na-donu" },
-  { from: "krasnodon", to: "rostov-na-donu" },
-
-  // Запорожье
-  { from: "melitopol", to: "rostov-na-donu" },
-  { from: "melitopol", to: "krasnodar" },
-  { from: "berdyansk", to: "rostov-na-donu" },
-  { from: "berdyansk", to: "krasnodar" },
-
-  // Херсон
-  { from: "kherson", to: "krasnodar" },
-  { from: "genichesk", to: "rostov-na-donu" },
-
   // “классика”
   { from: "moskva", to: "sankt-peterburg" },
-  { from: "rostov-na-donu", to: "moskva" },
-  { from: "krasnodar", to: "moskva" },
-  { from: "voronezh", to: "moskva" },
-  { from: "belgorod", to: "moskva" },
+  { from: "moskva", to: "nizhniy-novgorod" },
+  { from: "moskva", to: "kazan" },
+  { from: "moskva", to: "samara" },
+  { from: "moskva", to: "saratov" },
+  { from: "moskva", to: "voronezh" },
+  { from: "moskva", to: "rostov-na-donu" },
+  { from: "moskva", to: "krasnodar" },
+  { from: "sankt-peterburg", to: "moskva" },
+
+  // юг / курорты
+  { from: "rostov-na-donu", to: "krasnodar" },
+  { from: "rostov-na-donu", to: "sochi" },
+  { from: "krasnodar", to: "sochi" },
+  { from: "krasnodar", to: "anapa" },
+  { from: "krasnodar", to: "novorossiysk" },
+
+  // крым
+  { from: "rostov-na-donu", to: "simferopol" },
+  { from: "krasnodar", to: "simferopol" },
+  { from: "krasnodar", to: "sevastopol" },
+
+  // новые территории
+  { from: "donetsk", to: "rostov-na-donu" },
+  { from: "donetsk", to: "moskva" },
+  { from: "donetsk", to: "krasnodar" },
+  { from: "lugansk", to: "rostov-na-donu" },
+  { from: "lugansk", to: "moskva" },
+  { from: "mariupol", to: "taganrog" },
+  { from: "mariupol", to: "rostov-na-donu" },
+  { from: "melitopol", to: "rostov-na-donu" },
+  { from: "kherson", to: "simferopol" },
 ];
 
-/**
- * Хабы — куда часто едут (берём весь пул 100k+ + часть “новых территорий” как направления).
- */
-const HUBS: string[] = Array.from(
-  new Set([
-    ...CITIES_100K,
-    // чтобы “новые территории” могли быть “куда”
-    ...NEW_TERRITORIES,
-  ])
-);
+function uniqNonEmpty(xs: string[]) {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const x of xs) {
+    const v = (x ?? "").trim();
+    if (!v) continue;
+    if (seen.has(v)) continue;
+    seen.add(v);
+    out.push(v);
+  }
+  return out;
+}
+
+const CITY_LIST = uniqNonEmpty(CITIES);
+const ORIGIN_LIST = uniqNonEmpty(ORIGINS);
 
 /**
- * Источники — откуда едут (пул 100k+ + новые территории).
+ * Генератор уникальных маршрутов (без дублей, без from===to)
  */
-const ORIGINS: string[] = Array.from(new Set([...CITIES_100K, ...NEW_TERRITORIES]));
-
-/**
- * Генерируем ровно N уникальных маршрутов.
- * Важно: убираем дубли, не делаем from === to.
- */
-export function buildSeoRoutes(limit = 500): SeoRoute[] {
+export function buildSeoRoutes(limit = 2000): SeoRoute[] {
   const out: SeoRoute[] = [];
   const seen = new Set<string>();
 
@@ -265,23 +318,23 @@ export function buildSeoRoutes(limit = 500): SeoRoute[] {
     out.push(r);
   };
 
-  // 1) приоритетные
+  // 1) приоритет
   for (const r of PRIORITY_PAIRS) {
     push(r);
     if (out.length >= limit) return out;
   }
 
-  // 2) ORIGINS -> HUBS (самое главное для SEO)
-  for (const from of ORIGINS) {
-    for (const to of HUBS) {
+  // 2) ORIGINS -> все города
+  for (const from of ORIGIN_LIST) {
+    for (const to of CITY_LIST) {
       push({ from, to });
       if (out.length >= limit) return out;
     }
   }
 
-  // 3) запасной добив: HUBS -> HUBS
-  for (const from of HUBS) {
-    for (const to of HUBS) {
+  // 3) на всякий случай: города -> города (если вдруг не добили)
+  for (const from of CITY_LIST) {
+    for (const to of CITY_LIST) {
       push({ from, to });
       if (out.length >= limit) return out;
     }
@@ -290,7 +343,7 @@ export function buildSeoRoutes(limit = 500): SeoRoute[] {
   return out.slice(0, limit);
 }
 
-export function buildSeoRouteUrls(baseUrl: string, limit = 500): string[] {
+export function buildSeoRouteUrls(baseUrl: string, limit = 2000): string[] {
   const routes = buildSeoRoutes(limit);
   return routes.map((r) => `${baseUrl}/route/${r.from}/${r.to}`);
 }

@@ -73,7 +73,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // 500 SEO-маршрутов /route/from/to
-  const routeUrls = buildSeoRouteUrls(baseUrl, 500);
+  const routeUrls = buildSeoRouteUrls(baseUrl, 2000);
 
   const routePages: MetadataRoute.Sitemap = routeUrls.map((url) => ({
     url,
