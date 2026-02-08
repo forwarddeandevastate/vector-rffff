@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import ReviewsClient from "./reviews-client";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
@@ -128,7 +132,6 @@ export default async function ReviewsPage() {
     select: { id: true, name: true, rating: true, text: true, city: true, createdAt: true },
   });
 
-  // ✅ для client-компонента: rating без null и createdAt строкой
   const rowsForClient = rows.map((r) => ({
     id: r.id,
     name: r.name,
@@ -224,10 +227,7 @@ export default async function ReviewsPage() {
         </div>
 
         <div className="mt-6">
-          <SectionTitle
-            title="Отзывы о «Вектор РФ»"
-            desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки."
-          />
+          <SectionTitle title="Отзывы о «Вектор РФ»" desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки." />
         </div>
 
         <div className="grid gap-6 md:grid-cols-12">
