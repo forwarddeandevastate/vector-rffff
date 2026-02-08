@@ -113,23 +113,55 @@ function PopularBlock() {
 }
 
 export default function Page() {
-  const jsonLd = {
+  const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": `${SITE_URL}/airport-transfer#service`,
     name: "Трансфер в аэропорт и из аэропорта",
-    provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
-    areaServed: { "@type": "Country", name: "Россия" },
     serviceType: ["Трансфер в аэропорт", "Трансфер из аэропорта"],
     url: `${SITE_URL}/airport-transfer`,
+    areaServed: { "@type": "Country", name: "Россия" },
+    provider: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  };
+
+  // ✅ BreadcrumbList (для красивых сниппетов)
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Главная",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Трансфер в аэропорт",
+        item: `${SITE_URL}/airport-transfer`,
+      },
+    ],
   };
 
   return (
     <>
       <Script
-        id="ld-airport"
+        id="ld-airport-service"
         type="application/ld+json"
         strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <Script
+        id="ld-airport-breadcrumbs"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <ServicePage

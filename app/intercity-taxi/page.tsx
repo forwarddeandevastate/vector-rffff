@@ -90,9 +90,7 @@ function RoutesBlock() {
       <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">
-              Популярные направления
-            </h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">Популярные направления</h2>
             <p className="mt-2 text-sm text-zinc-600">
               Быстрые ссылки на самые частые маршруты. Можно открыть страницу маршрута и оставить заявку.
             </p>
@@ -123,23 +121,44 @@ function RoutesBlock() {
 }
 
 export default function Page() {
-  const jsonLd = {
+  const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": `${SITE_URL}/intercity-taxi#service`,
     name: "Междугороднее такси",
-    provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    url: `${SITE_URL}/intercity-taxi`,
+    provider: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
     areaServed: { "@type": "Country", name: "Россия" },
     serviceType: ["Междугороднее такси", "Поездка в другой город", "Трансфер между городами"],
-    url: `${SITE_URL}/intercity-taxi`,
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Междугороднее такси", item: `${SITE_URL}/intercity-taxi` },
+    ],
   };
 
   return (
     <>
       <Script
-        id="ld-intercity"
+        id="ld-intercity-service"
         type="application/ld+json"
         strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <Script
+        id="ld-intercity-breadcrumbs"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <ServicePage

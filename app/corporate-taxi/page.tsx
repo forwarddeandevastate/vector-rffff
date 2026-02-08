@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   description:
     "Корпоративные перевозки и трансферы для компаний: договор, безнал, отчётность. Регулярные поездки для сотрудников и гостей. Встреча в аэропорту. 24/7.",
   alternates: { canonical: `${SITE_URL}/corporate-taxi` },
-
   openGraph: {
     type: "website",
     url: `${SITE_URL}/corporate-taxi`,
@@ -21,7 +20,6 @@ export const metadata: Metadata = {
     locale: "ru_RU",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
   },
-
   twitter: {
     card: "summary_large_image",
     title: "Корпоративное такси — Вектор РФ",
@@ -32,19 +30,22 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  const jsonLd = {
+  const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": `${SITE_URL}/corporate-taxi#service`,
     name: "Корпоративное такси и перевозки",
     description:
       "Корпоративные перевозки для компаний: регулярные поездки сотрудников и гостей, встречи в аэропорту, фиксируем заявки и согласуем условия. Договор, безнал, отчётность. 24/7.",
+    url: `${SITE_URL}/corporate-taxi`,
+    areaServed: { "@type": "Country", name: "Россия" },
     provider: {
       "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
       telephone: "+7-831-423-39-29",
     },
-    areaServed: { "@type": "Country", name: "Россия" },
     serviceType: [
       "Корпоративное такси",
       "Корпоративные перевозки",
@@ -53,16 +54,30 @@ export default function Page() {
       "Аренда автомобиля с водителем",
       "Деловые поездки",
     ],
-    url: `${SITE_URL}/corporate-taxi`,
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Корпоративное такси", item: `${SITE_URL}/corporate-taxi` },
+    ],
   };
 
   return (
     <>
       <Script
-        id="ld-corporate-taxi"
+        id="ld-corporate-taxi-service"
         type="application/ld+json"
         strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <Script
+        id="ld-corporate-taxi-breadcrumbs"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <ServicePage

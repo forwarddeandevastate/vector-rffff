@@ -153,70 +153,6 @@ export default function RootLayout({
     ],
   };
 
-  // ✅ ПУНКТ 5: FAQ Schema (для расширенных сниппетов)
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "Сколько стоит трансфер?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Стоимость зависит от маршрута, класса автомобиля и расстояния. Оставьте заявку на сайте — быстро рассчитаем цену и подтвердим заказ.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Вы работаете круглосуточно?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Да, работаем 24/7. Можно заказать трансфер в любое время суток.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Можно ли заказать трансфер в аэропорт и из аэропорта?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Да. Выполняем трансфер в аэропорт и из аэропорта, возможна встреча с табличкой.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Делаете междугородние поездки по России?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Да, выполняем междугородние поездки по России. Подберём автомобиль под маршрут и количество пассажиров.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Есть минивэн для групповых поездок?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Да, есть минивэны для групповых и семейных поездок, а также для трансферов с багажом.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Работаете с организациями и безналичной оплатой?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Да, выполняем корпоративные перевозки и можем работать по безналичному расчёту.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Как быстро подаётся автомобиль?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Срок подачи зависит от города и времени суток. Обычно подача максимально быстрая после подтверждения заявки.",
-        },
-      },
-    ],
-  };
-
   return (
     <html lang="ru">
       <head>
@@ -227,16 +163,6 @@ export default function RootLayout({
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(schemaOrg),
-          }}
-        />
-
-        {/* FAQ Schema JSON-LD */}
-        <Script
-          id="faq-schema"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema),
           }}
         />
 

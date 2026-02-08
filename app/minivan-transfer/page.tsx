@@ -19,29 +19,28 @@ export const metadata: Metadata = {
       "Групповые поездки и трансферы на минивэне: больше мест и багажа. Согласуем стоимость до подачи. 24/7.",
     siteName: SITE_NAME,
     locale: "ru_RU",
-    images: [
-      { url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" },
-    ],
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
   },
 
   twitter: {
     card: "summary_large_image",
     title: "Минивэн / групповой трансфер — Вектор РФ",
-    description:
-      "Групповые поездки и трансферы на минивэне: больше мест и багажа. 24/7.",
+    description: "Групповые поездки и трансферы на минивэне: больше мест и багажа. 24/7.",
     images: ["/og.jpg"],
   },
 };
 
 export default function Page() {
-  const jsonLd = {
+  const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": `${SITE_URL}/minivan-transfer#service`,
     name: "Минивэн и групповой трансфер",
     description:
       "Трансфер на минивэне для 4–7 пассажиров и большого багажа: по городу, в аэропорт и на межгород. Стоимость согласуем до подачи автомобиля. 24/7.",
     provider: {
       "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
       telephone: "+7-831-423-39-29",
@@ -57,13 +56,28 @@ export default function Page() {
     url: `${SITE_URL}/minivan-transfer`,
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Минивэн / групповой трансфер", item: `${SITE_URL}/minivan-transfer` },
+    ],
+  };
+
   return (
     <>
       <Script
-        id="ld-minivan"
+        id="ld-minivan-service"
         type="application/ld+json"
         strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <Script
+        id="ld-minivan-breadcrumbs"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <ServicePage
