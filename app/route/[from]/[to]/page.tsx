@@ -1,16 +1,24 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import Link from "next/link";
 import ServicePage from "../../../ui/service-page";
+import { buildSeoRoutes } from "@/lib/seo-routes";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
+
+/**
+ * ВАЖНО:
+ * Не генерим 2000 маршрутов на каждый запрос/рендер.
+ * Считаем один раз на уровне модуля и дальше только фильтруем.
+ */
+const SEO_ROUTES = buildSeoRoutes(2000);
 
 // Аккуратный fallback: если города нет в маппинге — показываем как есть, но безопасно
 function safePretty(slug: string) {
   const s = (slug ?? "").trim();
   if (!s) return "Город";
 
-  // если вдруг прилетит %D0... — декодируем
   const decoded = (() => {
     try {
       return decodeURIComponent(s);
@@ -19,7 +27,6 @@ function safePretty(slug: string) {
     }
   })();
 
-  // "rostov-na-donu" -> "rostov na donu"
   return decoded
     .split("-")
     .filter(Boolean)
@@ -186,12 +193,74 @@ function cityName(slug: string) {
   return CITY_MAP[s] ?? safePretty(s);
 }
 
+function cn(...xs: Array<string | false | null | undefined>) {
+  return xs.filter(Boolean).join(" ");
+}
+
 type Props = {
   params: {
     from: string;
     to: string;
   };
 };
+
+function getRelatedLinks(from: string, to: string, limit = 10) {
+  const fromLinks = SEO_ROUTES
+    .filter((r) => r.from === from && r.to !== to)
+    .slice(0, limit)
+    .map((r) => ({
+      href: `/route/${r.from}/${r.to}`,
+      label: `${cityName(r.from)} — ${cityName(r.to)}`,
+      key: `${r.from}__${r.to}`,
+    }));
+
+  const toLinks = SEO_ROUTES
+    .filter((r) => r.to === to && r.from !== from)
+    .slice(0, limit)
+    .map((r) => ({
+      href: `/route/${r.from}/${r.to}`,
+      label: `${cityName(r.from)} — ${cityName(r.to)}`,
+      key: `${r.from}__${r.to}`,
+    }));
+
+  return { fromLinks, toLinks };
+}
+
+function RelatedLinksBlock({
+  title,
+  desc,
+  links,
+}: {
+  title: string;
+  desc: string;
+  links: Array<{ href: string; label: string; key: string }>;
+}) {
+  if (!links.length) return null;
+
+  return (
+    <section className="mx-auto max-w-6xl px-4 pb-12">
+      <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+        <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">{title}</h2>
+        <p className="mt-2 text-sm text-zinc-600">{desc}</p>
+
+        <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {links.map((l) => (
+            <Link
+              key={l.key}
+              href={l.href}
+              className={cn(
+                "rounded-2xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-semibold",
+                "text-zinc-800 shadow-sm backdrop-blur hover:bg-white hover:border-sky-200/80"
+              )}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const from = cityName(params.from);
@@ -203,7 +272,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `Такси ${from} — ${to} | Межгород | Вектор РФ`,
     description: `Междугороднее такси ${from} — ${to}. Комфорт, бизнес, минивэн. Фиксируем заявку и согласуем стоимость заранее. Онлайн-заявка 24/7.`,
     alternates: { canonical: url },
-
     openGraph: {
       type: "website",
       url,
@@ -213,7 +281,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "ru_RU",
       images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
     },
-
     twitter: {
       card: "summary_large_image",
       title: `Такси ${from} — ${to} | Вектор РФ`,
@@ -238,6 +305,8 @@ export default function Page({ params }: Props) {
     serviceType: ["Междугороднее такси", "Трансфер между городами"],
     url: canonical,
   };
+
+  const { fromLinks, toLinks } = getRelatedLinks(params.from, params.to, 10);
 
   return (
     <>
@@ -276,6 +345,18 @@ export default function Page({ params }: Props) {
             a: "Стандарт, Комфорт, Бизнес и Минивэн. Выберите класс в форме — мы подтвердим доступность.",
           },
         ]}
+      />
+
+      <RelatedLinksBlock
+        title={`Популярные направления из ${from}`}
+        desc="Ещё маршруты из этого города (внутренние ссылки помогают индексации)."
+        links={fromLinks}
+      />
+
+      <RelatedLinksBlock
+        title={`Популярные направления в ${to}`}
+        desc="Ещё маршруты в этот город."
+        links={toLinks}
       />
     </>
   );
