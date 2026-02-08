@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-// ✅ ОТКЛЮЧАЕМ КЭШ ДЛЯ GET (иначе Vercel/Next может отдавать старый JSON)
+// ✅ отключаем кэш для GET (чтобы новые отзывы/ответы появлялись сразу)
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -12,29 +12,10 @@ function isHoneypotFilled(body: any) {
   return String(body?.company || "").trim().length > 0;
 }
 
-/**
- * rating может прилетать как:
- *  - число: 5
- *  - строка: "5", "5/5", "★★★★★ (5)", "rating: 4"
- *  - пусто/мусор -> null
- */
-function parseRating(value: any): number | null {
-  if (value === undefined || value === null || value === "") return null;
-
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return Math.max(1, Math.min(5, Math.trunc(value)));
-  }
-
-  const s = String(value).trim();
-
-  // Берём первую цифру 1..5 из строки
-  const m = s.match(/([1-5])/);
-  if (!m) return null;
-
-  const n = Number(m[1]);
-  if (!Number.isFinite(n)) return null;
-
-  return Math.max(1, Math.min(5, Math.trunc(n)));
+function clampInt(n: any, min: number, max: number) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return null;
+  return Math.max(min, Math.min(max, Math.trunc(x)));
 }
 
 export async function GET() {
@@ -50,10 +31,14 @@ export async function GET() {
         text: true,
         city: true,
         createdAt: true,
+
+        // ✅ ответы из админки
+        replyText: true,
+        replyAuthor: true,
+        repliedAt: true,
       },
     });
 
-    // ✅ гарантируем number для рейтинга (если в базе null — считаем 5)
     const normalized = rows.map((r) => ({
       ...r,
       rating: Number.isFinite(Number(r.rating)) ? Math.max(1, Math.min(5, Number(r.rating))) : 5,
@@ -61,7 +46,7 @@ export async function GET() {
 
     const res = NextResponse.json({ ok: true, reviews: normalized });
 
-    // ✅ железобетонно запрещаем кэш на CDN/браузере
+    // ✅ железобетонно запрещаем кэш
     res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.headers.set("Pragma", "no-cache");
     res.headers.set("Expires", "0");
@@ -77,6 +62,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
 
+    // 🛡 honeypot
     if (isHoneypotFilled(body)) {
       return NextResponse.json({ ok: true, ignored: true });
     }
@@ -85,8 +71,11 @@ export async function POST(req: Request) {
     const text = String(body?.text || "").trim();
     const city = body?.city ? String(body.city).trim() : null;
 
-    // ✅ надёжный парсер рейтинга
-    const rating = parseRating(body?.rating) ?? 5;
+    const ratingRaw =
+      body?.rating === undefined || body?.rating === null || body?.rating === ""
+        ? null
+        : clampInt(body?.rating, 1, 5);
+    const rating = ratingRaw ?? 5;
 
     if (!name || name.length < 2) {
       return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
@@ -98,7 +87,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "Слишком длинный текст" }, { status: 400 });
     }
 
-    // ✅ ТВОЁ УСЛОВИЕ: модерация только если рейтинг < 3
+    // ✅ правило: модерация только если рейтинг < 3
     const isPublic = rating >= 3;
 
     const created = await prisma.review.create({

@@ -135,6 +135,11 @@ model Review {
   source    String?  // например "site", "telegram", "google"
   isPublic  Boolean  @default(false) // модерация
 
+  // ✅ Ответ из админки (показываем под отзывом)
+  replyText   String?
+  replyAuthor String?
+  repliedAt   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

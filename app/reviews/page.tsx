@@ -106,9 +106,11 @@ function Badge({ children }: { children: React.ReactNode }) {
   );
 }
 
-function formatDate(d: Date) {
+function formatDate(d: Date | string | null | undefined) {
+  if (!d) return "";
   try {
-    return new Date(d).toLocaleDateString("ru-RU", { year: "numeric", month: "long", day: "numeric" });
+    const dd = d instanceof Date ? d : new Date(d);
+    return dd.toLocaleDateString("ru-RU", { year: "numeric", month: "long", day: "numeric" });
   } catch {
     return "";
   }
@@ -120,6 +122,19 @@ function avg(nums: number[]) {
   return s / nums.length;
 }
 
+type ReviewForClient = {
+  id: number;
+  name: string;
+  text: string;
+  city: string | null;
+  rating: number;
+  createdAt: string;
+
+  replyText: string | null;
+  replyAuthor: string | null;
+  repliedAt: string | null;
+};
+
 export default async function ReviewsPage() {
   const PHONE_DISPLAY = "+7 (831) 423-39-29";
   const PHONE_TEL = "+78314233929";
@@ -129,16 +144,32 @@ export default async function ReviewsPage() {
     where: { isPublic: true },
     orderBy: { createdAt: "desc" },
     take: 30,
-    select: { id: true, name: true, rating: true, text: true, city: true, createdAt: true },
+    select: {
+      id: true,
+      name: true,
+      rating: true,
+      text: true,
+      city: true,
+      createdAt: true,
+
+      // ✅ ответы из админки
+      replyText: true,
+      replyAuthor: true,
+      repliedAt: true,
+    },
   });
 
-  const rowsForClient = rows.map((r) => ({
+  const rowsForClient: ReviewForClient[] = rows.map((r) => ({
     id: r.id,
     name: r.name,
     text: r.text,
     city: r.city,
     rating: Math.max(1, Math.min(5, Number(r.rating) || 5)),
     createdAt: r.createdAt.toISOString(),
+
+    replyText: r.replyText ?? null,
+    replyAuthor: r.replyAuthor ?? null,
+    repliedAt: r.repliedAt ? r.repliedAt.toISOString() : null,
   }));
 
   const ratings = rows.map((r) => Math.max(1, Math.min(5, Number(r.rating) || 5)));
@@ -177,9 +208,7 @@ export default async function ReviewsPage() {
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
 
-      {jsonLd ? (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      ) : null}
+      {jsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} /> : null}
 
       <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/65 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
@@ -227,7 +256,10 @@ export default async function ReviewsPage() {
         </div>
 
         <div className="mt-6">
-          <SectionTitle title="Отзывы о «Вектор РФ»" desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки." />
+          <SectionTitle
+            title="Отзывы о «Вектор РФ»"
+            desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки."
+          />
         </div>
 
         <div className="grid gap-6 md:grid-cols-12">
@@ -330,6 +362,17 @@ export default async function ReviewsPage() {
                     </div>
 
                     <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.text}</div>
+
+                    {/* ✅ ОТВЕТ АДМИНКИ */}
+                    {r.replyText ? (
+                      <div className="mt-4 rounded-2xl border border-zinc-200 bg-slate-50 p-4">
+                        <div className="text-xs font-semibold text-zinc-700">
+                          Ответ {r.replyAuthor ? `— ${r.replyAuthor}` : "администрации"}
+                          {r.repliedAt ? <span className="text-zinc-400"> • {formatDate(r.repliedAt)}</span> : null}
+                        </div>
+                        <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.replyText}</div>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>

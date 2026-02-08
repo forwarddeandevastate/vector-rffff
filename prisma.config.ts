@@ -1,9 +1,14 @@
-import { defineConfig } from "prisma/config";
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
-  // Prisma 7: connection URLs больше не задаются в schema.prisma.
-  // Здесь достаточно одного url.
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
   datasource: {
-    url: process.env.DATABASE_URL,
+    url: env("DATABASE_URL"),
+    // если используешь shadow DB — добавишь потом:
+    // shadowDatabaseUrl: env("SHADOW_DATABASE_URL"),
   },
 });

@@ -9,6 +9,11 @@ type Review = {
   text: string;
   city: string | null;
   createdAt: Date | string;
+
+  // ✅ ответы из админки
+  replyText?: string | null;
+  replyAuthor?: string | null;
+  repliedAt?: string | Date | null;
 };
 
 function cn(...xs: Array<string | false | null | undefined>) {
@@ -54,7 +59,7 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
 
-  // 🛡 honeypot (скрытое поле, боты часто заполняют)
+  // 🛡 honeypot
   const [company, setCompany] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -107,29 +112,16 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
           city: c ? c : null,
           rating,
           text: t,
-          company, // 🛡 honeypot
+          company,
         }),
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка отправки");
 
-      const isPublic = Boolean(data?.isPublic);
-
-      if (isPublic) {
+      // ✅ ВОТ ТУТ ГЛАВНОЕ
+      if (data.isPublic) {
         setOkMsg("Спасибо! Ваш отзыв опубликован.");
-
-        // ✅ сразу добавим в список, чтобы на странице появилось мгновенно
-        const newItem: Review = {
-          id: Number(data?.id) || Date.now(),
-          name: n,
-          city: c ? c : null,
-          rating: Math.max(1, Math.min(5, Number(rating) || 5)),
-          text: t,
-          createdAt: new Date().toISOString(),
-        };
-
-        setItems((prev) => [newItem, ...prev]);
       } else {
         setOkMsg("Спасибо! Отзыв отправлен на модерацию.");
       }
@@ -140,10 +132,7 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
       setText("");
       setCompany("");
 
-      // если модерация — подтянем список (вдруг что-то уже опубликовали)
-      if (!isPublic) {
-        await refresh();
-      }
+      await refresh();
     } catch (e: any) {
       setErr(e?.message || "Ошибка отправки");
     } finally {
@@ -154,7 +143,6 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
   return (
     <div className="grid gap-4">
       <form onSubmit={onSubmit} className="grid gap-3">
-        {/* honeypot: скрыто, без влияния на UI */}
         <input
           type="text"
           name="company"
@@ -188,7 +176,6 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
               <option value={2}>★★☆☆☆ (2)</option>
               <option value={1}>★☆☆☆☆ (1)</option>
             </select>
-            <div className="mt-1 text-[11px] text-zinc-500">Отзывы с оценкой 1–2 уходят на модерацию.</div>
           </Field>
 
           <Field label="Отзыв *" hint="10+ символов" className="sm:col-span-2">
