@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import Script from "next/script";
+import { useMemo, useRef, useState } from "react";
 import LeadForm, { type CarClass, type RouteType } from "./lead-form";
 
 function cn(...xs: Array<string | false | null | undefined>) {
@@ -25,12 +26,7 @@ function LogoMark() {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path
-          d="M6.7 6.5h10.6"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
+        <path d="M6.7 6.5h10.6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -216,8 +212,72 @@ export default function HomePage() {
     scrollToOrder();
   }
 
+  // ✅ FAQ Schema JSON-LD (на главной, под реальные вопросы в блоке #faq)
+  const faqSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Сколько стоит трансфер и как считается цена?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Цена зависит от маршрута и класса авто (Стандарт/Комфорт/Бизнес/Минивэн). После заявки мы подтверждаем стоимость до подачи автомобиля — без сюрпризов.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Как быстро подаётся машина?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "По городу обычно 15–30 минут (зависит от района и времени). В аэропорт/межгород — подача к согласованному времени.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Встречаете в аэропорту с табличкой?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Да. Водитель встречает в зоне прилёта с табличкой. Можно указать номер рейса в комментарии к заявке.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Можно ли заказать межгород туда-обратно?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Да, отметьте «Туда-обратно» в форме (или напишите в комментарии) — согласуем детали обратной поездки.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Работаете с компаниями?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Да. Корпоративные перевозки для сотрудников и гостей. Работаем по договору, возможен безнал и закрывающие документы.",
+          },
+        },
+      ],
+    }),
+    []
+  );
+
   return (
     <div className="min-h-screen text-zinc-900">
+      {/* ✅ FAQ Schema */}
+      <Script
+        id="faq-schema-home"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
@@ -426,9 +486,7 @@ export default function HomePage() {
                   </a>
                 </div>
 
-                <div className="mt-4 text-xs text-zinc-500">
-                  Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.
-                </div>
+                <div className="mt-4 text-xs text-zinc-500">Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.</div>
               </div>
             </div>
           </div>
@@ -587,13 +645,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ✅ ДОБАВИЛ: Как работаем (якорь #how) */}
       <section id="how" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <SectionTitle
-            title="Как работаем"
-            desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее."
-          />
+          <SectionTitle title="Как работаем" desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее." />
 
           <div className="grid gap-3 md:grid-cols-4">
             <Card title="1) Оставляете заявку" text="Заполняете форму: маршрут, дата/время, класс авто и пожелания." />
@@ -639,7 +693,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ✅ ДОБАВИЛ: FAQ (якорь #faq) */}
       <section id="faq" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <SectionTitle title="Вопросы и ответы" desc="Коротко о стоимости, подаче, встрече и корпоративных поездках." />
@@ -667,10 +720,7 @@ export default function HomePage() {
                 a: "Да. Корпоративные перевозки для сотрудников и гостей. Работаем по договору, возможен безнал и закрывающие документы.",
               },
             ].map((it) => (
-              <details
-                key={it.q}
-                className="group rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur"
-              >
+              <details key={it.q} className="group rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
                   <span className="text-sm font-extrabold text-zinc-900">{it.q}</span>
                   <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 group-open:hidden">
@@ -688,79 +738,77 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
-  <div className="mx-auto max-w-6xl px-4 py-8">
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-3">
-        <LogoMark />
-        <Wordmark />
-      </div>
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <LogoMark />
+              <Wordmark />
+            </div>
 
-      <div className="flex flex-wrap gap-2">
-        <a
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-          href={`tel:${PHONE_TEL}`}
-        >
-          <IconPhone className="h-4 w-4 text-sky-700" />
-          {PHONE_DISPLAY}
-        </a>
+            <div className="flex flex-wrap gap-2">
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href={`tel:${PHONE_TEL}`}
+              >
+                <IconPhone className="h-4 w-4 text-sky-700" />
+                {PHONE_DISPLAY}
+              </a>
 
-        <a
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-          href={TELEGRAM}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <IconTelegram className="h-4 w-4 text-sky-700" />
-          Telegram
-        </a>
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href={TELEGRAM}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <IconTelegram className="h-4 w-4 text-sky-700" />
+                Telegram
+              </a>
 
-        <a
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-          href="/reviews"
-        >
-          Отзывы
-        </a>
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href="/reviews"
+              >
+                Отзывы
+              </a>
 
-        <a
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-          href="/corporate"
-        >
-          Корпоративным
-        </a>
-      </div>
-    </div>
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href="/corporate"
+              >
+                Корпоративным
+              </a>
+            </div>
+          </div>
 
-    {/* SEO ссылки (аккуратно, не мешают дизайну) */}
-<div className="mt-6 border-t border-zinc-200/70 pt-5">
-  <div className="text-xs font-semibold text-zinc-700">Услуги</div>
+          {/* SEO ссылки (аккуратно, не мешают дизайну) */}
+          <div className="mt-6 border-t border-zinc-200/70 pt-5">
+            <div className="text-xs font-semibold text-zinc-700">Услуги</div>
 
-  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-zinc-600">
-    <a href="/intercity-taxi" className="hover:text-zinc-900 hover:underline">
-      Междугородние поездки
-    </a>
-    <a href="/airport-transfer" className="hover:text-zinc-900 hover:underline">
-      Трансфер в аэропорт
-    </a>
-    <a href="/city-transfer" className="hover:text-zinc-900 hover:underline">
-      Поездки по городу
-    </a>
-    <a href="/minivan-transfer" className="hover:text-zinc-900 hover:underline">
-      Минивэн / групповые поездки
-    </a>
-    <a href="/corporate" className="hover:text-zinc-900 hover:underline">
-      Корпоративные перевозки
-    </a>
-    <a href="/reviews" className="hover:text-zinc-900 hover:underline">
-      Отзывы
-    </a>
-  </div>
-</div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-zinc-600">
+              <a href="/intercity-taxi" className="hover:text-zinc-900 hover:underline">
+                Междугородние поездки
+              </a>
+              <a href="/airport-transfer" className="hover:text-zinc-900 hover:underline">
+                Трансфер в аэропорт
+              </a>
+              <a href="/city-transfer" className="hover:text-zinc-900 hover:underline">
+                Поездки по городу
+              </a>
+              <a href="/minivan-transfer" className="hover:text-zinc-900 hover:underline">
+                Минивэн / групповые поездки
+              </a>
+              <a href="/corporate" className="hover:text-zinc-900 hover:underline">
+                Корпоративные перевозки
+              </a>
+              <a href="/reviews" className="hover:text-zinc-900 hover:underline">
+                Отзывы
+              </a>
+            </div>
+          </div>
 
-    <div className="mt-6 text-xs text-zinc-500">
-      © {new Date().getFullYear()} Вектор РФ. Все права защищены.
-    </div>
-  </div>
-</footer>
+          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
+        </div>
+      </footer>
     </div>
   );
 }
