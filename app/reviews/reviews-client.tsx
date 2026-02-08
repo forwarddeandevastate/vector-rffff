@@ -114,14 +114,36 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка отправки");
 
-      setOkMsg("Спасибо! Отзыв отправлен на модерацию.");
+      const isPublic = Boolean(data?.isPublic);
+
+      if (isPublic) {
+        setOkMsg("Спасибо! Ваш отзыв опубликован.");
+
+        // ✅ сразу добавим в список, чтобы на странице появилось мгновенно
+        const newItem: Review = {
+          id: Number(data?.id) || Date.now(),
+          name: n,
+          city: c ? c : null,
+          rating: Math.max(1, Math.min(5, Number(rating) || 5)),
+          text: t,
+          createdAt: new Date().toISOString(),
+        };
+
+        setItems((prev) => [newItem, ...prev]);
+      } else {
+        setOkMsg("Спасибо! Отзыв отправлен на модерацию.");
+      }
+
       setName("");
       setCity("");
       setRating(5);
       setText("");
       setCompany("");
 
-      await refresh();
+      // если модерация — подтянем список (вдруг что-то уже опубликовали)
+      if (!isPublic) {
+        await refresh();
+      }
     } catch (e: any) {
       setErr(e?.message || "Ошибка отправки");
     } finally {
@@ -166,6 +188,7 @@ export default function ReviewsClient({ initialReviews }: { initialReviews: Revi
               <option value={2}>★★☆☆☆ (2)</option>
               <option value={1}>★☆☆☆☆ (1)</option>
             </select>
+            <div className="mt-1 text-[11px] text-zinc-500">Отзывы с оценкой 1–2 уходят на модерацию.</div>
           </Field>
 
           <Field label="Отзыв *" hint="10+ символов" className="sm:col-span-2">
