@@ -176,6 +176,7 @@ export default async function ReviewsPage() {
   const ratingValue = Number(avg(ratings).toFixed(1));
   const ratingCount = rows.length;
 
+  // ✅ МИКРОРАЗМЕТКА: Review + ответ администрации (comment: Comment)
   const jsonLd: any =
     ratingCount > 0
       ? {
@@ -188,17 +189,35 @@ export default async function ReviewsPage() {
             bestRating: 5,
             ratingCount,
           },
-          review: rows.slice(0, 10).map((r) => ({
-            "@type": "Review",
-            author: { "@type": "Person", name: r.name },
-            datePublished: new Date(r.createdAt).toISOString(),
-            reviewBody: r.text,
-            reviewRating: {
-              "@type": "Rating",
-              ratingValue: Math.max(1, Math.min(5, Number(r.rating) || 5)),
-              bestRating: 5,
-            },
-          })),
+          review: rows.slice(0, 10).map((r) => {
+            const reviewRatingValue = Math.max(1, Math.min(5, Number(r.rating) || 5));
+
+            const baseReview: any = {
+              "@type": "Review",
+              author: { "@type": "Person", name: r.name },
+              datePublished: new Date(r.createdAt).toISOString(),
+              reviewBody: r.text,
+              reviewRating: {
+                "@type": "Rating",
+                ratingValue: reviewRatingValue,
+                bestRating: 5,
+              },
+            };
+
+            if (r.replyText) {
+              baseReview.comment = {
+                "@type": "Comment",
+                text: r.replyText,
+                author: {
+                  "@type": "Organization",
+                  name: r.replyAuthor || "Вектор РФ",
+                },
+                dateCreated: r.repliedAt ? new Date(r.repliedAt).toISOString() : undefined,
+              };
+            }
+
+            return baseReview;
+          }),
         }
       : null;
 
@@ -363,7 +382,6 @@ export default async function ReviewsPage() {
 
                     <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.text}</div>
 
-                    {/* ✅ ОТВЕТ АДМИНКИ */}
                     {r.replyText ? (
                       <div className="mt-4 rounded-2xl border border-zinc-200 bg-slate-50 p-4">
                         <div className="text-xs font-semibold text-zinc-700">
