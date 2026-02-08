@@ -73,7 +73,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "Слишком длинный текст" }, { status: 400 });
     }
 
-    // создаём как НЕ публичный — ждёт модерации
+    // ✅ НОВОЕ ПРАВИЛО:
+    // - рейтинг 1–2: на модерацию (isPublic=false)
+    // - рейтинг 3–5: публикуем сразу (isPublic=true)
+    const isPublic = rating >= 3;
+
     const created = await prisma.review.create({
       data: {
         name,
@@ -81,12 +85,12 @@ export async function POST(req: Request) {
         text,
         city,
         source: "site",
-        isPublic: false,
+        isPublic,
       },
-      select: { id: true },
+      select: { id: true, isPublic: true },
     });
 
-    return NextResponse.json({ ok: true, id: created.id });
+    return NextResponse.json({ ok: true, id: created.id, isPublic: created.isPublic });
   } catch (e: any) {
     console.error("REVIEWS POST ERROR:", e);
     return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
