@@ -12,10 +12,29 @@ function isHoneypotFilled(body: any) {
   return String(body?.company || "").trim().length > 0;
 }
 
-function clampInt(n: any, min: number, max: number) {
-  const x = Number(n);
-  if (!Number.isFinite(x)) return null;
-  return Math.max(min, Math.min(max, Math.trunc(x)));
+/**
+ * rating может прилетать как:
+ *  - число: 5
+ *  - строка: "5", "5/5", "★★★★★ (5)", "rating: 4"
+ *  - пусто/мусор -> null
+ */
+function parseRating(value: any): number | null {
+  if (value === undefined || value === null || value === "") return null;
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.max(1, Math.min(5, Math.trunc(value)));
+  }
+
+  const s = String(value).trim();
+
+  // Берём первую цифру 1..5 из строки
+  const m = s.match(/([1-5])/);
+  if (!m) return null;
+
+  const n = Number(m[1]);
+  if (!Number.isFinite(n)) return null;
+
+  return Math.max(1, Math.min(5, Math.trunc(n)));
 }
 
 export async function GET() {
@@ -34,6 +53,7 @@ export async function GET() {
       },
     });
 
+    // ✅ гарантируем number для рейтинга (если в базе null — считаем 5)
     const normalized = rows.map((r) => ({
       ...r,
       rating: Number.isFinite(Number(r.rating)) ? Math.max(1, Math.min(5, Number(r.rating))) : 5,
@@ -65,9 +85,8 @@ export async function POST(req: Request) {
     const text = String(body?.text || "").trim();
     const city = body?.city ? String(body.city).trim() : null;
 
-    const ratingRaw =
-      body?.rating === undefined || body?.rating === null || body?.rating === "" ? null : clampInt(body?.rating, 1, 5);
-    const rating = ratingRaw ?? 5;
+    // ✅ надёжный парсер рейтинга
+    const rating = parseRating(body?.rating) ?? 5;
 
     if (!name || name.length < 2) {
       return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
