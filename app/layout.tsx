@@ -13,14 +13,12 @@ const SITE_NAME = "Вектор РФ";
 const YM_ID = 106629239;
 
 // Если Яндекс.Вебмастер попросит meta verification — вставь код сюда:
-// (пример: const YANDEX_VERIFICATION = "xxxxxxxxxxxxxxxx";)
 const YANDEX_VERIFICATION = "";
 
-// ✅ Нормализованные контакты
+// Контакты
 const PHONE_E164 = "+78314233929";
-const PHONE_DISPLAY = "+7 (831) 423-39-29";
 
-// ✅ viewport лучше объявлять отдельно (Next App Router)
+// viewport отдельно (Next App Router)
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -49,10 +47,6 @@ export const metadata: Metadata = {
     "встреча в аэропорту",
     "междугородний трансфер",
   ],
-
-  // ❗️ВАЖНО: НЕ задаём canonical в root layout.
-  // Иначе страницы без собственного canonical могут получить каноникал на главную.
-  // canonical проставляй на нужных страницах (ты это уже делаешь).
 
   openGraph: {
     type: "website",
@@ -109,8 +103,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         "@id": `${SITE_URL}/#organization`,
         name: SITE_NAME,
         url: SITE_URL,
-        // убедись, что файл реально существует:
-        // public/logo.png
         logo: `${SITE_URL}/logo.png`,
         contactPoint: [
           {
@@ -164,9 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {YANDEX_VERIFICATION ? (
           <meta name="yandex-verification" content={YANDEX_VERIFICATION} />
         ) : null}
-      </head>
 
-      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
         {/* Schema.org JSON-LD */}
         <Script
           id="schema-org"
@@ -201,6 +191,27 @@ ym(${YM_ID}, 'init', {
           }}
         />
 
+        {/* Untarget.ai */}
+        <Script
+          id="untarget-ai"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+(function(s,o){s[o]=s[o]||function(){(s[o].d=s[o].d||[]).push(arguments);}}
+)(window,'UntargetJS');
+UntargetJS('ts', new Date());
+UntargetJS('id', '7a2be');
+            `,
+          }}
+        />
+        <Script
+          id="untarget-ai-src"
+          strategy="afterInteractive"
+          src="https://cdn.untarget.ai/untarget.min.o.js"
+        />
+      </head>
+
+      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
         {/* Yandex.Metrika noscript */}
         <noscript>
           <div>
