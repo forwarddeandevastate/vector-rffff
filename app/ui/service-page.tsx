@@ -114,15 +114,17 @@ export default function ServicePage({
               </ul>
 
               <div className="mt-6 flex flex-wrap gap-2">
-                <Link
-                  href="/#order"
+                {/* ✅ На сервисной странице логичнее скроллить к форме справа */}
+                <a
+                  href="#order"
                   className={cn(
                     "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
                     "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
                   )}
                 >
                   Оставить заявку
-                </Link>
+                </a>
+
                 <a
                   href={`tel:${PHONE_TEL}`}
                   className={cn(
@@ -132,6 +134,7 @@ export default function ServicePage({
                 >
                   Позвонить: {PHONE_DISPLAY}
                 </a>
+
                 <a
                   href={TELEGRAM}
                   target="_blank"
@@ -161,7 +164,8 @@ export default function ServicePage({
           </section>
 
           {/* Right */}
-          <aside className="md:col-span-5">
+          {/* ✅ Якорь для /...#order */}
+          <aside id="order" className="md:col-span-5 scroll-mt-24">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
                 <div className="flex items-start justify-between gap-3">

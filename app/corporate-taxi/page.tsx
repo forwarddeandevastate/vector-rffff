@@ -56,11 +56,12 @@ export default function Page() {
     ],
   };
 
+  // ✅ BreadcrumbList (лучше для сниппетов)
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
       { "@type": "ListItem", position: 2, name: "Корпоративное такси", item: `${SITE_URL}/corporate-taxi` },
     ],
   };

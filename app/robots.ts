@@ -7,15 +7,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "Yandex",
-        allow: ["/", "/sitemap-yandex.xml"],
-        disallow: ["/admin", "/admin/", "/api", "/api/", "/_next", "/_next/"],
+        disallow: ["/admin", "/api", "/_next"],
       },
       {
         userAgent: "*",
-        allow: ["/", "/sitemap.xml"],
-        disallow: ["/admin", "/admin/", "/api", "/api/", "/_next", "/_next/"],
+        disallow: ["/admin", "/api", "/_next"],
       },
     ],
-    sitemap: [`${baseUrl}/sitemap.xml`, `${baseUrl}/sitemap-yandex.xml`],
+    sitemap: `${baseUrl}/sitemap.xml`,
+    // host в MetadataRoute.Robots не обязателен, и Next его не всегда пишет в robots.txt
   };
 }

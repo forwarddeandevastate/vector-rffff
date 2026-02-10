@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+
+const SITE_URL = "https://vector-rf.ru";
+const SITE_NAME = "Вектор РФ";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -8,6 +12,24 @@ export const metadata: Metadata = {
   title: "Корпоративным клиентам — Вектор РФ",
   description:
     "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность.",
+  alternates: { canonical: `${SITE_URL}/corporate` },
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/corporate`,
+    title: "Корпоративным клиентам — Вектор РФ",
+    description:
+      "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность.",
+    siteName: SITE_NAME,
+    locale: "ru_RU",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Корпоративным клиентам — Вектор РФ",
+    description:
+      "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность.",
+    images: ["/og.jpg"],
+  },
 };
 
 function LogoMark() {
@@ -121,8 +143,53 @@ export default function CorporatePage() {
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
 
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": `${SITE_URL}/corporate#service`,
+    name: "Корпоративные перевозки и трансферы",
+    serviceType: [
+      "Корпоративное такси",
+      "Корпоративные перевозки",
+      "Трансфер в аэропорт",
+      "Трансфер из аэропорта",
+      "Аренда автомобиля с водителем",
+    ],
+    url: `${SITE_URL}/corporate`,
+    areaServed: { "@type": "Country", name: "Россия" },
+    provider: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      telephone: "+7-831-423-39-29",
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Корпоративным клиентам", item: `${SITE_URL}/corporate` },
+    ],
+  };
+
   return (
     <div className="min-h-screen text-zinc-900">
+      <Script
+        id="ld-corporate-service"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <Script
+        id="ld-corporate-breadcrumbs"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
@@ -234,7 +301,9 @@ export default function CorporatePage() {
             <div className="rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-xl backdrop-blur md:p-7">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-extrabold text-zinc-900">Связаться по корпоративным поездкам</div>
+                  <div className="text-sm font-extrabold text-zinc-900">
+                    Связаться по корпоративным поездкам
+                  </div>
                   <div className="mt-1 text-sm text-zinc-600">Ответим и предложим условия под ваши задачи.</div>
                 </div>
                 <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
@@ -338,7 +407,9 @@ export default function CorporatePage() {
               </a>
             </div>
           </div>
-          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
+          <div className="mt-6 text-xs text-zinc-500">
+            © {new Date().getFullYear()} Вектор РФ. Все права защищены.
+          </div>
         </div>
       </footer>
     </div>

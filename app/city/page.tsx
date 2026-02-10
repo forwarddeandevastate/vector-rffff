@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 import { buildSeoRoutes, type SeoRoute } from "@/lib/seo-routes";
 
 const SITE_URL = "https://vector-rf.ru";
-const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
   title: "Направления и города — каталог маршрутов | Вектор РФ",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     title: "Направления и города — каталог маршрутов | Вектор РФ",
     description:
       "Каталог популярных направлений: выбирайте маршрут и оставляйте заявку. Комфорт, бизнес, минивэн. 24/7.",
-    siteName: SITE_NAME,
+    siteName: "Вектор РФ",
     locale: "ru_RU",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
   },
@@ -163,6 +163,16 @@ function PillLink({ href, children }: { href: string; children: React.ReactNode 
 }
 
 export default function Page() {
+  // ✅ BreadcrumbList (Яндекс “навигационная цепочка” + Google breadcrumbs)
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Каталог направлений", item: `${SITE_URL}/city` },
+    ],
+  };
+
   // ВАЖНО: не надо выводить все 2000 ссылок одним списком “в лоб”.
   // Для SEO достаточно 600–1200 ссылок на одной странице; остальное пусть добирается через sitemap.
   // Это безопаснее по скорости и не превращает страницу в “простыню”.
@@ -178,6 +188,13 @@ export default function Page() {
 
   return (
     <main className="min-h-screen text-zinc-900">
+      <Script
+        id="ld-city-breadcrumbs"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
       {/* фон как на главной, мягкий */}
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.25),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.14),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.12),transparent_55%)]" />

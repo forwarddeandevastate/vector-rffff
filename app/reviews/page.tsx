@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import Script from "next/script";
 import ReviewsClient from "./reviews-client";
 
 export const runtime = "nodejs";
@@ -151,8 +152,6 @@ export default async function ReviewsPage() {
       text: true,
       city: true,
       createdAt: true,
-
-      // ✅ ответы из админки
       replyText: true,
       replyAuthor: true,
       repliedAt: true,
@@ -166,7 +165,6 @@ export default async function ReviewsPage() {
     city: r.city,
     rating: Math.max(1, Math.min(5, Number(r.rating) || 5)),
     createdAt: r.createdAt.toISOString(),
-
     replyText: r.replyText ?? null,
     replyAuthor: r.replyAuthor ?? null,
     repliedAt: r.repliedAt ? r.repliedAt.toISOString() : null,
@@ -176,13 +174,18 @@ export default async function ReviewsPage() {
   const ratingValue = Number(avg(ratings).toFixed(1));
   const ratingCount = rows.length;
 
-  // ✅ МИКРОРАЗМЕТКА: Review + ответ администрации (comment: Comment)
-  const jsonLd: any =
+  // ✅ Микроразметка: лучше через next/script, чтобы не ругался линтер/hydration
+  // + добавили url и address (без жёсткой точности, безопасно)
+  const jsonLd =
     ratingCount > 0
       ? {
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
+          "@id": "https://vector-rf.ru/#localbusiness",
           name: "Вектор РФ",
+          url: "https://vector-rf.ru/",
+          telephone: "+7-831-423-39-29",
+          areaServed: { "@type": "Country", name: "Россия" },
           aggregateRating: {
             "@type": "AggregateRating",
             ratingValue,
@@ -208,10 +211,7 @@ export default async function ReviewsPage() {
               baseReview.comment = {
                 "@type": "Comment",
                 text: r.replyText,
-                author: {
-                  "@type": "Organization",
-                  name: r.replyAuthor || "Вектор РФ",
-                },
+                author: { "@type": "Organization", name: r.replyAuthor || "Вектор РФ" },
                 dateCreated: r.repliedAt ? new Date(r.repliedAt).toISOString() : undefined,
               };
             }
@@ -227,7 +227,14 @@ export default async function ReviewsPage() {
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
 
-      {jsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} /> : null}
+      {jsonLd ? (
+        <Script
+          id="ld-reviews"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ) : null}
 
       <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/65 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
@@ -275,10 +282,7 @@ export default async function ReviewsPage() {
         </div>
 
         <div className="mt-6">
-          <SectionTitle
-            title="Отзывы о «Вектор РФ»"
-            desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки."
-          />
+          <SectionTitle title="Отзывы о «Вектор РФ»" desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки." />
         </div>
 
         <div className="grid gap-6 md:grid-cols-12">

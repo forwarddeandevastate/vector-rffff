@@ -6,7 +6,7 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Междугороднее такси",
+  title: "Междугороднее такси — поездки между городами | Вектор РФ",
   description:
     "Междугороднее такси по России: поездки между городами, комфортные автомобили, фиксируем заявку и согласуем стоимость заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/intercity-taxi` },
@@ -68,7 +68,7 @@ const POPULAR_ROUTES: LinkItem[] = [
   { from: "simferopol", to: "kerch", label: "Симферополь — Керчь" },
   { from: "simferopol", to: "evpatoriya", label: "Симферополь — Евпатория" },
 
-  // новые территории (осторожно: только те, что реально у тебя есть в seo-routes + CITY_MAP)
+  // новые территории (оставляю как было — предполагаю, что эти slugs есть у тебя в seo-routes)
   { from: "donetsk", to: "rostov-na-donu", label: "Донецк — Ростов-на-Дону" },
   { from: "donetsk", to: "moskva", label: "Донецк — Москва" },
   { from: "donetsk", to: "krasnodar", label: "Донецк — Краснодар" },
@@ -90,7 +90,9 @@ function RoutesBlock() {
       <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">Популярные направления</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">
+              Популярные направления
+            </h2>
             <p className="mt-2 text-sm text-zinc-600">
               Быстрые ссылки на самые частые маршруты. Можно открыть страницу маршрута и оставить заявку.
             </p>
@@ -127,21 +129,22 @@ export default function Page() {
     "@id": `${SITE_URL}/intercity-taxi#service`,
     name: "Междугороднее такси",
     url: `${SITE_URL}/intercity-taxi`,
+    areaServed: { "@type": "Country", name: "Россия" },
+    serviceType: ["Междугороднее такси", "Поездка в другой город", "Трансфер между городами"],
     provider: {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
     },
-    areaServed: { "@type": "Country", name: "Россия" },
-    serviceType: ["Междугороднее такси", "Поездка в другой город", "Трансфер между городами"],
   };
 
+  // ✅ BreadcrumbList (чуть правильнее: главный URL со слэшем)
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
       { "@type": "ListItem", position: 2, name: "Междугороднее такси", item: `${SITE_URL}/intercity-taxi` },
     ],
   };

@@ -138,7 +138,7 @@ export default function Page() {
         "@type": "ListItem",
         position: 1,
         name: "Главная",
-        item: SITE_URL,
+        item: `${SITE_URL}/`,
       },
       {
         "@type": "ListItem",

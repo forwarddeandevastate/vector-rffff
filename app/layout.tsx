@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -11,6 +11,20 @@ const manrope = Manrope({
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 const YM_ID = 106629239;
+
+// Если Яндекс.Вебмастер попросит meta verification — вставь код сюда:
+// (пример: const YANDEX_VERIFICATION = "xxxxxxxxxxxxxxxx";)
+const YANDEX_VERIFICATION = "";
+
+// ✅ Нормализованные контакты
+const PHONE_E164 = "+78314233929";
+const PHONE_DISPLAY = "+7 (831) 423-39-29";
+
+// ✅ viewport лучше объявлять отдельно (Next App Router)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -36,9 +50,9 @@ export const metadata: Metadata = {
     "междугородний трансфер",
   ],
 
-  alternates: {
-    canonical: SITE_URL,
-  },
+  // ❗️ВАЖНО: НЕ задаём canonical в root layout.
+  // Иначе страницы без собственного canonical могут получить каноникал на главную.
+  // canonical проставляй на нужных страницах (ты это уже делаешь).
 
   openGraph: {
     type: "website",
@@ -86,11 +100,7 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const schemaOrg = {
     "@context": "https://schema.org",
     "@graph": [
@@ -99,11 +109,13 @@ export default function RootLayout({
         "@id": `${SITE_URL}/#organization`,
         name: SITE_NAME,
         url: SITE_URL,
+        // убедись, что файл реально существует:
+        // public/logo.png
         logo: `${SITE_URL}/logo.png`,
         contactPoint: [
           {
             "@type": "ContactPoint",
-            telephone: "+7-831-423-39-29",
+            telephone: PHONE_E164,
             contactType: "customer service",
             availableLanguage: ["Russian"],
           },
@@ -114,22 +126,15 @@ export default function RootLayout({
         "@id": `${SITE_URL}/#website`,
         url: SITE_URL,
         name: SITE_NAME,
-        publisher: {
-          "@id": `${SITE_URL}/#organization`,
-        },
+        publisher: { "@id": `${SITE_URL}/#organization` },
         inLanguage: "ru-RU",
       },
       {
         "@type": "Service",
         "@id": `${SITE_URL}/#service`,
         name: "Трансферы и междугородние поездки",
-        provider: {
-          "@id": `${SITE_URL}/#organization`,
-        },
-        areaServed: {
-          "@type": "Country",
-          name: "Россия",
-        },
+        provider: { "@id": `${SITE_URL}/#organization` },
+        areaServed: { "@type": "Country", name: "Россия" },
         serviceType: [
           "Трансфер в аэропорт",
           "Трансфер из аэропорта",
@@ -143,7 +148,7 @@ export default function RootLayout({
         "@id": `${SITE_URL}/#localbusiness`,
         name: SITE_NAME,
         url: SITE_URL,
-        telephone: "+7-831-423-39-29",
+        telephone: PHONE_E164,
         address: {
           "@type": "PostalAddress",
           addressCountry: "RU",
@@ -154,22 +159,26 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ru">
+    <html lang="ru-RU">
       <head>
+        {YANDEX_VERIFICATION ? (
+          <meta name="yandex-verification" content={YANDEX_VERIFICATION} />
+        ) : null}
+      </head>
+
+      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
         {/* Schema.org JSON-LD */}
         <Script
           id="schema-org"
           type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schemaOrg),
-          }}
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
 
         {/* Yandex.Metrika */}
         <Script
           id="yandex-metrika"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
 (function(m,e,t,r,i,k,a){
@@ -191,21 +200,17 @@ ym(${YM_ID}, 'init', {
             `,
           }}
         />
-        {/* /Yandex.Metrika */}
-      </head>
 
-      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
         {/* Yandex.Metrika noscript */}
         <noscript>
           <div>
             <img
-              src="https://mc.yandex.ru/watch/106629239"
+              src={`https://mc.yandex.ru/watch/${YM_ID}`}
               style={{ position: "absolute", left: "-9999px" }}
               alt=""
             />
           </div>
         </noscript>
-        {/* /Yandex.Metrika noscript */}
 
         {children}
       </body>

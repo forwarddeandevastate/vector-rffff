@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   description:
     "Минивэн и групповой трансфер: для семьи/компании и большого багажа. В аэропорт, по городу и на межгород. Согласуем стоимость заранее. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/minivan-transfer` },
-
   openGraph: {
     type: "website",
     url: `${SITE_URL}/minivan-transfer`,
@@ -21,7 +20,6 @@ export const metadata: Metadata = {
     locale: "ru_RU",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
   },
-
   twitter: {
     card: "summary_large_image",
     title: "Минивэн / групповой трансфер — Вектор РФ",
@@ -38,13 +36,7 @@ export default function Page() {
     name: "Минивэн и групповой трансфер",
     description:
       "Трансфер на минивэне для 4–7 пассажиров и большого багажа: по городу, в аэропорт и на межгород. Стоимость согласуем до подачи автомобиля. 24/7.",
-    provider: {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      telephone: "+7-831-423-39-29",
-    },
+    url: `${SITE_URL}/minivan-transfer`,
     areaServed: { "@type": "Country", name: "Россия" },
     serviceType: [
       "Минивэн",
@@ -53,15 +45,27 @@ export default function Page() {
       "Трансфер в аэропорт",
       "Междугородний трансфер",
     ],
-    url: `${SITE_URL}/minivan-transfer`,
+    provider: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      telephone: "+7-831-423-39-29",
+    },
   };
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Минивэн / групповой трансфер", item: `${SITE_URL}/minivan-transfer` },
+      // ✅ лучше со слэшем, чтобы был корректный URL главной
+      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Минивэн / групповой трансфер",
+        item: `${SITE_URL}/minivan-transfer`,
+      },
     ],
   };
 
