@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { buildSeoRouteUrls } from "@/lib/seo-routes";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default function sitemapYandex(): MetadataRoute.Sitemap {
   const baseUrl = "https://vector-rf.ru";
   const now = new Date();
 
@@ -12,8 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
-
-    // SEO услуги
     {
       url: `${baseUrl}/city`,
       lastModified: now,
@@ -50,8 +48,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.85,
     },
-
-    // Остальные страницы
     {
       url: `${baseUrl}/reviews`,
       lastModified: now,
@@ -64,18 +60,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
-
-    // thanks лучше не пихать в sitemap (служебная страница)
-    // {
-    //   url: `${baseUrl}/thanks`,
-    //   lastModified: now,
-    //   changeFrequency: "yearly",
-    //   priority: 0.2,
-    // },
   ];
 
-  // Полный список SEO-маршрутов /route/from/to (для Google ок)
-  const routeUrls = buildSeoRouteUrls(baseUrl, 2000);
+  // Яндекс — до 500 маршрутов
+  const routeUrls = buildSeoRouteUrls(baseUrl, 500);
 
   const routePages: MetadataRoute.Sitemap = routeUrls.map((url) => ({
     url,

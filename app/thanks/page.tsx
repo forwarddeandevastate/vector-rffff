@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata = {
+const PHONE_DISPLAY = "+7 (831) 423-39-29";
+const PHONE_TEL = "+78314233929";
+const TELEGRAM = "https://t.me/vector_rf52";
+const TELEGRAM_USERNAME = "vector_rf52";
+
+export const metadata: Metadata = {
   title: "Заявка отправлена — Вектор РФ",
   description: "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
+  // чтобы “спасибо” не индексировалось
+  robots: { index: false, follow: false },
 };
 
 export default function ThanksPage() {
@@ -64,7 +72,7 @@ export default function ThanksPage() {
                     </h1>
                     <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
                       Мы получили вашу заявку. Обычно связываемся в течение{" "}
-                      <span className="font-semibold text-slate-900">5–15 минут</span> (в рабочее время).
+                      <span className="font-semibold text-slate-900">5–15 минут</span>.
                     </p>
                   </div>
                 </div>
@@ -92,7 +100,7 @@ export default function ThanksPage() {
                     Вернуться на главную
                   </Link>
                   <Link
-                    href="/#request"
+                    href="/#order"
                     className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
                   >
                     Отправить ещё одну заявку
@@ -100,24 +108,14 @@ export default function ThanksPage() {
                 </div>
 
                 <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-4">
-                  <div className="text-sm font-semibold text-slate-900">
-                    Если нужно срочно — напишите нам
-                  </div>
+                  <div className="text-sm font-semibold text-slate-900">Если нужно срочно — напишите нам</div>
                   <p className="mt-1 text-sm text-slate-600">
-                    Мы быстрее ответим в мессенджере. Укажите, что заявка уже отправлена на сайте.
+                    Мы быстрее ответим в Telegram или по телефону. Укажите, что заявка уже отправлена на сайте.
                   </p>
 
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                     <a
-                      href="https://wa.me/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                    >
-                      WhatsApp
-                    </a>
-                    <a
-                      href="https://t.me/"
+                      href={TELEGRAM}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
@@ -125,7 +123,7 @@ export default function ThanksPage() {
                       Telegram
                     </a>
                     <a
-                      href="tel:+7"
+                      href={`tel:${PHONE_TEL}`}
                       className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
                     >
                       Позвонить
@@ -133,7 +131,7 @@ export default function ThanksPage() {
                   </div>
 
                   <p className="mt-3 text-xs text-slate-500">
-                    *Ссылки на контакты можно подключить к вашим SiteSettings — скажешь, и я сделаю.
+                    Контакты: {PHONE_DISPLAY} • Telegram @{TELEGRAM_USERNAME}
                   </p>
                 </div>
               </div>
@@ -143,9 +141,7 @@ export default function ThanksPage() {
           {/* Side info */}
           <div className="lg:col-span-5">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-lg font-extrabold tracking-tight text-slate-900">
-                Что будет дальше
-              </h2>
+              <h2 className="text-lg font-extrabold tracking-tight text-slate-900">Что будет дальше</h2>
 
               <ul className="mt-4 space-y-4 text-sm text-slate-700">
                 <li className="flex gap-3">
@@ -163,12 +159,9 @@ export default function ThanksPage() {
               </ul>
 
               <div className="mt-6 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                <div className="text-sm font-semibold text-slate-900">
-                  Важно
-                </div>
+                <div className="text-sm font-semibold text-slate-900">Важно</div>
                 <p className="mt-1 text-sm text-slate-600">
-                  Если вы указали неверный номер или мессенджер — отправьте заявку ещё раз
-                  или свяжитесь с нами напрямую.
+                  Если вы указали неверный номер — отправьте заявку ещё раз или свяжитесь с нами напрямую.
                 </p>
               </div>
 
@@ -190,12 +183,8 @@ export default function ThanksPage() {
 
             <div className="mt-6 rounded-3xl border border-slate-200 bg-gradient-to-br from-blue-700 to-sky-600 p-6 text-white shadow-sm sm:p-8">
               <div className="text-sm font-semibold text-white/90">Вектор РФ</div>
-              <div className="mt-2 text-xl font-extrabold tracking-tight">
-                Спокойно, вовремя, по делу.
-              </div>
-              <p className="mt-2 text-sm text-white/90">
-                Работаем аккуратно, подтверждаем детали и держим связь.
-              </p>
+              <div className="mt-2 text-xl font-extrabold tracking-tight">Спокойно, вовремя, по делу.</div>
+              <p className="mt-2 text-sm text-white/90">Работаем аккуратно, подтверждаем детали и держим связь.</p>
             </div>
           </div>
         </div>
