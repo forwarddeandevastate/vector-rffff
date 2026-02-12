@@ -1,3 +1,6 @@
+"use client";
+
+import Script from "next/script";
 import { useMemo, useRef, useState } from "react";
 import LeadForm, { type CarClass, type RouteType } from "./lead-form";
 
@@ -186,11 +189,6 @@ function ClassCardButton({
 }
 
 export default function HomePage() {
-  return <HomeClient />;
-}
-
-/** Client-only часть (интерактив + FAQ JSON-LD) */
-function HomeClient() {
   const PHONE_DISPLAY = "+7 (831) 423-39-29";
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
@@ -214,6 +212,7 @@ function HomeClient() {
     scrollToOrder();
   }
 
+  // ✅ FAQ Schema JSON-LD (на главной, под реальные вопросы в блоке #faq)
   const faqSchema = useMemo(
     () => ({
       "@context": "https://schema.org",
@@ -276,9 +275,11 @@ function HomeClient() {
 
   return (
     <div className="min-h-screen text-zinc-900">
-      {/* FAQ JSON-LD */}
-      <script
+      {/* ✅ FAQ JSON-LD */}
+      <Script
+        id="faq-schema-home"
         type="application/ld+json"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
@@ -439,11 +440,7 @@ function HomeClient() {
             </div>
           </div>
 
-          <div
-            id="order"
-            ref={orderRef}
-            className="md:col-span-5 scroll-mt-24"
-          >
+          <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -509,7 +506,11 @@ function HomeClient() {
           <ClassCardButton
             title="Стандарт"
             priceHint="Оптимально для города"
-            features={["Базовый комфорт, аккуратная подача", "Подходит для 1–3 пассажиров", "Хороший выбор для коротких поездок"]}
+            features={[
+              "Базовый комфорт, аккуратная подача",
+              "Подходит для 1–3 пассажиров",
+              "Хороший выбор для коротких поездок",
+            ]}
             note="Точную стоимость подтверждаем до подачи."
             active={selectedClass === "standard"}
             onClick={() => pickClass("standard", true)}
@@ -525,7 +526,11 @@ function HomeClient() {
           <ClassCardButton
             title="Бизнес"
             priceHint="Максимально спокойно и представительно"
-            features={["Повышенный комфорт и тишина в салоне", "Подходит для встреч и важных поездок", "Акцент на сервис и пунктуальность"]}
+            features={[
+              "Повышенный комфорт и тишина в салоне",
+              "Подходит для встреч и важных поездок",
+              "Акцент на сервис и пунктуальность",
+            ]}
             note="Уточняем детали заранее и фиксируем заявку."
             active={selectedClass === "business"}
             onClick={() => pickClass("business", true)}
@@ -790,6 +795,7 @@ function HomeClient() {
             </div>
           </div>
 
+          {/* SEO ссылки (аккуратно, не мешают дизайну) */}
           <div className="mt-6 border-t border-zinc-200/70 pt-5">
             <div className="text-xs font-semibold text-zinc-700">Услуги</div>
 
