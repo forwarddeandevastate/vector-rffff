@@ -212,7 +212,6 @@ export default function HomePage() {
     scrollToOrder();
   }
 
-  // ✅ FAQ Schema JSON-LD (на главной, под реальные вопросы в блоке #faq)
   const faqSchema = useMemo(
     () => ({
       "@context": "https://schema.org",
@@ -275,7 +274,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen text-zinc-900">
-      {/* ✅ FAQ JSON-LD */}
       <Script
         id="faq-schema-home"
         type="application/ld+json"
@@ -300,7 +298,9 @@ export default function HomePage() {
             <NavPill href="/reviews">Отзывы</NavPill>
             <NavPill href="#corporate">Корпоративным</NavPill>
             <NavPill href="#how">Как работаем</NavPill>
-            <NavPill href="#faq">Вопросы</NavPill>
+
+            {/* ✅ вместо #faq */}
+            <NavPill href="/faq">Вопросы</NavPill>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -436,6 +436,17 @@ export default function HomePage() {
                 )}
               >
                 Отзывы
+              </a>
+
+              {/* ✅ кнопка на FAQ */}
+              <a
+                href="/faq"
+                className={cn(
+                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                )}
+              >
+                Вопросы и ответы
               </a>
             </div>
           </div>
@@ -582,6 +593,16 @@ export default function HomePage() {
                 >
                   Оставить заявку
                 </button>
+
+                <a
+                  href="/faq"
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
+                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                >
+                  Вопросы и ответы
+                </a>
               </div>
             </div>
           </div>
@@ -704,50 +725,16 @@ export default function HomePage() {
             >
               Telegram
             </a>
-          </div>
-        </div>
-      </section>
 
-      <section id="faq" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <SectionTitle title="Вопросы и ответы" desc="Коротко о стоимости, подаче, встрече и корпоративных поездках." />
-
-          <div className="space-y-3">
-            {[
-              {
-                q: "Сколько стоит трансфер и как считается цена?",
-                a: "Цена зависит от маршрута и класса авто (Стандарт/Комфорт/Бизнес/Минивэн). После заявки мы подтверждаем стоимость до подачи автомобиля — без сюрпризов.",
-              },
-              {
-                q: "Как быстро подаётся машина?",
-                a: "По городу обычно 15–30 минут (зависит от района и времени). В аэропорт/межгород — подача к согласованному времени.",
-              },
-              {
-                q: "Встречаете в аэропорту с табличкой?",
-                a: "Да. Водитель встречает в зоне прилёта с табличкой. Можно указать номер рейса в комментарии к заявке.",
-              },
-              {
-                q: "Можно ли заказать межгород туда-обратно?",
-                a: "Да, отметьте «Туда-обратно» в форме (или напишите в комментарии) — согласуем детали обратной поездки.",
-              },
-              {
-                q: "Работаете с компаниями?",
-                a: "Да. Корпоративные перевозки для сотрудников и гостей. Работаем по договору, возможен безнал и закрывающие документы.",
-              },
-            ].map((it) => (
-              <details key={it.q} className="group rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                  <span className="text-sm font-extrabold text-zinc-900">{it.q}</span>
-                  <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 group-open:hidden">
-                    +
-                  </span>
-                  <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 hidden group-open:inline">
-                    —
-                  </span>
-                </summary>
-                <div className="mt-3 text-sm leading-6 text-zinc-600">{it.a}</div>
-              </details>
-            ))}
+            <a
+              href="/faq"
+              className={cn(
+                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+              )}
+            >
+              Вопросы и ответы
+            </a>
           </div>
         </div>
       </section>
@@ -792,10 +779,17 @@ export default function HomePage() {
               >
                 Корпоративным
               </a>
+
+              {/* ✅ добавили FAQ */}
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href="/faq"
+              >
+                Вопросы и ответы
+              </a>
             </div>
           </div>
 
-          {/* SEO ссылки (аккуратно, не мешают дизайну) */}
           <div className="mt-6 border-t border-zinc-200/70 pt-5">
             <div className="text-xs font-semibold text-zinc-700">Услуги</div>
 
@@ -817,6 +811,11 @@ export default function HomePage() {
               </a>
               <a href="/reviews" className="hover:text-zinc-900 hover:underline">
                 Отзывы
+              </a>
+
+              {/* ✅ ссылка на FAQ внизу */}
+              <a href="/faq" className="hover:text-zinc-900 hover:underline">
+                Вопросы и ответы
               </a>
             </div>
           </div>
