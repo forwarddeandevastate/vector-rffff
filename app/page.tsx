@@ -298,9 +298,8 @@ export default function HomePage() {
             <NavPill href="/reviews">Отзывы</NavPill>
             <NavPill href="#corporate">Корпоративным</NavPill>
             <NavPill href="#how">Как работаем</NavPill>
-
-            {/* ✅ вместо #faq */}
             <NavPill href="/faq">Вопросы</NavPill>
+            <NavPill href="#contacts">Контакты</NavPill>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -438,7 +437,6 @@ export default function HomePage() {
                 Отзывы
               </a>
 
-              {/* ✅ кнопка на FAQ */}
               <a
                 href="/faq"
                 className={cn(
@@ -447,6 +445,16 @@ export default function HomePage() {
                 )}
               >
                 Вопросы и ответы
+              </a>
+
+              <a
+                href="#contacts"
+                className={cn(
+                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+                )}
+              >
+                Контакты
               </a>
             </div>
           </div>
@@ -517,11 +525,7 @@ export default function HomePage() {
           <ClassCardButton
             title="Стандарт"
             priceHint="Оптимально для города"
-            features={[
-              "Базовый комфорт, аккуратная подача",
-              "Подходит для 1–3 пассажиров",
-              "Хороший выбор для коротких поездок",
-            ]}
+            features={["Базовый комфорт, аккуратная подача", "Подходит для 1–3 пассажиров", "Хороший выбор для коротких поездок"]}
             note="Точную стоимость подтверждаем до подачи."
             active={selectedClass === "standard"}
             onClick={() => pickClass("standard", true)}
@@ -537,11 +541,7 @@ export default function HomePage() {
           <ClassCardButton
             title="Бизнес"
             priceHint="Максимально спокойно и представительно"
-            features={[
-              "Повышенный комфорт и тишина в салоне",
-              "Подходит для встреч и важных поездок",
-              "Акцент на сервис и пунктуальность",
-            ]}
+            features={["Повышенный комфорт и тишина в салоне", "Подходит для встреч и важных поездок", "Акцент на сервис и пунктуальность"]}
             note="Уточняем детали заранее и фиксируем заявку."
             active={selectedClass === "business"}
             onClick={() => pickClass("business", true)}
@@ -561,7 +561,10 @@ export default function HomePage() {
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="md:flex md:items-start md:justify-between md:gap-8">
             <div className="md:max-w-2xl">
-              <SectionTitle title="Отзывы клиентов" desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше." />
+              <SectionTitle
+                title="Отзывы клиентов"
+                desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше."
+              />
 
               <div className="grid gap-3 md:grid-cols-3">
                 <Card title="Реальные отзывы" text="Публикуем отзывы после модерации, чтобы сохранять качество и честность." />
@@ -619,12 +622,18 @@ export default function HomePage() {
               />
 
               <div className="grid gap-3 md:grid-cols-3">
-                <Card title="Договор и безнал" text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу." />
+                <Card
+                  title="Договор и безнал"
+                  text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу."
+                />
                 <Card
                   title="Единые условия"
                   text="Фиксируем правила подачи, ожидания, маршруты и требования к автомобилю. Всё прозрачно для вашей команды."
                 />
-                <Card title="Отчётность" text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования." />
+                <Card
+                  title="Отчётность"
+                  text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования."
+                />
               </div>
             </div>
 
@@ -683,7 +692,10 @@ export default function HomePage() {
 
       <section id="how" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <SectionTitle title="Как работаем" desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее." />
+          <SectionTitle
+            title="Как работаем"
+            desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее."
+          />
 
           <div className="grid gap-3 md:grid-cols-4">
             <Card title="1) Оставляете заявку" text="Заполняете форму: маршрут, дата/время, класс авто и пожелания." />
@@ -735,6 +747,87 @@ export default function HomePage() {
             >
               Вопросы и ответы
             </a>
+
+            <a
+              href="#contacts"
+              className={cn(
+                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
+                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
+              )}
+            >
+              Контакты
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ✅ CONTACTS (новый блок на главной) */}
+      <section id="contacts" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
+        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+          <SectionTitle title="Контакты" desc="Если нужно срочно — лучше сразу написать в Telegram или позвонить." />
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <a
+              href={`tel:${PHONE_TEL}`}
+              className={cn("rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur hover:bg-white")}
+            >
+              <div className="text-xs font-semibold text-zinc-600">Телефон</div>
+              <div className="mt-1 text-sm font-extrabold text-zinc-900">{PHONE_DISPLAY}</div>
+              <div className="mt-1 text-sm text-zinc-600">Нажмите, чтобы позвонить</div>
+            </a>
+
+            <a
+              href={TELEGRAM}
+              target="_blank"
+              rel="noreferrer"
+              className={cn("rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur hover:bg-white")}
+            >
+              <div className="text-xs font-semibold text-zinc-600">Telegram</div>
+              <div className="mt-1 text-sm font-extrabold text-zinc-900">Написать в Telegram</div>
+              <div className="mt-1 text-sm text-zinc-600">Ответим быстрее по срочным вопросам</div>
+            </a>
+
+            <div className={cn("rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur")}>
+              <div className="text-xs font-semibold text-zinc-600">Режим работы</div>
+              <div className="mt-1 text-sm font-extrabold text-zinc-900">Заявки 24/7</div>
+              <div className="mt-1 text-sm text-zinc-600">Свяжемся обычно в течение 5–15 минут</div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href="/services"
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold",
+                    "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                >
+                  Наш сервис
+                </a>
+
+                <a
+                  href="/privacy"
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold",
+                    "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                >
+                  Конфиденциальность
+                </a>
+
+                <a
+                  href="/agreement"
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold",
+                    "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                  )}
+                >
+                  Соглашение
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-zinc-200 bg-white/80 p-4 text-sm text-zinc-600 shadow-sm backdrop-blur">
+            <span className="font-semibold text-zinc-900">Подсказка:</span> укажите в сообщении, что заявка уже отправлена на сайте — мы найдём её быстрее.
           </div>
         </div>
       </section>
@@ -780,7 +873,6 @@ export default function HomePage() {
                 Корпоративным
               </a>
 
-              {/* ✅ добавили FAQ */}
               <a
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href="/faq"
@@ -812,10 +904,14 @@ export default function HomePage() {
               <a href="/reviews" className="hover:text-zinc-900 hover:underline">
                 Отзывы
               </a>
-
-              {/* ✅ ссылка на FAQ внизу */}
               <a href="/faq" className="hover:text-zinc-900 hover:underline">
                 Вопросы и ответы
+              </a>
+              <a href="#contacts" className="hover:text-zinc-900 hover:underline">
+                Контакты
+              </a>
+              <a href="/services" className="hover:text-zinc-900 hover:underline">
+                Наш сервис
               </a>
             </div>
           </div>

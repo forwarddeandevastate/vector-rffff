@@ -66,9 +66,7 @@ export default function PrivacyPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-xs font-semibold text-zinc-600">Документы</div>
-              <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
-                Политика конфиденциальности
-              </h1>
+              <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Политика конфиденциальности</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
                 Здесь описано, какие данные мы получаем через сайт, зачем они нужны, как мы их защищаем и какие права
                 есть у пользователя.
@@ -173,23 +171,22 @@ export default function PrivacyPage() {
 
             <h2>9. Как связаться</h2>
             <p>
-              По вопросам обработки персональных данных вы можете связаться с нами по телефону{" "}
-              <b>{PHONE_DISPLAY}</b> или в Telegram.
+              По вопросам обработки персональных данных вы можете связаться с нами по телефону <b>{PHONE_DISPLAY}</b> или в
+              Telegram.
             </p>
 
             <h2>10. Изменения политики</h2>
-            <p>
-              Мы можем обновлять Политику. Актуальная версия публикуется на этой странице.
-            </p>
+            <p>Мы можем обновлять Политику. Актуальная версия публикуется на этой странице.</p>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
             <Link
-              href="/personal-data"
+              href="/agreement"
               className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
             >
-              Согласие на обработку ПДн
+              Соглашение / оферта
             </Link>
+
             <Link
               href="/#order"
               className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-5 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
