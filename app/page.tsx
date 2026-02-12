@@ -820,6 +820,14 @@ export default function HomePage() {
               >
                 Вопросы и ответы
               </a>
+
+              {/* ✅ НОВАЯ КНОПКА */}
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href="/requisites"
+              >
+                Реквизиты компании
+              </a>
             </div>
           </div>
 
@@ -853,6 +861,11 @@ export default function HomePage() {
               </a>
               <a href="/services" className="hover:text-zinc-900 hover:underline">
                 Наш сервис
+              </a>
+
+              {/* ✅ НОВАЯ ССЫЛКА ВНИЗУ */}
+              <a href="/requisites" className="hover:text-zinc-900 hover:underline">
+                Реквизиты компании
               </a>
             </div>
           </div>
