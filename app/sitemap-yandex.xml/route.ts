@@ -22,22 +22,42 @@ function xmlEscape(s: string) {
 export async function GET() {
   const now = new Date().toISOString();
 
-  // статические страницы (чтобы Яндекс видел основные)
+  // ✅ важные статические страницы (основные + юридические + хабы)
   const staticUrls = [
     `${BASE_URL}/`,
-    `${BASE_URL}/city`,
+    `${BASE_URL}/services`,
+    `${BASE_URL}/about`,
+    `${BASE_URL}/contacts`,
+
+    // услуги (посадочные)
     `${BASE_URL}/city-transfer`,
     `${BASE_URL}/airport-transfer`,
     `${BASE_URL}/intercity-taxi`,
     `${BASE_URL}/minivan-transfer`,
     `${BASE_URL}/corporate-taxi`,
     `${BASE_URL}/corporate`,
+
+    // доверие/контент
     `${BASE_URL}/reviews`,
+    `${BASE_URL}/faq`,
+
+    // документы
+    `${BASE_URL}/privacy`,
+    `${BASE_URL}/agreement`,
+    `${BASE_URL}/personal-data`,
+
+    // если реально есть и нужна (иначе удали)
+    // `${BASE_URL}/thanks`,
   ];
 
-  // SEO-маршруты /route/from/to — ограничиваем 500
-  const routeUrls = buildSeoRouteUrls(BASE_URL, YANDEX_LIMIT);
+  // ❌ убрали менее нужное:
+  // - `${BASE_URL}/city` (дубль/служебное, обычно не посадочная)
 
+  // SEO-маршруты /route/from/to — добиваем до ровно 500
+  const routeCount = Math.max(0, YANDEX_LIMIT - staticUrls.length);
+  const routeUrls = buildSeoRouteUrls(BASE_URL, routeCount);
+
+  // ✅ гарантированно ровно 500 (если buildSeoRouteUrls вернул меньше — дополним не сможем, но обычно он генерит много)
   const urls = [...staticUrls, ...routeUrls].slice(0, YANDEX_LIMIT);
 
   const body =
