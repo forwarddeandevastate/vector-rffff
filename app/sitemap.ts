@@ -33,6 +33,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.75,
     },
 
+    // ✅ новые страницы
+    {
+      url: `${baseUrl}/prices`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/requisites`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.35,
+    },
+
     // ✅ посадочные услуги
     {
       url: `${baseUrl}/city-transfer`,

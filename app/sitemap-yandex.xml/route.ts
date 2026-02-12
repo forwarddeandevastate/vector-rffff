@@ -6,8 +6,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const BASE_URL = "https://vector-rf.ru";
-
-// лимит Яндекса
 const YANDEX_LIMIT = 500;
 
 function xmlEscape(s: string) {
@@ -22,12 +20,16 @@ function xmlEscape(s: string) {
 export async function GET() {
   const now = new Date().toISOString();
 
-  // ✅ важные статические страницы (основные + юридические + хабы)
+  // ✅ важные статические страницы (основные + доверие + юр + хабы)
   const staticUrls = [
     `${BASE_URL}/`,
     `${BASE_URL}/services`,
     `${BASE_URL}/about`,
     `${BASE_URL}/contacts`,
+
+    // ✅ новые страницы
+    `${BASE_URL}/prices`,
+    `${BASE_URL}/requisites`,
 
     // услуги (посадочные)
     `${BASE_URL}/city-transfer`,
@@ -45,19 +47,12 @@ export async function GET() {
     `${BASE_URL}/privacy`,
     `${BASE_URL}/agreement`,
     `${BASE_URL}/personal-data`,
-
-    // если реально есть и нужна (иначе удали)
-    // `${BASE_URL}/thanks`,
   ];
 
-  // ❌ убрали менее нужное:
-  // - `${BASE_URL}/city` (дубль/служебное, обычно не посадочная)
-
-  // SEO-маршруты /route/from/to — добиваем до ровно 500
+  // ✅ SEO-маршруты /route/from/to — добиваем до ровно 500
   const routeCount = Math.max(0, YANDEX_LIMIT - staticUrls.length);
   const routeUrls = buildSeoRouteUrls(BASE_URL, routeCount);
 
-  // ✅ гарантированно ровно 500 (если buildSeoRouteUrls вернул меньше — дополним не сможем, но обычно он генерит много)
   const urls = [...staticUrls, ...routeUrls].slice(0, YANDEX_LIMIT);
 
   const body =
