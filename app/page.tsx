@@ -525,7 +525,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Стандарт"
             priceHint="Оптимально для города"
-            features={["Базовый комфорт, аккуратная подача", "Подходит для 1–3 пассажиров", "Хороший выбор для коротких поездок"]}
+            features={[
+              "Базовый комфорт, аккуратная подача",
+              "Подходит для 1–3 пассажиров",
+              "Хороший выбор для коротких поездок",
+            ]}
             note="Точную стоимость подтверждаем до подачи."
             active={selectedClass === "standard"}
             onClick={() => pickClass("standard", true)}
@@ -533,7 +537,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Комфорт"
             priceHint="Чаще выбирают для аэропортов"
-            features={["Больше пространства и мягче ход", "Удобно с багажом", "Подходит для деловых и семейных поездок"]}
+            features={[
+              "Больше пространства и мягче ход",
+              "Удобно с багажом",
+              "Подходит для деловых и семейных поездок",
+            ]}
             note="Можно указать пожелания: детское кресло, остановки."
             active={selectedClass === "comfort"}
             onClick={() => pickClass("comfort", true)}
@@ -541,7 +549,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Бизнес"
             priceHint="Максимально спокойно и представительно"
-            features={["Повышенный комфорт и тишина в салоне", "Подходит для встреч и важных поездок", "Акцент на сервис и пунктуальность"]}
+            features={[
+              "Повышенный комфорт и тишина в салоне",
+              "Подходит для встреч и важных поездок",
+              "Акцент на сервис и пунктуальность",
+            ]}
             note="Уточняем детали заранее и фиксируем заявку."
             active={selectedClass === "business"}
             onClick={() => pickClass("business", true)}
@@ -549,7 +561,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Минивэн"
             priceHint="Когда нужно больше мест"
-            features={["Для семьи/компании и большого багажа", "Подходит для 4–7 пассажиров", "Удобно на межгород и в аэропорт"]}
+            features={[
+              "Для семьи/компании и большого багажа",
+              "Подходит для 4–7 пассажиров",
+              "Удобно на межгород и в аэропорт",
+            ]}
             note="Сообщите количество пассажиров и багаж — подберём вариант."
             active={selectedClass === "minivan"}
             onClick={() => pickClass("minivan", true)}
@@ -561,7 +577,10 @@ export default function HomePage() {
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="md:flex md:items-start md:justify-between md:gap-8">
             <div className="md:max-w-2xl">
-              <SectionTitle title="Отзывы клиентов" desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше." />
+              <SectionTitle
+                title="Отзывы клиентов"
+                desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше."
+              />
 
               <div className="grid gap-3 md:grid-cols-3">
                 <Card title="Реальные отзывы" text="Публикуем отзывы после модерации, чтобы сохранять качество и честность." />
@@ -613,12 +632,24 @@ export default function HomePage() {
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="md:flex md:items-start md:justify-between md:gap-8">
             <div className="md:max-w-2xl">
-              <SectionTitle title="Для корпоративных клиентов" desc="Организуем регулярные поездки для сотрудников и гостей: быстрое согласование, единые правила, удобная отчётность." />
+              <SectionTitle
+                title="Для корпоративных клиентов"
+                desc="Организуем регулярные поездки для сотрудников и гостей: быстрое согласование, единые правила, удобная отчётность."
+              />
 
               <div className="grid gap-3 md:grid-cols-3">
-                <Card title="Договор и безнал" text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу." />
-                <Card title="Единые условия" text="Фиксируем правила подачи, ожидания, маршруты и требования к автомобилю. Всё прозрачно для вашей команды." />
-                <Card title="Отчётность" text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования." />
+                <Card
+                  title="Договор и безнал"
+                  text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу."
+                />
+                <Card
+                  title="Единые условия"
+                  text="Фиксируем правила подачи, ожидания, маршруты и требования к автомобилю. Всё прозрачно для вашей команды."
+                />
+                <Card
+                  title="Отчётность"
+                  text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования."
+                />
               </div>
             </div>
 
@@ -677,7 +708,10 @@ export default function HomePage() {
 
       <section id="how" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <SectionTitle title="Как работаем" desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее." />
+          <SectionTitle
+            title="Как работаем"
+            desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее."
+          />
 
           <div className="grid gap-3 md:grid-cols-4">
             <Card title="1) Оставляете заявку" text="Заполняете форму: маршрут, дата/время, класс авто и пожелания." />
@@ -791,12 +825,19 @@ export default function HomePage() {
                 Вопросы и ответы
               </a>
 
-              {/* ✅ НОВАЯ КНОПКА */}
               <a
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href="/requisites"
               >
                 Реквизиты компании
+              </a>
+
+              {/* ✅ Цены — только внизу */}
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
+                href="/prices"
+              >
+                Цены
               </a>
             </div>
           </div>
@@ -833,9 +874,13 @@ export default function HomePage() {
                 Наш сервис
               </a>
 
-              {/* ✅ НОВАЯ ССЫЛКА ВНИЗУ */}
               <a href="/requisites" className="hover:text-zinc-900 hover:underline">
                 Реквизиты компании
+              </a>
+
+              {/* ✅ Цены — ссылка внизу */}
+              <a href="/prices" className="hover:text-zinc-900 hover:underline">
+                Цены
               </a>
             </div>
           </div>
