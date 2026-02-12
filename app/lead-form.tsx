@@ -309,9 +309,9 @@ export default function LeadForm({
       setCalcLoading(true);
 
       try {
-        const url =
-          `/api/distance?from=${encodeURIComponent(fromText.trim())}` +
-          `&to=${encodeURIComponent(toText.trim())}`;
+        const url = `/api/distance?from=${encodeURIComponent(fromText.trim())}&to=${encodeURIComponent(
+          toText.trim()
+        )}`;
 
         const res = await fetch(url, { signal: controller.signal });
         const data = await res.json().catch(() => ({}));
@@ -409,9 +409,7 @@ export default function LeadForm({
             {routeType !== "intercity" && (
               <div className="mt-2 text-sm font-extrabold text-zinc-900">
                 {routeType === "city" && formatFrom(CITY_BASE_PRICE[carClass])}
-
-                {routeType === "airport" &&
-                  formatFrom(airportPriceFromCity(CITY_BASE_PRICE[carClass]))}
+                {routeType === "airport" && formatFrom(airportPriceFromCity(CITY_BASE_PRICE[carClass]))}
               </div>
             )}
 
@@ -438,14 +436,10 @@ export default function LeadForm({
                 ) : finalPrice ? (
                   <>
                     <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(finalPrice)}</div>
-                    {roundTrip ? (
-                      <div className="mt-0.5 text-[11px] text-zinc-600">Туда-обратно</div>
-                    ) : null}
+                    {roundTrip ? <div className="mt-0.5 text-[11px] text-zinc-600">Туда-обратно</div> : null}
                   </>
                 ) : (
-                  <div className="mt-1 text-[11px] text-zinc-700">
-                    Введите “Откуда” и “Куда” — посчитаем автоматически.
-                  </div>
+                  <div className="mt-1 text-[11px] text-zinc-700">Введите “Откуда” и “Куда” — посчитаем автоматически.</div>
                 )}
               </div>
             ) : null}
@@ -524,9 +518,7 @@ export default function LeadForm({
                 setToOpen(true);
               }}
               onFocus={() => setToOpen(true)}
-              placeholder={
-                routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"
-              }
+              placeholder={routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"}
             />
             {toOpen && toSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -640,6 +632,19 @@ export default function LeadForm({
       >
         {loading ? "Отправляем…" : "Отправить заявку"}
       </button>
+
+      {/* ✅ НЕНАВЯЗЧИВО: документы под кнопкой */}
+      <div className="text-[11px] leading-5 text-zinc-500">
+        Нажимая «Отправить заявку», вы соглашаетесь с{" "}
+        <a href="/privacy" className="text-zinc-600 underline decoration-zinc-300 hover:text-zinc-900">
+          политикой конфиденциальности
+        </a>{" "}
+        и{" "}
+        <a href="/personal-data" className="text-zinc-600 underline decoration-zinc-300 hover:text-zinc-900">
+          обработкой персональных данных
+        </a>
+        .
+      </div>
     </form>
   );
 }
