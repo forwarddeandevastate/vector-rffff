@@ -1,6 +1,3 @@
-"use client";
-
-import Script from "next/script";
 import { useMemo, useRef, useState } from "react";
 import LeadForm, { type CarClass, type RouteType } from "./lead-form";
 
@@ -189,6 +186,11 @@ function ClassCardButton({
 }
 
 export default function HomePage() {
+  return <HomeClient />;
+}
+
+/** Client-only часть (интерактив + FAQ JSON-LD) */
+function HomeClient() {
   const PHONE_DISPLAY = "+7 (831) 423-39-29";
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
@@ -212,7 +214,6 @@ export default function HomePage() {
     scrollToOrder();
   }
 
-  // ✅ FAQ Schema JSON-LD (на главной, под реальные вопросы в блоке #faq)
   const faqSchema = useMemo(
     () => ({
       "@context": "https://schema.org",
@@ -268,13 +269,16 @@ export default function HomePage() {
     []
   );
 
+  const routeButtonBase =
+    "rounded-2xl border bg-white/80 p-4 text-left shadow-sm backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-sky-200/80";
+  const routeActive = "border-sky-300 ring-2 ring-sky-200/70 bg-white";
+  const routeIdle = "border-zinc-200 hover:bg-white";
+
   return (
     <div className="min-h-screen text-zinc-900">
-      {/* ✅ FAQ Schema */}
-      <Script
-        id="faq-schema-home"
+      {/* FAQ JSON-LD */}
+      <script
         type="application/ld+json"
-        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
@@ -354,7 +358,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => pickRouteType("city")}
-                className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
+                className={cn(routeButtonBase, selectedRouteType === "city" ? routeActive : routeIdle)}
               >
                 <div className="text-sm font-extrabold text-zinc-900">Город</div>
                 <div className="mt-1 text-sm text-zinc-600">Встреча и поездки по городу</div>
@@ -363,7 +367,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => pickRouteType("intercity")}
-                className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
+                className={cn(routeButtonBase, selectedRouteType === "intercity" ? routeActive : routeIdle)}
               >
                 <div className="text-sm font-extrabold text-zinc-900">Межгород</div>
                 <div className="mt-1 text-sm text-zinc-600">Трансферы между городами</div>
@@ -372,7 +376,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => pickRouteType("airport")}
-                className="rounded-2xl border border-zinc-200 bg-white/80 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
+                className={cn(routeButtonBase, selectedRouteType === "airport" ? routeActive : routeIdle)}
               >
                 <div className="text-sm font-extrabold text-zinc-900">Аэропорты</div>
                 <div className="mt-1 text-sm text-zinc-600">Встреча по времени прилёта</div>
@@ -435,7 +439,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div id="order" ref={orderRef} className="md:col-span-5">
+          <div
+            id="order"
+            ref={orderRef}
+            className="md:col-span-5 scroll-mt-24"
+          >
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -486,7 +494,9 @@ export default function HomePage() {
                   </a>
                 </div>
 
-                <div className="mt-4 text-xs text-zinc-500">Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.</div>
+                <div className="mt-4 text-xs text-zinc-500">
+                  Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.
+                </div>
               </div>
             </div>
           </div>
@@ -780,7 +790,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* SEO ссылки (аккуратно, не мешают дизайну) */}
           <div className="mt-6 border-t border-zinc-200/70 pt-5">
             <div className="text-xs font-semibold text-zinc-700">Услуги</div>
 
