@@ -4,15 +4,18 @@ import ServicePage from "../ui/service-page";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
+const CANONICAL = `${SITE_URL}/corporate-taxi`;
+const PHONE_E164 = "+78314233929";
 
 export const metadata: Metadata = {
   title: "Корпоративное такси и перевозки для компаний | Вектор РФ",
   description:
     "Корпоративные перевозки и трансферы для компаний: договор, безнал, отчётность. Регулярные поездки для сотрудников и гостей. Встреча в аэропорту. 24/7.",
-  alternates: { canonical: `${SITE_URL}/corporate-taxi` },
+  alternates: { canonical: CANONICAL },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    url: `${SITE_URL}/corporate-taxi`,
+    url: CANONICAL,
     title: "Корпоративное такси — Вектор РФ",
     description:
       "Перевозки для компаний: договор, безнал, отчётность. Поездки сотрудников и гостей, встречи в аэропорту. 24/7.",
@@ -23,8 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Корпоративное такси — Вектор РФ",
-    description:
-      "Перевозки для компаний: договор, безнал, отчётность. Поездки сотрудников и гостей. 24/7.",
+    description: "Перевозки для компаний: договор, безнал, отчётность. Поездки сотрудников и гостей. 24/7.",
     images: ["/og.jpg"],
   },
 };
@@ -33,18 +35,18 @@ export default function Page() {
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": `${SITE_URL}/corporate-taxi#service`,
+    "@id": `${CANONICAL}#service`,
     name: "Корпоративное такси и перевозки",
     description:
       "Корпоративные перевозки для компаний: регулярные поездки сотрудников и гостей, встречи в аэропорту, фиксируем заявки и согласуем условия. Договор, безнал, отчётность. 24/7.",
-    url: `${SITE_URL}/corporate-taxi`,
+    url: CANONICAL,
     areaServed: { "@type": "Country", name: "Россия" },
     provider: {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      telephone: "+7-831-423-39-29",
+      telephone: PHONE_E164,
     },
     serviceType: [
       "Корпоративное такси",
@@ -56,13 +58,46 @@ export default function Page() {
     ],
   };
 
-  // ✅ BreadcrumbList (лучше для сниппетов)
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: "Корпоративное такси", item: `${SITE_URL}/corporate-taxi` },
+      { "@type": "ListItem", position: 2, name: "Корпоративное такси", item: CANONICAL },
+    ],
+  };
+
+  // ✅ FAQPage JSON-LD (под FAQ, который показывается на странице через ServicePage)
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Работаете по договору и безналу?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да. Согласуем условия, подготовим договор и реквизиты. Закрывающие документы — по запросу.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Можно организовать поездки сотрудников по заявкам?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Да. Настроим понятный формат заявок: кто, куда, когда, контакт. Можно централизованно через ответственного.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Встречаете в аэропорту по рейсу?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Да. Если укажете номер рейса, ориентируемся по фактическому времени прилёта. По запросу — встреча с табличкой.",
+        },
+      },
     ],
   };
 
@@ -71,14 +106,20 @@ export default function Page() {
       <Script
         id="ld-corporate-taxi-service"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
       <Script
         id="ld-corporate-taxi-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Script
+        id="ld-corporate-taxi-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <ServicePage

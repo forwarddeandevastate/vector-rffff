@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import Link from "next/link";
 import ServicePage from "../ui/service-page";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Трансфер в аэропорт и из аэропорта",
+  title: "Трансфер в аэропорт и из аэропорта — Вектор РФ",
   description:
     "Трансфер в аэропорт и из аэропорта: встреча по времени прилёта, помощь с багажом, согласование стоимости заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/airport-transfer` },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/airport-transfer`,
-    title: "Трансфер в аэропорт — Вектор РФ",
+    title: "Трансфер в аэропорт и из аэропорта — Вектор РФ",
     description:
       "Встреча по времени прилёта, подача авто, помощь с багажом. Стоимость согласуем заранее. 24/7.",
     siteName: SITE_NAME,
@@ -86,12 +88,12 @@ function PopularBlock() {
           Популярные направления (аэропорт)
         </h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Быстрые ссылки на частые маршруты “в аэропорт / из аэропорта”. Открывайте страницу и оставляйте заявку.
+          Быстрые ссылки на частые маршруты. Открывайте направление и оставляйте заявку — стоимость согласуем заранее.
         </p>
 
         <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {AIRPORT_ROUTES.map((r) => (
-            <a
+            <Link
               key={`${r.from}__${r.to}`}
               href={`/route/${r.from}/${r.to}`}
               className={cn(
@@ -100,12 +102,12 @@ function PopularBlock() {
               )}
             >
               {r.label}
-            </a>
+            </Link>
           ))}
         </div>
 
         <div className="mt-6 text-xs text-zinc-500">
-          Не нашли направление? Оставьте заявку — мы уточним терминал/рейс и заранее согласуем стоимость.
+          Не нашли направление? Оставьте заявку — уточним рейс/адрес и заранее согласуем стоимость.
         </div>
       </div>
     </section>
@@ -113,13 +115,15 @@ function PopularBlock() {
 }
 
 export default function Page() {
+  const canonical = `${SITE_URL}/airport-transfer`;
+
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": `${SITE_URL}/airport-transfer#service`,
+    "@id": `${canonical}#service`,
     name: "Трансфер в аэропорт и из аэропорта",
     serviceType: ["Трансфер в аэропорт", "Трансфер из аэропорта"],
-    url: `${SITE_URL}/airport-transfer`,
+    url: canonical,
     areaServed: { "@type": "Country", name: "Россия" },
     provider: {
       "@type": "Organization",
@@ -129,22 +133,42 @@ export default function Page() {
     },
   };
 
-  // ✅ BreadcrumbList (для красивых сниппетов)
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Трансфер в аэропорт", item: canonical },
+    ],
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
       {
-        "@type": "ListItem",
-        position: 1,
-        name: "Главная",
-        item: `${SITE_URL}/`,
+        "@type": "Question",
+        name: "Встречаете с табличкой?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да, по запросу. Укажите это в комментарии к заявке — подтвердим детали встречи.",
+        },
       },
       {
-        "@type": "ListItem",
-        position: 2,
-        name: "Трансфер в аэропорт",
-        item: `${SITE_URL}/airport-transfer`,
+        "@type": "Question",
+        name: "Если рейс задержали?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Если вы указали номер рейса, ориентируемся по фактическому времени прилёта и заранее согласуем ожидание.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Можно заказать детское кресло?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да. Укажите возраст ребёнка — подберём подходящее кресло и подтвердим наличие.",
+        },
       },
     ],
   };
@@ -154,14 +178,20 @@ export default function Page() {
       <Script
         id="ld-airport-service"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
       <Script
         id="ld-airport-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Script
+        id="ld-airport-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <ServicePage

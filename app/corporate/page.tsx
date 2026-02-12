@@ -3,6 +3,7 @@ import Script from "next/script";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
+const CANONICAL = `${SITE_URL}/corporate`;
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -11,11 +12,12 @@ function cn(...xs: Array<string | false | null | undefined>) {
 export const metadata: Metadata = {
   title: "Корпоративным клиентам — Вектор РФ",
   description:
-    "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность.",
-  alternates: { canonical: `${SITE_URL}/corporate` },
+    "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность. Работаем 24/7.",
+  alternates: { canonical: CANONICAL },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    url: `${SITE_URL}/corporate`,
+    url: CANONICAL,
     title: "Корпоративным клиентам — Вектор РФ",
     description:
       "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность.",
@@ -146,7 +148,7 @@ export default function CorporatePage() {
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": `${SITE_URL}/corporate#service`,
+    "@id": `${CANONICAL}#service`,
     name: "Корпоративные перевозки и трансферы",
     serviceType: [
       "Корпоративное такси",
@@ -155,14 +157,14 @@ export default function CorporatePage() {
       "Трансфер из аэропорта",
       "Аренда автомобиля с водителем",
     ],
-    url: `${SITE_URL}/corporate`,
+    url: CANONICAL,
     areaServed: { "@type": "Country", name: "Россия" },
     provider: {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      telephone: "+7-831-423-39-29",
+      telephone: PHONE_TEL,
     },
   };
 
@@ -171,7 +173,42 @@ export default function CorporatePage() {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: "Корпоративным клиентам", item: `${SITE_URL}/corporate` },
+      { "@type": "ListItem", position: 2, name: "Корпоративным клиентам", item: CANONICAL },
+    ],
+  };
+
+  // ✅ FAQPage JSON-LD (Яндекс любит, когда FAQ есть и в тексте, и в разметке)
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Работаете по договору и безналу?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Да. Работаем по договору, возможна оплата по счёту. Закрывающие документы предоставляем по запросу.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Какие поездки можно организовать для компании?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Регулярные поездки сотрудников по городу, трансферы гостей (аэропорт/вокзал), межгород для командировок, мероприятий и филиалов.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Как быстро можно начать работу?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Напишите или позвоните — уточним задачи и требования, согласуем условия (подача, ожидание, классы авто, отчётность) и запустим работу.",
+        },
+      },
     ],
   };
 
@@ -180,14 +217,20 @@ export default function CorporatePage() {
       <Script
         id="ld-corporate-service"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
       <Script
         id="ld-corporate-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Script
+        id="ld-corporate-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
@@ -295,6 +338,43 @@ export default function CorporatePage() {
                 </div>
               </div>
             </div>
+
+            {/* FAQ блок (контент + соответствует JSON-LD) */}
+            <section className="mt-6 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-7">
+              <h2 className="text-lg font-extrabold tracking-tight text-zinc-900">Вопросы и ответы</h2>
+              <div className="mt-4 space-y-3">
+                {[
+                  {
+                    q: "Работаете по договору и безналу?",
+                    a: "Да. Работаем по договору, возможна оплата по счёту. Закрывающие документы предоставляем по запросу.",
+                  },
+                  {
+                    q: "Какие поездки можно организовать для компании?",
+                    a: "Регулярные поездки сотрудников по городу, трансферы гостей (аэропорт/вокзал), межгород для командировок, мероприятий и филиалов.",
+                  },
+                  {
+                    q: "Как быстро можно начать работу?",
+                    a: "Напишите или позвоните — уточним задачи и требования, согласуем условия и запустим работу.",
+                  },
+                ].map((it) => (
+                  <details
+                    key={it.q}
+                    className="group rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+                      <span className="text-sm font-extrabold text-zinc-900">{it.q}</span>
+                      <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 group-open:hidden">
+                        +
+                      </span>
+                      <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 hidden group-open:inline">
+                        —
+                      </span>
+                    </summary>
+                    <div className="mt-3 text-sm leading-6 text-zinc-600">{it.a}</div>
+                  </details>
+                ))}
+              </div>
+            </section>
           </div>
 
           <aside className="md:col-span-5">
@@ -407,6 +487,7 @@ export default function CorporatePage() {
               </a>
             </div>
           </div>
+
           <div className="mt-6 text-xs text-zinc-500">
             © {new Date().getFullYear()} Вектор РФ. Все права защищены.
           </div>

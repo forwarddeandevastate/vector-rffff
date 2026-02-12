@@ -4,15 +4,18 @@ import ServicePage from "../ui/service-page";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
+const CANONICAL = `${SITE_URL}/intercity-taxi`;
+const PHONE_E164 = "+78314233929";
 
 export const metadata: Metadata = {
   title: "Междугороднее такси — поездки между городами | Вектор РФ",
   description:
     "Междугороднее такси по России: поездки между городами, комфортные автомобили, фиксируем заявку и согласуем стоимость заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
-  alternates: { canonical: `${SITE_URL}/intercity-taxi` },
+  alternates: { canonical: CANONICAL },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    url: `${SITE_URL}/intercity-taxi`,
+    url: CANONICAL,
     title: "Междугороднее такси — Вектор РФ",
     description:
       "Поездки между городами по России: комфорт, безопасность, согласование стоимости заранее. 24/7.",
@@ -68,7 +71,7 @@ const POPULAR_ROUTES: LinkItem[] = [
   { from: "simferopol", to: "kerch", label: "Симферополь — Керчь" },
   { from: "simferopol", to: "evpatoriya", label: "Симферополь — Евпатория" },
 
-  // новые территории (оставляю как было — предполагаю, что эти slugs есть у тебя в seo-routes)
+  // новые территории
   { from: "donetsk", to: "rostov-na-donu", label: "Донецк — Ростов-на-Дону" },
   { from: "donetsk", to: "moskva", label: "Донецк — Москва" },
   { from: "donetsk", to: "krasnodar", label: "Донецк — Краснодар" },
@@ -126,9 +129,9 @@ export default function Page() {
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": `${SITE_URL}/intercity-taxi#service`,
+    "@id": `${CANONICAL}#service`,
     name: "Междугороднее такси",
-    url: `${SITE_URL}/intercity-taxi`,
+    url: CANONICAL,
     areaServed: { "@type": "Country", name: "Россия" },
     serviceType: ["Междугороднее такси", "Поездка в другой город", "Трансфер между городами"],
     provider: {
@@ -136,16 +139,47 @@ export default function Page() {
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
+      telephone: PHONE_E164,
     },
   };
 
-  // ✅ BreadcrumbList (чуть правильнее: главный URL со слэшем)
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: "Междугороднее такси", item: `${SITE_URL}/intercity-taxi` },
+      { "@type": "ListItem", position: 2, name: "Междугороднее такси", item: CANONICAL },
+    ],
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Можно ли ехать туда-обратно?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да. Укажите это в заявке — рассчитаем вариант туда-обратно и согласуем стоимость.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Можно добавить остановки по дороге?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да, просто перечислите остановки — мы учтём это при согласовании.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Какие классы доступны на межгород?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Стандарт, Комфорт, Бизнес и Минивэн — выбирайте в форме, мы подтвердим доступность.",
+        },
+      },
     ],
   };
 
@@ -154,14 +188,20 @@ export default function Page() {
       <Script
         id="ld-intercity-service"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
       <Script
         id="ld-intercity-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Script
+        id="ld-intercity-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <ServicePage

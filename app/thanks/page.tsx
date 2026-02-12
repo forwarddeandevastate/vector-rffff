@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+const SITE_URL = "https://vector-rf.ru";
+const CANONICAL = `${SITE_URL}/thanks`;
+
 const PHONE_DISPLAY = "+7 (831) 423-39-29";
 const PHONE_TEL = "+78314233929";
 const TELEGRAM = "https://t.me/vector_rf52";
@@ -9,8 +12,26 @@ const TELEGRAM_USERNAME = "vector_rf52";
 export const metadata: Metadata = {
   title: "Заявка отправлена — Вектор РФ",
   description: "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
-  // чтобы “спасибо” не индексировалось
-  robots: { index: false, follow: false },
+  alternates: { canonical: CANONICAL },
+
+  // ✅ страницу “спасибо” не индексируем, но ссылки можно учитывать
+  robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
+
+  openGraph: {
+    type: "website",
+    url: CANONICAL,
+    title: "Заявка отправлена — Вектор РФ",
+    description: "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
+    siteName: "Вектор РФ",
+    locale: "ru_RU",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Заявка отправлена — Вектор РФ",
+    description: "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
+    images: ["/og.jpg"],
+  },
 };
 
 export default function ThanksPage() {

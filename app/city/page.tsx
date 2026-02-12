@@ -4,19 +4,24 @@ import Script from "next/script";
 import { buildSeoRoutes, type SeoRoute } from "@/lib/seo-routes";
 
 const SITE_URL = "https://vector-rf.ru";
+const SITE_NAME = "Вектор РФ";
+
+// ✅ ВАЖНО: считаем один раз на уровне модуля (не на каждый запрос/рендер)
+const SEO_ROUTES = buildSeoRoutes(2000);
 
 export const metadata: Metadata = {
-  title: "Направления и города — каталог маршрутов | Вектор РФ",
+  title: "Каталог маршрутов по России — города и направления | Вектор РФ",
   description:
-    "Каталог популярных направлений и городов: междугородние поездки по России. Выберите маршрут и оставьте заявку онлайн — 24/7.",
+    "Каталог популярных направлений и городов: междугородние поездки по России. Выберите маршрут и оставьте заявку онлайн — 24/7. Стоимость согласуем заранее.",
   alternates: { canonical: `${SITE_URL}/city` },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/city`,
-    title: "Направления и города — каталог маршрутов | Вектор РФ",
+    title: "Каталог маршрутов по России — города и направления | Вектор РФ",
     description:
       "Каталог популярных направлений: выбирайте маршрут и оставляйте заявку. Комфорт, бизнес, минивэн. 24/7.",
-    siteName: "Вектор РФ",
+    siteName: SITE_NAME,
     locale: "ru_RU",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
   },
@@ -47,8 +52,7 @@ function safePretty(slug: string) {
     .join(" ");
 }
 
-// Мини-маппинг для самых частых — чтобы выглядело “по-человечески”.
-// Остальные — через safePretty.
+// Мини-маппинг для самых частых — остальные через safePretty
 const CITY_MAP: Record<string, string> = {
   moskva: "Москва",
   "sankt-peterburg": "Санкт-Петербург",
@@ -80,7 +84,7 @@ const CITY_MAP: Record<string, string> = {
   lyubertsy: "Люберцы",
   domodedovo: "Домодедово",
 
-  // новые территории (как у тебя)
+  // новые территории
   donetsk: "Донецк",
   lugansk: "Луганск",
   mariupol: "Мариуполь",
@@ -103,7 +107,6 @@ function take<T>(arr: T[], n: number) {
 }
 
 function buildSections(routes: SeoRoute[]) {
-  // Группируем по "from", чтобы /city стал “каталогом источников”
   const byFrom = new Map<string, SeoRoute[]>();
   for (const r of routes) {
     const list = byFrom.get(r.from) ?? [];
@@ -111,7 +114,6 @@ function buildSections(routes: SeoRoute[]) {
     byFrom.set(r.from, list);
   }
 
-  // Приоритетный порядок “источников” (самые важные сверху)
   const priorityFrom: string[] = [
     "moskva",
     "sankt-peterburg",
@@ -130,8 +132,6 @@ function buildSections(routes: SeoRoute[]) {
     "smolensk",
     "tver",
     "yaroslavl",
-
-    // новые территории
     "donetsk",
     "lugansk",
     "mariupol",
@@ -163,39 +163,54 @@ function PillLink({ href, children }: { href: string; children: React.ReactNode 
 }
 
 export default function Page() {
-  // ✅ BreadcrumbList (Яндекс “навигационная цепочка” + Google breadcrumbs)
+  const routes = SEO_ROUTES;
+
+  // не делаем 2000 ссылок на одной странице
+  const routesForCatalog = routes.slice(0, 1000);
+
+  const sections = buildSections(routesForCatalog);
+  const quick = take(routesForCatalog, 36);
+
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: "Каталог направлений", item: `${SITE_URL}/city` },
+      { "@type": "ListItem", position: 2, name: "Каталог маршрутов", item: `${SITE_URL}/city` },
     ],
   };
 
-  // ВАЖНО: не надо выводить все 2000 ссылок одним списком “в лоб”.
-  // Для SEO достаточно 600–1200 ссылок на одной странице; остальное пусть добирается через sitemap.
-  // Это безопаснее по скорости и не превращает страницу в “простыню”.
-  const routes = buildSeoRoutes(2000);
-
-  // Для /city покажем до 1000 ссылок, но красиво по секциям.
-  const routesForCatalog = routes.slice(0, 1000);
-
-  const sections = buildSections(routesForCatalog);
-
-  // Доп. блок “быстрые ссылки” — топ-направления (из первых приоритетов)
-  const quick = take(routesForCatalog, 36);
+  // ✅ Каталог ссылок как ItemList (помогает Яндексу понять “страница-справочник”)
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Каталог маршрутов — Вектор РФ",
+    itemListOrder: "https://schema.org/ItemListUnordered",
+    numberOfItems: routesForCatalog.length,
+    itemListElement: routesForCatalog.slice(0, 200).map((r, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `${SITE_URL}/route/${r.from}/${r.to}`,
+      name: `${cityName(r.from)} — ${cityName(r.to)}`,
+    })),
+  };
 
   return (
     <main className="min-h-screen text-zinc-900">
       <Script
         id="ld-city-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      <Script
+        id="ld-city-itemlist"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
 
-      {/* фон как на главной, мягкий */}
+      {/* фон как на главной */}
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.25),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.14),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.12),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
@@ -204,9 +219,9 @@ export default function Page() {
         <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="text-xs font-semibold text-zinc-600">Каталог направлений</div>
+              <div className="text-xs font-semibold text-zinc-600">Каталог маршрутов</div>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
-                Города и маршруты по России
+                Города и направления по России
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
                 Выберите направление и оставьте заявку. Мы согласуем стоимость до подачи автомобиля.
@@ -251,7 +266,6 @@ export default function Page() {
 
         <div className="mt-8 grid gap-4">
           {sections.map((sec) => {
-            // В каждой секции показываем до 60 ссылок, иначе становится слишком тяжело.
             const links = take(sec.routes, 60);
 
             return (
@@ -292,7 +306,7 @@ export default function Page() {
         <div className="mt-8 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="text-lg font-extrabold tracking-tight">Не нашли направление?</div>
           <p className="mt-2 text-sm text-zinc-600">
-            Оставьте заявку — мы уточним маршрут, время и заранее согласуем стоимость.
+            Оставьте заявку — уточним маршрут, время и заранее согласуем стоимость.
           </p>
           <div className="mt-4">
             <Link

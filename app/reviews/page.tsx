@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import Script from "next/script";
 import ReviewsClient from "./reviews-client";
@@ -5,6 +6,35 @@ import ReviewsClient from "./reviews-client";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+const SITE_URL = "https://vector-rf.ru";
+const SITE_NAME = "Вектор РФ";
+const CANONICAL = `${SITE_URL}/reviews`;
+const PHONE_E164 = "+78314233929";
+
+export const metadata: Metadata = {
+  title: "Отзывы клиентов — Вектор РФ",
+  description:
+    "Отзывы клиентов о «Вектор РФ»: трансферы по городу, в аэропорт и межгород. Посмотрите отзывы и оставьте свой — публикуем после проверки.",
+  alternates: { canonical: CANONICAL },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    url: CANONICAL,
+    title: "Отзывы клиентов — Вектор РФ",
+    description:
+      "Отзывы клиентов о «Вектор РФ»: посмотрите реальные отзывы и оставьте свой. Публикуем после проверки.",
+    siteName: SITE_NAME,
+    locale: "ru_RU",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Отзывы клиентов — Вектор РФ",
+    description: "Отзывы клиентов о «Вектор РФ». Посмотрите отзывы и оставьте свой — 24/7.",
+    images: ["/og.jpg"],
+  },
+};
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -130,7 +160,6 @@ type ReviewForClient = {
   city: string | null;
   rating: number;
   createdAt: string;
-
   replyText: string | null;
   replyAuthor: string | null;
   repliedAt: string | null;
@@ -138,7 +167,7 @@ type ReviewForClient = {
 
 export default async function ReviewsPage() {
   const PHONE_DISPLAY = "+7 (831) 423-39-29";
-  const PHONE_TEL = "+78314233929";
+  const PHONE_TEL = PHONE_E164;
   const TELEGRAM = "https://t.me/vector_rf52";
 
   const rows = await prisma.review.findMany({
@@ -174,17 +203,25 @@ export default async function ReviewsPage() {
   const ratingValue = Number(avg(ratings).toFixed(1));
   const ratingCount = rows.length;
 
-  // ✅ Микроразметка: лучше через next/script, чтобы не ругался линтер/hydration
-  // + добавили url и address (без жёсткой точности, безопасно)
-  const jsonLd =
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Отзывы", item: CANONICAL },
+    ],
+  };
+
+  // LocalBusiness + AggregateRating + Reviews (если есть)
+  const localBusinessJsonLd =
     ratingCount > 0
       ? {
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
-          "@id": "https://vector-rf.ru/#localbusiness",
-          name: "Вектор РФ",
-          url: "https://vector-rf.ru/",
-          telephone: "+7-831-423-39-29",
+          "@id": `${SITE_URL}/#localbusiness`,
+          name: SITE_NAME,
+          url: `${SITE_URL}/`,
+          telephone: PHONE_E164,
           areaServed: { "@type": "Country", name: "Россия" },
           aggregateRating: {
             "@type": "AggregateRating",
@@ -211,7 +248,7 @@ export default async function ReviewsPage() {
               baseReview.comment = {
                 "@type": "Comment",
                 text: r.replyText,
-                author: { "@type": "Organization", name: r.replyAuthor || "Вектор РФ" },
+                author: { "@type": "Organization", name: r.replyAuthor || SITE_NAME },
                 dateCreated: r.repliedAt ? new Date(r.repliedAt).toISOString() : undefined,
               };
             }
@@ -223,18 +260,25 @@ export default async function ReviewsPage() {
 
   return (
     <div className="min-h-screen text-zinc-900">
+      {/* JSON-LD */}
+      <Script
+        id="ld-reviews-breadcrumbs"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      {localBusinessJsonLd ? (
+        <Script
+          id="ld-reviews-localbusiness"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+        />
+      ) : null}
+
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
-
-      {jsonLd ? (
-        <Script
-          id="ld-reviews"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      ) : null}
 
       <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/65 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
@@ -282,11 +326,14 @@ export default async function ReviewsPage() {
         </div>
 
         <div className="mt-6">
-          <SectionTitle title="Отзывы о «Вектор РФ»" desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки." />
+          <SectionTitle
+            title="Отзывы о «Вектор РФ»"
+            desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки."
+          />
         </div>
 
         <div className="grid gap-6 md:grid-cols-12">
-          <div id="leave" className="order-1 md:order-2 md:col-span-5">
+          <div id="leave" className="order-1 md:order-2 md:col-span-5 scroll-mt-24">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-xl backdrop-blur md:p-7">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -371,32 +418,34 @@ export default async function ReviewsPage() {
               </div>
 
               <div className="mt-5 grid gap-3">
-                {rows.map((r) => (
-                  <div key={r.id} className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="text-sm font-extrabold text-zinc-900">{r.name}</div>
-                      {r.city ? <div className="text-sm text-zinc-500">• {r.city}</div> : null}
-                      <div className="text-xs text-zinc-400">• {formatDate(r.createdAt)}</div>
-                    </div>
-
-                    <div className="mt-1 text-sm text-zinc-700">
-                      {"★".repeat(Math.max(1, Math.min(5, Number(r.rating) || 5)))}{" "}
-                      <span className="text-zinc-400">({Math.max(1, Math.min(5, Number(r.rating) || 5))}/5)</span>
-                    </div>
-
-                    <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.text}</div>
-
-                    {r.replyText ? (
-                      <div className="mt-4 rounded-2xl border border-zinc-200 bg-slate-50 p-4">
-                        <div className="text-xs font-semibold text-zinc-700">
-                          Ответ {r.replyAuthor ? `— ${r.replyAuthor}` : "администрации"}
-                          {r.repliedAt ? <span className="text-zinc-400"> • {formatDate(r.repliedAt)}</span> : null}
-                        </div>
-                        <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.replyText}</div>
+                {rows.map((r) => {
+                  const stars = Math.max(1, Math.min(5, Number(r.rating) || 5));
+                  return (
+                    <div key={r.id} className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="text-sm font-extrabold text-zinc-900">{r.name}</div>
+                        {r.city ? <div className="text-sm text-zinc-500">• {r.city}</div> : null}
+                        <div className="text-xs text-zinc-400">• {formatDate(r.createdAt)}</div>
                       </div>
-                    ) : null}
-                  </div>
-                ))}
+
+                      <div className="mt-1 text-sm text-zinc-700">
+                        {"★".repeat(stars)} <span className="text-zinc-400">({stars}/5)</span>
+                      </div>
+
+                      <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.text}</div>
+
+                      {r.replyText ? (
+                        <div className="mt-4 rounded-2xl border border-zinc-200 bg-slate-50 p-4">
+                          <div className="text-xs font-semibold text-zinc-700">
+                            Ответ {r.replyAuthor ? `— ${r.replyAuthor}` : "администрации"}
+                            {r.repliedAt ? <span className="text-zinc-400"> • {formatDate(r.repliedAt)}</span> : null}
+                          </div>
+                          <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.replyText}</div>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

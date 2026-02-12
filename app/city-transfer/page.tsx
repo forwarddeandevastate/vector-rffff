@@ -8,14 +8,15 @@ const SITE_NAME = "Вектор РФ";
 export const metadata: Metadata = {
   title: "Трансфер по городу — заказать поездку | Вектор РФ",
   description:
-    "Городской трансфер по Нижнему Новгороду и области. Быстрая подача, фиксируем стоимость заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
+    "Городской трансфер: быстрая подача, фиксируем заявку и согласуем стоимость заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/city-transfer` },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/city-transfer`,
     title: "Трансфер по городу | Вектор РФ",
     description:
-      "Городской трансфер: быстро, комфортно, фиксируем стоимость заранее. Заказ онлайн 24/7.",
+      "Городской трансфер: быстро, комфортно, согласуем стоимость заранее. Заказ онлайн 24/7.",
     siteName: SITE_NAME,
     locale: "ru_RU",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
@@ -30,20 +31,18 @@ export const metadata: Metadata = {
 
 type CityLink = { slug: string; label: string };
 
-// Внутригородские “точки” делаем безопасно: ведём на /city-transfer#order,
-// чтобы ничего не ломалось, даже если нет /route/<slug>/<slug>.
 const CITY_POINTS: CityLink[] = [
   { slug: "nizhniy-novgorod", label: "Нижний Новгород" },
   { slug: "dzerzhinsk", label: "Дзержинск" },
   { slug: "bor", label: "Бор" },
   { slug: "kstovo", label: "Кстово" },
 
-  { slug: "moskva", label: "Москва (городской трансфер)" },
-  { slug: "sankt-peterburg", label: "Санкт-Петербург (городской трансфер)" },
-  { slug: "kazan", label: "Казань (городской трансфер)" },
-  { slug: "samara", label: "Самара (городской трансфер)" },
-  { slug: "krasnodar", label: "Краснодар (городской трансфер)" },
-  { slug: "rostov-na-donu", label: "Ростов-на-Дону (городской трансфер)" },
+  { slug: "moskva", label: "Москва" },
+  { slug: "sankt-peterburg", label: "Санкт-Петербург" },
+  { slug: "kazan", label: "Казань" },
+  { slug: "samara", label: "Самара" },
+  { slug: "krasnodar", label: "Краснодар" },
+  { slug: "rostov-na-donu", label: "Ростов-на-Дону" },
 ];
 
 function cn(...xs: Array<string | false | null | undefined>) {
@@ -58,14 +57,16 @@ function CityBlock() {
           Городской трансфер — популярные точки
         </h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Быстрые ссылки на города/агломерации. Если нужен другой адрес — оставьте заявку, уточним детали.
+          Быстрые ссылки для заявки. Если нужен другой адрес — оставьте заявку, мы уточним детали и согласуем стоимость.
         </p>
 
         <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {CITY_POINTS.map((c) => (
             <a
               key={c.slug}
-              href="/city-transfer#order"
+              href={`/#order?utm_source=city-transfer&utm_medium=internal&utm_campaign=${encodeURIComponent(
+                c.slug
+              )}`}
               className={cn(
                 "rounded-2xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-semibold",
                 "text-zinc-800 shadow-sm backdrop-blur hover:bg-white hover:border-sky-200/80"
@@ -77,7 +78,7 @@ function CityBlock() {
         </div>
 
         <div className="mt-6 text-xs text-zinc-500">
-          Если нужны именно ссылки на /route/… — скажи, какие slug гарантированно существуют в seo-routes, и я включу их без риска 404.
+          Работаем 24/7. Учитываем пожелания: багаж, детское кресло, остановки по пути.
         </div>
       </div>
     </section>
@@ -85,13 +86,15 @@ function CityBlock() {
 }
 
 export default function Page() {
+  const canonical = `${SITE_URL}/city-transfer`;
+
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": `${SITE_URL}/city-transfer#service`,
+    "@id": `${canonical}#service`,
     name: "Трансфер по городу",
     serviceType: ["Такси по городу", "Городской трансфер"],
-    url: `${SITE_URL}/city-transfer`,
+    url: canonical,
     areaServed: { "@type": "Country", name: "Россия" },
     provider: {
       "@type": "Organization",
@@ -101,13 +104,45 @@ export default function Page() {
     },
   };
 
-  // ✅ BreadcrumbList (для красивых сниппетов)
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: "Трансфер по городу", item: `${SITE_URL}/city-transfer` },
+      { "@type": "ListItem", position: 2, name: "Трансфер по городу", item: canonical },
+    ],
+  };
+
+  // ✅ FAQPage JSON-LD (вопросы совпадают с блоком FAQ на странице)
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Как быстро подаёте автомобиль?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Обычно подача занимает от 15–30 минут (зависит от адреса и загрузки). Точное время подтверждаем после заявки.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Можно ли заказать поездку заранее?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да, укажите дату и время — мы зафиксируем заявку и подтвердим подачу.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Что если нужна остановка по пути?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Укажите остановку в комментарии — учтём при расчёте и согласовании стоимости.",
+        },
+      },
     ],
   };
 
@@ -116,14 +151,20 @@ export default function Page() {
       <Script
         id="ld-city-service"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
       <Script
         id="ld-city-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Script
+        id="ld-city-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <ServicePage

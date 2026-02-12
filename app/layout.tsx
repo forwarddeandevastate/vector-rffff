@@ -48,9 +48,13 @@ export const metadata: Metadata = {
     "междугородний трансфер",
   ],
 
+  // ❗️ВАЖНО:
+  // - НЕ ставим canonical в root layout
+  // - НЕ ставим openGraph.url в root layout
+  // Это должно задаваться на уровне конкретной страницы.
+
   openGraph: {
     type: "website",
-    url: SITE_URL,
     title: "Вектор РФ — трансферы и поездки по России",
     description:
       "Трансферы по городу, межгород, аэропорты. Комфортные поездки по России. Онлайн-заявка 24/7.",
@@ -156,7 +160,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {YANDEX_VERIFICATION ? (
           <meta name="yandex-verification" content={YANDEX_VERIFICATION} />
         ) : null}
+      </head>
 
+      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
         {/* Schema.org JSON-LD */}
         <Script
           id="schema-org"
@@ -197,8 +203,8 @@ ym(${YM_ID}, 'init', {
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
-(function(s,o){s[o]=s[o]||function(){(s[o].d=s[o].d||[]).push(arguments);}}
-)(window,'UntargetJS');
+(function(s,o){s[o]=s[o]||function(){(s[o].d=s[o].d||[]).push(arguments);}})
+(window,'UntargetJS');
 UntargetJS('ts', new Date());
 UntargetJS('id', '7a2be');
             `,
@@ -209,9 +215,7 @@ UntargetJS('id', '7a2be');
           strategy="afterInteractive"
           src="https://cdn.untarget.ai/untarget.min.o.js"
         />
-      </head>
 
-      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
         {/* Yandex.Metrika noscript */}
         <noscript>
           <div>

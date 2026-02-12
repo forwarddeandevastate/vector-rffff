@@ -4,15 +4,18 @@ import ServicePage from "../ui/service-page";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
+const CANONICAL = `${SITE_URL}/minivan-transfer`;
+const PHONE_E164 = "+78314233929";
 
 export const metadata: Metadata = {
   title: "Минивэн и групповой трансфер — 4–7 мест | Вектор РФ",
   description:
     "Минивэн и групповой трансфер: для семьи/компании и большого багажа. В аэропорт, по городу и на межгород. Согласуем стоимость заранее. Онлайн-заявка 24/7.",
-  alternates: { canonical: `${SITE_URL}/minivan-transfer` },
+  alternates: { canonical: CANONICAL },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    url: `${SITE_URL}/minivan-transfer`,
+    url: CANONICAL,
     title: "Минивэн / групповой трансфер — Вектор РФ",
     description:
       "Групповые поездки и трансферы на минивэне: больше мест и багажа. Согласуем стоимость до подачи. 24/7.",
@@ -32,11 +35,11 @@ export default function Page() {
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "@id": `${SITE_URL}/minivan-transfer#service`,
+    "@id": `${CANONICAL}#service`,
     name: "Минивэн и групповой трансфер",
     description:
       "Трансфер на минивэне для 4–7 пассажиров и большого багажа: по городу, в аэропорт и на межгород. Стоимость согласуем до подачи автомобиля. 24/7.",
-    url: `${SITE_URL}/minivan-transfer`,
+    url: CANONICAL,
     areaServed: { "@type": "Country", name: "Россия" },
     serviceType: [
       "Минивэн",
@@ -50,7 +53,7 @@ export default function Page() {
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      telephone: "+7-831-423-39-29",
+      telephone: PHONE_E164,
     },
   };
 
@@ -58,13 +61,38 @@ export default function Page() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      // ✅ лучше со слэшем, чтобы был корректный URL главной
       { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Минивэн / групповой трансфер", item: CANONICAL },
+    ],
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
       {
-        "@type": "ListItem",
-        position: 2,
-        name: "Минивэн / групповой трансфер",
-        item: `${SITE_URL}/minivan-transfer`,
+        "@type": "Question",
+        name: "Сколько мест в минивэне?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Обычно 4–7 мест. Напишите количество пассажиров и багаж — подберём оптимальный вариант.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Подходит для аэропорта с багажом?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да, это один из самых частых кейсов: чемоданы, коляски, спортивный инвентарь.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Можно заказать заранее на конкретное время?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да. Укажите дату/время — заявка фиксируется, подтверждаем подачу.",
+        },
       },
     ],
   };
@@ -74,14 +102,20 @@ export default function Page() {
       <Script
         id="ld-minivan-service"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
       <Script
         id="ld-minivan-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Script
+        id="ld-minivan-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <ServicePage
