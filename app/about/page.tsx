@@ -268,5 +268,58 @@ export default function AboutPage() {
         <section className="mt-4 rounded-3xl border border-zinc-200 bg-white/75 p-6 shadow-sm backdrop-blur md:p-8">
           <h2 className="text-2xl font-extrabold tracking-tight">Регионы и направления</h2>
           <p className="mt-2 text-sm text-zinc-600">
-            Работаем по России: город, аэропор
-::contentReference[oaicite:0]{index=0}
+            Работаем по России: городские поездки, аэропорты, вокзалы и междугородние маршруты. География постоянно
+            расширяется — если нужного направления нет на сайте, оставьте заявку, и мы предложим вариант.
+          </p>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            {[
+              {
+                t: "Город",
+                d: "Поездки по городу и области, встречи у дома/офиса, подача по адресу.",
+              },
+              {
+                t: "Аэропорты",
+                d: "Трансферы в аэропорт и из аэропорта, встреча по прилёту, помощь с багажом.",
+              },
+              {
+                t: "Межгород",
+                d: "Поездки между городами, в том числе с остановками и вариантом туда-обратно.",
+              },
+            ].map((x) => (
+              <div key={x.t} className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
+                <div className="text-sm font-extrabold text-zinc-900">{x.t}</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-600">{x.d}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link
+              href="/services"
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-5 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
+            >
+              Смотреть услуги
+            </Link>
+
+            <Link
+              href="/faq"
+              className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+            >
+              Вопросы и ответы
+            </Link>
+
+            <Link
+              href="/reviews"
+              className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+            >
+              Отзывы
+            </Link>
+          </div>
+        </section>
+
+        <footer className="mt-8 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</footer>
+      </div>
+    </main>
+  );
+}
