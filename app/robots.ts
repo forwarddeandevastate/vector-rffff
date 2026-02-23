@@ -7,14 +7,23 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "Yandex",
-        disallow: ["/admin", "/api", "/_next"],
+        disallow: [
+          "/admin",
+          "/api",
+          "/_next",
+          "/*?etext=",   // 🔥 запрет параметра etext
+        ],
       },
       {
         userAgent: "*",
-        disallow: ["/admin", "/api", "/_next"],
+        disallow: [
+          "/admin",
+          "/api",
+          "/_next",
+          "/*?etext=",   // 🔥 запрет параметра etext
+        ],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-    // host в MetadataRoute.Robots не обязателен, и Next его не всегда пишет в robots.txt
   };
 }
