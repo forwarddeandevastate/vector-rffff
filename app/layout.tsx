@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import BreadcrumbsJsonLd from "./breadcrumbs-jsonld";
 
 const manrope = Manrope({
   subsets: ["cyrillic"],
@@ -170,6 +171,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
+
+        {/* ✅ Breadcrumbs JSON-LD */}
+        <BreadcrumbsJsonLd siteUrl={SITE_URL} />
 
         {/* Yandex.Metrika */}
         <Script
