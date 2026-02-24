@@ -1,31 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 import bcrypt from "bcryptjs";
 import { writeAudit } from "@/lib/audit";
 
-type AdminJwtPayload = {
-  sub: string | number;
-  email: string;
-  role?: string;
-};
-
-async function getAdminOrThrow(): Promise<AdminJwtPayload> {
-  const res = (await requireAdmin()) as
-    | { ok: true; payload: AdminJwtPayload }
-    | { ok: false; error: string };
-
-  if (!res?.ok) throw new Error("UNAUTHORIZED");
-  return res.payload;
-}
-
 export async function GET() {
   try {
-    await getAdminOrThrow();
+    await requireAdminOrThrow();
 
     const users = await prisma.user.findMany({
       orderBy: [{ role: "asc" }, { name: "asc" }],
-      select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
     });
 
     return NextResponse.json({ ok: true, users });
@@ -37,11 +29,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const admin = await getAdminOrThrow();
+    const admin = await requireAdminOrThrow();
     const actorId = Number(admin.sub);
     const actorEmail = admin.email;
 
     const body = await req.json().catch(() => null);
+
     const email = body?.email?.toString().trim().toLowerCase();
     const name = body?.name?.toString().trim();
     const password = body?.password?.toString();
@@ -61,7 +54,14 @@ export async function POST(req: Request) {
         role: "DISPATCHER",
         isActive,
       },
-      select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
     });
 
     await writeAudit({

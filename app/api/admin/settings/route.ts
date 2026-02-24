@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 import { writeAudit } from "@/lib/audit";
 
 export async function GET() {
   try {
-    const auth = await requireAdmin();
-    if (!auth.ok) {
-      return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
-    }
+    await requireAdminOrThrow();
 
     const settings = await prisma.siteSettings.findUnique({
       where: { id: 1 },
@@ -16,18 +13,14 @@ export async function GET() {
 
     return NextResponse.json({ ok: true, settings });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
+    const status = e?.message === "UNAUTHORIZED" ? 401 : 500;
+    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireAdmin();
-    if (!auth.ok) {
-      return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
-    }
-
-    const admin = auth.payload;
+    const admin = await requireAdminOrThrow();
     const actorId = Number(admin.sub);
     const actorEmail = admin.email;
 
@@ -72,6 +65,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, settings: updated });
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status: 500 });
+    const status = e?.message === "UNAUTHORIZED" ? 401 : 500;
+    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status });
   }
 }

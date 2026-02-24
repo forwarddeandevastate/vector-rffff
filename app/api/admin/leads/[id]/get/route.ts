@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 
 export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    await requireAdmin();
+    await requireAdminOrThrow();
 
     const { id } = await ctx.params;
     const leadId = Number(id);

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 import { sendTelegramToAll } from "@/lib/telegram";
 
 export const runtime = "nodejs";
 
 export async function POST() {
   try {
-    await requireAdmin();
+    await requireAdminOrThrow();
 
     const r = await sendTelegramToAll("<b>Тест</b>: Telegram уведомления работают ✅");
 

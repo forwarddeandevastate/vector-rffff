@@ -1,38 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 import { writeAudit } from "@/lib/audit";
-
-type AdminPayload = {
-  sub: string | number;
-  email: string;
-  role?: string;
-};
-
-type RequireAdminResult =
-  | { ok: true; payload: AdminPayload }
-  | { ok: false; error: string; payload?: undefined };
-
-async function getAdminPayloadOrThrow(): Promise<AdminPayload> {
-  const res = (await requireAdmin()) as any;
-
-  // Новый формат: { ok, payload }
-  if (res && typeof res === "object" && "ok" in res) {
-    if (!res.ok) throw new Error("UNAUTHORIZED");
-    return res.payload as AdminPayload;
-  }
-
-  // Старый формат (если когда-то был): payload напрямую
-  if (res && typeof res === "object" && "sub" in res && "email" in res) {
-    return res as AdminPayload;
-  }
-
-  throw new Error("UNAUTHORIZED");
-}
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const admin = await getAdminPayloadOrThrow();
+    const admin = await requireAdminOrThrow();
     const actorId = Number(admin.sub);
     const actorEmail = admin.email;
 
@@ -45,6 +18,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     const body = await req.json().catch(() => ({}));
     const data: any = {};
 
+    // Разрешаем менять только isActive (как и было)
     if (typeof body.isActive === "boolean") data.isActive = body.isActive;
 
     if (Object.keys(data).length === 0) {

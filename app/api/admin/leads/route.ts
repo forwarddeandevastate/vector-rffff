@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 
 export async function GET(req: Request) {
   try {
-    await requireAdmin();
+    await requireAdminOrThrow();
 
     const url = new URL(req.url);
     const status = url.searchParams.get("status"); // new|in_progress|done|canceled

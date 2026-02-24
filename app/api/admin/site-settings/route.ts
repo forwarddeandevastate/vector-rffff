@@ -1,28 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 import { writeAudit } from "@/lib/audit";
-
-type RequireAdminResult =
-  | { ok: true; payload: { sub: string | number; email: string } }
-  | { ok: false; error: string };
-
-async function getAdminOrThrow() {
-  const res = (await requireAdmin()) as RequireAdminResult;
-
-  // Новый формат: { ok, payload }
-  if (res && typeof res === "object" && "ok" in res) {
-    if (!res.ok) throw new Error("UNAUTHORIZED");
-    return res.payload;
-  }
-
-  // Старый формат (на всякий): payload напрямую
-  return res as any;
-}
 
 export async function GET() {
   try {
-    await getAdminOrThrow();
+    await requireAdminOrThrow();
 
     const settings = await prisma.siteSettings.findFirst({
       orderBy: { id: "asc" },
@@ -37,7 +20,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const admin = await getAdminOrThrow();
+    const admin = await requireAdminOrThrow();
     const actorId = Number(admin.sub);
     const actorEmail = admin.email;
 

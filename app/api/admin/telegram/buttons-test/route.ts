@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 import { sendTelegramText } from "@/lib/telegram";
 
 export const runtime = "nodejs"; // важно для стабильной работы с fetch на Vercel
 
 export async function POST() {
   try {
-    await requireAdmin();
+    await requireAdminOrThrow();
 
     const chatId = process.env.TELEGRAM_CHAT_ID || "";
     if (!chatId) {
-      return NextResponse.json(
-        { ok: false, error: "Missing TELEGRAM_CHAT_ID" },
-        { status: 500 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing TELEGRAM_CHAT_ID" }, { status: 500 });
     }
 
     const keyboard = {
@@ -32,10 +29,7 @@ export async function POST() {
     return NextResponse.json({ ok: true, result: r });
   } catch (e: any) {
     const status = e?.message === "UNAUTHORIZED" ? 401 : 500;
-    return NextResponse.json(
-      { ok: false, error: e?.message || "server error" },
-      { status }
-    );
+    return NextResponse.json({ ok: false, error: e?.message || "server error" }, { status });
   }
 }
 

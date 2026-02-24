@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-api";
+import { requireAdminOrThrow } from "@/lib/admin-api";
 
 export async function GET() {
   try {
-    await requireAdmin();
+    await requireAdminOrThrow();
 
     const users = await prisma.user.findMany({
       where: { role: "DISPATCHER", isActive: true },
