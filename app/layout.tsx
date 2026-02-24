@@ -158,6 +158,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru-RU">
       <head>
+        {/* ✅ Анти-мигание темы (админка) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function () {
+  try {
+    var saved = localStorage.getItem('admin-theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+  } catch (e) {}
+})();`,
+          }}
+        />
+
         {YANDEX_VERIFICATION ? (
           <meta name="yandex-verification" content={YANDEX_VERIFICATION} />
         ) : null}
@@ -214,20 +228,12 @@ UntargetJS('id', '7a2be');
             `,
           }}
         />
-        <Script
-          id="untarget-ai-src"
-          strategy="afterInteractive"
-          src="https://cdn.untarget.ai/untarget.min.o.js"
-        />
+        <Script id="untarget-ai-src" strategy="afterInteractive" src="https://cdn.untarget.ai/untarget.min.o.js" />
 
         {/* Yandex.Metrika noscript */}
         <noscript>
           <div>
-            <img
-              src={`https://mc.yandex.ru/watch/${YM_ID}`}
-              style={{ position: "absolute", left: "-9999px" }}
-              alt=""
-            />
+            <img src={`https://mc.yandex.ru/watch/${YM_ID}`} style={{ position: "absolute", left: "-9999px" }} alt="" />
           </div>
         </noscript>
 

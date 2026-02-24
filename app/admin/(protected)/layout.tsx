@@ -1,17 +1,17 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import LogoutButton from "./logout-button";
 import ThemeToggle from "./theme-toggle";
 import { ToastProvider } from "./toast";
+import { requireAdmin } from "@/lib/admin-api";
 
 export default async function AdminProtectedLayout({ children }: { children: ReactNode }) {
-  const name = process.env.ADMIN_COOKIE_NAME || "admin_token";
-  const cookieStore = await cookies();
-  const token = cookieStore.get(name)?.value;
+  const auth = await requireAdmin();
 
-  if (!token) redirect("/admin/login");
+  if (!auth.ok) {
+    redirect("/admin/login?reason=expired");
+  }
 
   return (
     <ToastProvider>

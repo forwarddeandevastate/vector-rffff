@@ -16,7 +16,7 @@ function Spinner({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-export default function LoginClient() {
+export default function LoginClient({ reason }: { reason?: string }) {
   const router = useRouter();
   const sp = useSearchParams();
   const next = sp.get("next") || "/admin/leads";
@@ -60,6 +60,12 @@ export default function LoginClient() {
               <div className="text-sm text-zinc-600 dark:text-zinc-400">Вход в админ-панель</div>
             </div>
           </div>
+
+          {reason === "expired" && (
+            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+              Сессия истекла. Пожалуйста, войдите снова.
+            </div>
+          )}
 
           <form onSubmit={onSubmit} className="grid gap-3">
             <div className="grid gap-1">
