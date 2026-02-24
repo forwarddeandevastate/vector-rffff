@@ -210,7 +210,7 @@ function setTimeSameDay(base: Date, hh: number, mm: number) {
 }
 
 /**
- * ✅ НОВОЕ: только правка телефона (РФ)
+ * ✅ Правка телефона (РФ)
  * - 8xxxxxxxxxx -> +7xxxxxxxxxx
  * - 7xxxxxxxxxx -> +7xxxxxxxxxx
  * - +8xxxxxxxxxx -> +7xxxxxxxxxx
@@ -273,6 +273,18 @@ export default function LeadForm({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
+
+  // ✅ НОВОЕ: если выбрана "Город", но ввели разные точки "Откуда/Куда" — переключаем на "Межгород"
+  useEffect(() => {
+    if (routeType !== "city") return;
+    const a = normalize(fromText);
+    const b = normalize(toText);
+    if (!a || !b) return;
+    if (a === b) return;
+
+    onRouteTypeChange("intercity");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromText, toText]);
 
   const canSubmit = useMemo(() => {
     return name.trim() && phone.trim() && fromText.trim() && toText.trim();
@@ -413,15 +425,16 @@ export default function LeadForm({
               </div>
             )}
 
+            {/* ✅ ПОРЯДОК: Межгород → Аэропорт → Город */}
             <div className="mt-2 flex flex-wrap gap-2">
-              <SegButton active={routeType === "city"} onClick={() => onRouteTypeChange("city")}>
-                Город
+              <SegButton active={routeType === "intercity"} onClick={() => onRouteTypeChange("intercity")}>
+                Межгород
               </SegButton>
               <SegButton active={routeType === "airport"} onClick={() => onRouteTypeChange("airport")}>
                 Аэропорт
               </SegButton>
-              <SegButton active={routeType === "intercity"} onClick={() => onRouteTypeChange("intercity")}>
-                Межгород
+              <SegButton active={routeType === "city"} onClick={() => onRouteTypeChange("city")}>
+                Город
               </SegButton>
             </div>
 
@@ -439,7 +452,9 @@ export default function LeadForm({
                     {roundTrip ? <div className="mt-0.5 text-[11px] text-zinc-600">Туда-обратно</div> : null}
                   </>
                 ) : (
-                  <div className="mt-1 text-[11px] text-zinc-700">Введите “Откуда” и “Куда” — посчитаем автоматически.</div>
+                  <div className="mt-1 text-[11px] text-zinc-700">
+                    Введите “Откуда” и “Куда” — посчитаем автоматически.
+                  </div>
                 )}
               </div>
             ) : null}
@@ -633,7 +648,6 @@ export default function LeadForm({
         {loading ? "Отправляем…" : "Отправить заявку"}
       </button>
 
-      {/* ✅ НЕНАВЯЗЧИВО: документы под кнопкой */}
       <div className="text-[11px] leading-5 text-zinc-500">
         Нажимая «Отправить заявку», вы соглашаетесь с{" "}
         <a href="/privacy" className="text-zinc-600 underline decoration-zinc-300 hover:text-zinc-900">

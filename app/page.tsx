@@ -152,9 +152,7 @@ function ClassCardButton({
       className={cn(
         "text-left rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur transition w-full",
         "focus:outline-none focus:ring-2 focus:ring-sky-200/80",
-        active
-          ? "border-sky-300 ring-2 ring-sky-200/70 shadow-md bg-white"
-          : "border-zinc-200 hover:border-sky-200/70 hover:bg-white/90"
+        active ? "border-sky-300 ring-2 ring-sky-200/70 shadow-md bg-white" : "border-zinc-200 hover:border-sky-200/70 hover:bg-white/90"
       )}
       aria-pressed={active ? "true" : "false"}
     >
@@ -164,12 +162,7 @@ function ClassCardButton({
           <div className="mt-1 text-xs text-zinc-600">{priceHint}</div>
         </div>
 
-        <div
-          className={cn(
-            "grid h-9 w-9 place-items-center rounded-xl ring-1",
-            active ? "bg-sky-100 ring-sky-200" : "bg-sky-50 ring-sky-100"
-          )}
-        >
+        <div className={cn("grid h-9 w-9 place-items-center rounded-xl ring-1", active ? "bg-sky-100 ring-sky-200" : "bg-sky-50 ring-sky-100")}>
           <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600" />
         </div>
       </div>
@@ -194,7 +187,8 @@ export default function HomePage() {
   const TELEGRAM = "https://t.me/vector_rf52";
 
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
-  const [selectedRouteType, setSelectedRouteType] = useState<RouteType>("city");
+  // ✅ Межгород по умолчанию
+  const [selectedRouteType, setSelectedRouteType] = useState<RouteType>("intercity");
 
   const orderRef = useRef<HTMLDivElement | null>(null);
 
@@ -231,8 +225,7 @@ export default function HomePage() {
           name: "Как быстро подаётся машина?",
           acceptedAnswer: {
             "@type": "Answer",
-            text:
-              "По городу обычно 15–30 минут (зависит от района и времени). В аэропорт/межгород — подача к согласованному времени.",
+            text: "По городу обычно 15–30 минут (зависит от района и времени). В аэропорт/межгород — подача к согласованному времени.",
           },
         },
         {
@@ -240,8 +233,7 @@ export default function HomePage() {
           name: "Встречаете в аэропорту с табличкой?",
           acceptedAnswer: {
             "@type": "Answer",
-            text:
-              "Да. Водитель встречает в зоне прилёта с табличкой. Можно указать номер рейса в комментарии к заявке.",
+            text: "Да. Водитель встречает в зоне прилёта с табличкой. Можно указать номер рейса в комментарии к заявке.",
           },
         },
         {
@@ -249,8 +241,7 @@ export default function HomePage() {
           name: "Можно ли заказать межгород туда-обратно?",
           acceptedAnswer: {
             "@type": "Answer",
-            text:
-              "Да, отметьте «Туда-обратно» в форме (или напишите в комментарии) — согласуем детали обратной поездки.",
+            text: "Да, отметьте «Туда-обратно» в форме (или напишите в комментарии) — согласуем детали обратной поездки.",
           },
         },
         {
@@ -258,8 +249,7 @@ export default function HomePage() {
           name: "Работаете с компаниями?",
           acceptedAnswer: {
             "@type": "Answer",
-            text:
-              "Да. Корпоративные перевозки для сотрудников и гостей. Работаем по договору, возможен безнал и закрывающие документы.",
+            text: "Да. Корпоративные перевозки для сотрудников и гостей. Работаем по договору, возможен безнал и закрывающие документы.",
           },
         },
       ],
@@ -354,16 +344,8 @@ export default function HomePage() {
               Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
             </p>
 
+            {/* ✅ Порядок: Межгород → Аэропорт → Город */}
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => pickRouteType("city")}
-                className={cn(routeButtonBase, selectedRouteType === "city" ? routeActive : routeIdle)}
-              >
-                <div className="text-sm font-extrabold text-zinc-900">Город</div>
-                <div className="mt-1 text-sm text-zinc-600">Встреча и поездки по городу</div>
-              </button>
-
               <button
                 type="button"
                 onClick={() => pickRouteType("intercity")}
@@ -380,6 +362,15 @@ export default function HomePage() {
               >
                 <div className="text-sm font-extrabold text-zinc-900">Аэропорты</div>
                 <div className="mt-1 text-sm text-zinc-600">Встреча по времени прилёта</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => pickRouteType("city")}
+                className={cn(routeButtonBase, selectedRouteType === "city" ? routeActive : routeIdle)}
+              >
+                <div className="text-sm font-extrabold text-zinc-900">Город</div>
+                <div className="mt-1 text-sm text-zinc-600">Встреча и поездки по городу</div>
               </button>
             </div>
 
@@ -510,9 +501,7 @@ export default function HomePage() {
                   </a>
                 </div>
 
-                <div className="mt-4 text-xs text-zinc-500">
-                  Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.
-                </div>
+                <div className="mt-4 text-xs text-zinc-500">Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.</div>
               </div>
             </div>
           </div>
@@ -801,7 +790,6 @@ export default function HomePage() {
                 Реквизиты компании
               </a>
 
-              {/* ✅ Цены — только внизу */}
               <a
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href="/prices"
@@ -811,7 +799,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* ✅ ЕДИНСТВЕННОЕ ИЗМЕНЕНИЕ НИЖЕ: вместо “в ряд” — блоки по категориям/колонкам */}
           <div className="mt-6 border-t border-zinc-200/70 pt-5">
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
               <div>
