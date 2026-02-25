@@ -1,20 +1,22 @@
 import { defineConfig } from "prisma/config";
 
-function must(name: string) {
-  const v = process.env[name];
-  if (!v || !v.trim()) throw new Error(`Missing ${name}`);
-  return v.trim();
+function pickUrl() {
+  // Для migrate deploy лучше DIRECT_URL (прямое подключение), если есть.
+  const direct = process.env.DIRECT_URL?.trim();
+  if (direct) return direct;
+
+  const pooled = process.env.DATABASE_URL?.trim();
+  if (pooled) return pooled;
+
+  // Чтобы ошибка была понятной в логах Vercel
+  throw new Error("Missing DATABASE_URL (and DIRECT_URL). Set it in Vercel Environment Variables.");
 }
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
-
-  // Prisma 7: connection URL для migrate живёт здесь.
-  // Для Neon: миграции лучше гонять через DIRECT_URL (не pooler).
-  // Если DIRECT_URL не задан — fallback на DATABASE_URL.
   datasources: {
     db: {
-      url: process.env.DIRECT_URL?.trim() || must("DATABASE_URL"),
+      url: pickUrl(),
     },
   },
 });
