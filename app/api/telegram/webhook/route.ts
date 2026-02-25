@@ -45,6 +45,7 @@ async function getLead(leadId: number) {
       roundTrip: true,
       comment: true,
       price: true,
+      priceIsManual: true, // ✅ добавили
       commission: true,
       status: true,
     },
@@ -115,16 +116,22 @@ export async function POST(req: Request) {
 
       // --- Статусы ---
       if (action === "in_progress" || action === "done" || action === "new") {
-        await prisma.lead.update({
-          where: { id: leadId },
-          data: { status: action },
-        });
+        // ✅ если возвращаем в NEW — логично снова считать цену авторасчётом (если она была ручной)
+        const dataToUpdate =
+          action === "new"
+            ? ({ status: action, priceIsManual: false } as const)
+            : ({ status: action } as const);
+
+        await prisma.lead.update({ where: { id: leadId }, data: dataToUpdate });
 
         const lead = await getLead(leadId);
+
+        // редактируем сообщение, где нажали
         if (lead && chatId && msgId) {
           await editTelegramMessage(chatId, msgId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
         }
 
+        // и обновим везде, где есть маппинг
         const msgs = await prisma.telegramMessage.findMany({
           where: { kind: "lead", leadId },
           select: { chatId: true, messageId: true },
@@ -142,42 +149,41 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
 
-      // --- Отмена = удалить ТОЛЬКО из Telegram, в БД оставить ---
+      // --- Отмена = убрать из Telegram (в БД оставить) ---
       if (action === "canceled") {
-        // 1) пометим в БД как canceled (история сохраняется)
-        await prisma.lead
-          .update({
-            where: { id: leadId },
-            data: { status: "canceled" },
-          })
-          .catch(() => null);
+        await prisma.lead.update({ where: { id: leadId }, data: { status: "canceled" } }).catch(() => null);
 
-        // 2) найдём все сообщения этой заявки
         const msgs = await prisma.telegramMessage.findMany({
           where: { kind: "lead", leadId },
           select: { chatId: true, messageId: true },
         });
 
-        // 3) удалим сообщения в Telegram
         for (const mm of msgs) {
           await deleteTelegramMessage(mm.chatId, mm.messageId).catch(() => null);
         }
 
-        // 4) удалим маппинг из БД, чтобы больше не пытаться редактировать удалённые сообщения
         await prisma.telegramMessage.deleteMany({ where: { kind: "lead", leadId } });
 
-        if (cqId) await answerCallbackQuery(cqId, "Убрано из Telegram");
+        if (cqId) await answerCallbackQuery(cqId, "Убрано");
         return NextResponse.json({ ok: true });
       }
 
-      // --- Цена/Комиссия ---
+      // --- Цена/Комиссия: просим число и НЕ оставляем служебные сообщения ---
+      const forceReply = {
+        force_reply: true,
+        input_field_placeholder: "Например: 40000",
+        selective: false,
+      };
+
       if (action === "set_price") {
         if (!tgUserId || !chatId) {
           if (cqId) await answerCallbackQuery(cqId, "Нет данных чата");
           return NextResponse.json({ ok: true });
         }
         await setPendingInput(tgUserId, "lead_price", leadId);
-        await sendTelegramText(chatId, `Введите новую цену для заявки <b>#${leadId}</b> (только число).`);
+
+        await sendTelegramText(chatId, `Введите новую цену для заявки <b>#${leadId}</b> (только число).`, forceReply);
+
         if (cqId) await answerCallbackQuery(cqId, "Жду цену");
         return NextResponse.json({ ok: true });
       }
@@ -188,7 +194,9 @@ export async function POST(req: Request) {
           return NextResponse.json({ ok: true });
         }
         await setPendingInput(tgUserId, "lead_commission", leadId);
-        await sendTelegramText(chatId, `Введите комиссию для заявки <b>#${leadId}</b> (только число).`);
+
+        await sendTelegramText(chatId, `Введите комиссию для заявки <b>#${leadId}</b> (только число).`, forceReply);
+
         if (cqId) await answerCallbackQuery(cqId, "Жду комиссию");
         return NextResponse.json({ ok: true });
       }
@@ -223,24 +231,24 @@ export async function POST(req: Request) {
           update: { kind: pending.kind, entityId: pending.entityId, createdAt: new Date() },
           create: { tgUserId, kind: pending.kind, entityId: pending.entityId },
         });
-        await sendTelegramText(chatId, "Нужно число. Например: 25440");
         return NextResponse.json({ ok: true });
       }
 
       const leadId = Number(pending.entityId);
-      if (!Number.isFinite(leadId)) {
-        await sendTelegramText(chatId, "Ошибка: некорректный ID заявки");
-        return NextResponse.json({ ok: true });
-      }
+      if (!Number.isFinite(leadId)) return NextResponse.json({ ok: true });
 
+      // ✅ обновляем БД
       if (pending.kind === "lead_price") {
-        await prisma.lead.update({ where: { id: leadId }, data: { price: amount } });
-        await sendTelegramText(chatId, `Цена для заявки <b>#${leadId}</b> обновлена: <b>${amount} ₽</b>`);
+        // ВАЖНО: если поставили цену вручную — ставим флаг
+        await prisma.lead.update({
+          where: { id: leadId },
+          data: { price: amount, priceIsManual: true },
+        });
       } else if (pending.kind === "lead_commission") {
         await prisma.lead.update({ where: { id: leadId }, data: { commission: amount } });
-        await sendTelegramText(chatId, `Комиссия для заявки <b>#${leadId}</b> обновлена: <b>${amount} ₽</b>`);
       }
 
+      // обновляем карточки в TG (где они есть)
       const lead = await getLead(leadId);
       if (lead) {
         const msgs = await prisma.telegramMessage.findMany({
@@ -254,6 +262,13 @@ export async function POST(req: Request) {
           );
         }
       }
+
+      // ✅ чистим чат: удаляем сообщение пользователя + "Введите ..."
+      const userMsgId = Number(msg?.message_id ?? 0);
+      const promptMsgId = Number(msg?.reply_to_message?.message_id ?? 0);
+
+      if (userMsgId) await deleteTelegramMessage(chatId, userMsgId).catch(() => null);
+      if (promptMsgId) await deleteTelegramMessage(chatId, promptMsgId).catch(() => null);
 
       return NextResponse.json({ ok: true });
     } catch (e: any) {

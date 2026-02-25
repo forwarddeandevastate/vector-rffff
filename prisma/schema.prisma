@@ -45,7 +45,12 @@ model Lead {
 
   carClass       String
   roundTrip      Boolean  @default(false)
+
+  // Итоговая цена (может быть авторасчёт или ручная)
   price          Int?
+
+  // ✅ Если true — значит цену задали вручную, авторасчёт в TG не показываем
+  priceIsManual  Boolean  @default(false)
 
   // ✅ Комиссия (рубли), редактируется из Telegram/админки
   commission     Int?
@@ -96,7 +101,7 @@ model SiteSettings {
   address      String?
   notes        String?
 
-  updatedAt    DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("site_settings")
 }

@@ -231,7 +231,7 @@ export function leadKeyboard(leadId: number) {
         { text: "✏️ Изменить цену", callback_data: `L:${leadId}:set_price` },
         { text: "💸 Комиссия", callback_data: `L:${leadId}:set_commission` },
       ],
-      [{ text: "❌ Отменить (удалить)", callback_data: `L:${leadId}:canceled` }],
+      [{ text: "❌ Убрать из Telegram", callback_data: `L:${leadId}:canceled` }],
     ],
   };
 }
@@ -247,6 +247,7 @@ export function leadMessage(lead: {
   roundTrip?: boolean | null;
   comment?: string | null;
   price?: number | null;
+  priceIsManual?: boolean | null; // ✅ добавили
   commission?: number | null;
   status?: string | null;
 }) {
@@ -270,7 +271,18 @@ export function leadMessage(lead: {
   lines.push(`📍 <b>${escHtml(lead.fromText)}</b> → <b>${escHtml(lead.toText)}</b>`);
   if (lead.datetime) lines.push(`🕒 ${escHtml(lead.datetime)}`);
   lines.push(`🚗 Класс: <b>${escHtml(lead.carClass)}</b>${lead.roundTrip ? " • туда-обратно" : ""}`);
-  if (typeof lead.price === "number") lines.push(`💰 Итог: <b>${lead.price} ₽</b>`);
+
+  const hasPrice = typeof lead.price === "number";
+  const isManual = !!lead.priceIsManual;
+
+  // ✅ Если цена ручная — показываем только итог, авторасчёт НЕ показываем
+  if (hasPrice && isManual) {
+    lines.push(`💰 Итог: <b>${lead.price} ₽</b>`);
+  } else if (hasPrice && !isManual) {
+    // ✅ Если цена не ручная — это авторасчёт
+    lines.push(`[Авторасчёт]: ${lead.price} ₽`);
+  }
+
   if (typeof lead.commission === "number") lines.push(`💸 Комиссия: <b>${lead.commission} ₽</b>`);
   if (lead.comment) lines.push(`💬 ${escHtml(lead.comment)}`);
   return lines.join("\n");
@@ -294,6 +306,7 @@ export async function updateLeadStatusFromTelegram(leadId: number, status: strin
       roundTrip: true,
       comment: true,
       price: true,
+      priceIsManual: true, // ✅ добавили
       commission: true,
       status: true,
     },
