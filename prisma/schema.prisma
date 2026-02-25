@@ -3,9 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // Prisma 7: URL/Direct URL в schema больше не задаются.
+  // Подключение для migrate берётся из prisma.config.ts,
+  // а рантайм подключение идёт через adapter-pg.
+  provider = "postgresql"
 }
 
 enum UserRole {
@@ -46,10 +47,12 @@ model Lead {
   roundTrip      Boolean  @default(false)
   price          Int?
 
+  // ✅ Комиссия (рубли), редактируется из Telegram/админки
   commission     Int?
 
   comment        String?
 
+  // new | in_progress | done | canceled
   status         String   @default("new")
 
   assignedToId   Int?
@@ -62,6 +65,7 @@ model Lead {
   utmMedium      String?
   utmCampaign    String?
 
+  // ✅ Привязки сообщений Telegram, чтобы редактировать/удалять везде
   tgMessages     TelegramMessage[]
 
   createdAt      DateTime @default(now())
@@ -99,7 +103,7 @@ model SiteSettings {
 
 model AdminLoginAttempt {
   id           Int      @id @default(autoincrement())
-  key          String   @unique
+  key          String   @unique  // email+ip
   email        String
   ip           String
   attempts     Int      @default(0)
@@ -135,7 +139,7 @@ model Review {
 
   name      String
   text      String
-  rating    Int?
+  rating    Int?     // 1..5 (необязательно)
 
   city      String?
   source    String?
@@ -152,10 +156,12 @@ model Review {
   @@map("reviews")
 }
 
+// --- Telegram sync ---
+
 model TelegramMessage {
   id        String   @id @default(cuid())
 
-  kind      String
+  kind      String   // "lead" | "announcement"
   leadId    Int?
   annId     String?
 
@@ -209,12 +215,16 @@ model AnnouncementCommission {
   @@map("announcement_commissions")
 }
 
+/**
+ * Временное состояние для ввода числа в боте:
+ * нажали кнопку → бот попросил сумму → следующее сообщение трактуем как ввод.
+ */
 model PendingInput {
   id        String   @id @default(cuid())
 
   tgUserId  String
-  kind      String
-  entityId  String
+  kind      String   // "lead_price" | "lead_commission" | "ann_price" | "ann_commission"
+  entityId  String   // leadId или annId
 
   createdAt DateTime @default(now())
 
