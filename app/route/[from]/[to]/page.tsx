@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import ServicePage from "../../../ui/service-page";
 import { buildSeoRoutes } from "@/lib/seo-routes";
 
@@ -16,14 +15,13 @@ const SEO_ROUTES = buildSeoRoutes(2000);
 const SEO_SET = new Set(SEO_ROUTES.map((r) => `${r.from}__${r.to}`));
 
 /**
- * (Опционально) Пререндерим топовые маршруты, чтобы они были максимально "быстрыми" для ботов.
- * 300–800 обычно ок. 2000 тоже можно, но билд может стать тяжелее.
+ * Пререндерим часть маршрутов (ускоряет ботов и людей на популярных направлениях).
+ * Можно увеличить/уменьшить. 600 — нормальный компромисс.
  */
 export function generateStaticParams() {
   return SEO_ROUTES.slice(0, 600).map((r) => ({ from: r.from, to: r.to }));
 }
 
-// Аккуратный fallback: если города нет в маппинге — показываем как есть, но безопасно
 function safePretty(slug: string) {
   const s = (slug ?? "").trim();
   if (!s) return "Город";
@@ -43,7 +41,7 @@ function safePretty(slug: string) {
     .join(" ");
 }
 
-// Маппинг slug -> нормальное русское название
+// slug -> русское имя
 const CITY_MAP: Record<string, string> = {
   moskva: "Москва",
   "sankt-peterburg": "Санкт-Петербург",
@@ -80,7 +78,7 @@ const CITY_MAP: Record<string, string> = {
   krasnogorsk: "Красногорск",
   serpukhov: "Серпухов",
   "orekhovo-zuevo": "Орехово-Зуево",
-  "shchyolkovo": "Щёлково",
+  shchyolkovo: "Щёлково",
   ramenskoye: "Раменское",
   domodedovo: "Домодедово",
   pushkino: "Пушкино",
@@ -190,9 +188,8 @@ function isKnownRoute(from: string, to: string) {
   return SEO_SET.has(`${from}__${to}`);
 }
 
-function getRelatedLinks(from: string, to: string, limit = 10) {
-  const fromLinks = SEO_ROUTES
-    .filter((r) => r.from === from && r.to !== to)
+function getRelatedLinks(from: string, to: string, limit = 25) {
+  const fromLinks = SEO_ROUTES.filter((r) => r.from === from && r.to !== to)
     .slice(0, limit)
     .map((r) => ({
       href: `/route/${r.from}/${r.to}`,
@@ -200,8 +197,7 @@ function getRelatedLinks(from: string, to: string, limit = 10) {
       key: `${r.from}__${r.to}`,
     }));
 
-  const toLinks = SEO_ROUTES
-    .filter((r) => r.to === to && r.from !== from)
+  const toLinks = SEO_ROUTES.filter((r) => r.to === to && r.from !== from)
     .slice(0, limit)
     .map((r) => ({
       href: `/route/${r.from}/${r.to}`,
@@ -248,6 +244,60 @@ function RelatedLinksBlock({
   );
 }
 
+function SeoTextBlock({ from, to, known }: { from: string; to: string; known: boolean }) {
+  // Лёгкая вариативность, чтобы страницы не были «одинаковые до буквы»
+  const variants = [
+    {
+      p1: `Такси ${from} — ${to} — удобный способ добраться без пересадок и ожиданий. Мы организуем междугородние поездки с предварительным согласованием стоимости и подбором подходящего класса автомобиля.`,
+      p2: `Трансфер из ${from} в ${to} подходит для командировок, семейных поездок и поездок с багажом. Стоимость подтверждаем заранее — до подачи автомобиля.`,
+    },
+    {
+      p1: `Междугороднее такси ${from} — ${to} удобно, когда важны время и комфорт. Мы согласуем маршрут, подачу и цену заранее, чтобы поездка прошла спокойно.`,
+      p2: `Поездка ${from} — ${to} возможна в классах Стандарт, Комфорт, Бизнес и Минивэн. Укажите пожелания (багаж, кресло, остановки) — мы всё учтём при подтверждении.`,
+    },
+    {
+      p1: `Трансфер ${from} — ${to} без пересадок: заберём по адресу и довезём до точки назначения. Заявка оформляется онлайн за 1 минуту.`,
+      p2: `Такси из ${from} в ${to} можно заказать заранее на нужную дату и время. Мы подтверждаем стоимость до подачи и фиксируем заявку.`,
+    },
+  ];
+
+  // детерминированный выбор по маршруту
+  const idx = (from.length + to.length) % variants.length;
+  const v = variants[idx];
+
+  return (
+    <section className="mx-auto max-w-6xl px-4 pb-12">
+      <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+        <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">
+          Междугороднее такси {from} — {to}
+        </h2>
+
+        <div className="mt-4 space-y-4 text-sm leading-7 text-zinc-700">
+          <p>{v.p1}</p>
+          <p>{v.p2}</p>
+
+          <p>
+            Мы работаем 24/7: после заявки уточняем детали и подтверждаем подачу. Можно добавить остановки по пути и
+            выбрать класс автомобиля под вашу задачу.
+          </p>
+
+          <p>
+            Заказать такси {from} — {to} можно онлайн.{" "}
+            {known
+              ? "Маршрут популярный — подскажем оптимальное время выезда и нюансы по дороге."
+              : "Если маршрут редкий — мы уточним возможность поездки и предложим варианты."}
+          </p>
+
+          <p className="text-xs text-zinc-500">
+            Семантика: междугородний трансфер, поездка на автомобиле, водитель с опытом, аренда авто с водителем,
+            поездка без пересадок.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const fromTitle = cityName(params.from);
   const toTitle = cityName(params.to);
@@ -260,10 +310,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: `Междугороднее такси ${fromTitle} — ${toTitle}. Комфорт, бизнес, минивэн. Стоимость согласуем заранее. Онлайн-заявка 24/7.`,
     alternates: { canonical: url },
 
-    // ✅ ключ: мусорные URL не индексируем
+    // ✅ неизвестные пары: noindex (но follow, чтобы вес по внутренним ссылкам проходил)
     robots: known
       ? { index: true, follow: true }
-      : { index: false, follow: true, googleBot: { index: false, follow: true } },
+      : {
+          index: false,
+          follow: true,
+          googleBot: { index: false, follow: true },
+        },
 
     openGraph: {
       type: "website",
@@ -286,9 +340,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default function Page({ params }: Props) {
   const known = isKnownRoute(params.from, params.to);
 
-  // Если хочешь прям жёстко: неизвестные пары = 404, а не noindex:
-  // if (!known) notFound();
-
   const from = cityName(params.from);
   const to = cityName(params.to);
 
@@ -304,12 +355,15 @@ export default function Page({ params }: Props) {
     url: canonical,
   };
 
-  const { fromLinks, toLinks } = getRelatedLinks(params.from, params.to, 10);
+  const { fromLinks, toLinks } = getRelatedLinks(params.from, params.to, 25);
 
   return (
     <>
-      {/* ✅ ВАЖНО ДЛЯ SEO: JSON-LD в HTML сразу (не afterInteractive) */}
+      {/* ✅ SEO: JSON-LD в HTML сразу */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      {/* ✅ Дополнительная страховка: noindex прямо в HTML для неизвестных пар */}
+      {!known && <meta name="robots" content="noindex, follow" />}
 
       <ServicePage
         breadcrumbs={[
@@ -345,6 +399,10 @@ export default function Page({ params }: Props) {
         ]}
       />
 
+      {/* ✅ Массовый SEO-блок (уникализируется вариациями) */}
+      <SeoTextBlock from={from} to={to} known={known} />
+
+      {/* ✅ Усиленная перелинковка */}
       <RelatedLinksBlock
         title={`Популярные направления из ${from}`}
         desc="Ещё маршруты из этого города (внутренние ссылки помогают индексации)."
