@@ -2,11 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import BreadcrumbsJsonLd from "./breadcrumbs-jsonld";
+
+// ❗ BreadcrumbsJsonLd убираем из layout — он клиентский и добавляет JS в критический путь
+// import BreadcrumbsJsonLd from "./breadcrumbs-jsonld";
 
 const manrope = Manrope({
   subsets: ["cyrillic"],
-  weight: ["500", "600", "700", "800"],
+  // меньше начертаний = меньше woff2 и быстрее критический путь
+  weight: ["500", "700", "800"],
+  display: "swap",
 });
 
 const SITE_URL = "https://vector-rf.ru";
@@ -19,7 +23,6 @@ const YANDEX_VERIFICATION = "";
 // Контакты
 const PHONE_E164 = "+78314233929";
 
-// viewport отдельно (Next App Router)
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -48,11 +51,6 @@ export const metadata: Metadata = {
     "встреча в аэропорту",
     "междугородний трансфер",
   ],
-
-  // ❗️ВАЖНО:
-  // - НЕ ставим canonical в root layout
-  // - НЕ ставим openGraph.url в root layout
-  // Это должно задаваться на уровне конкретной страницы.
 
   openGraph: {
     type: "website",
@@ -172,27 +170,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
 
-        {YANDEX_VERIFICATION ? (
-          <meta name="yandex-verification" content={YANDEX_VERIFICATION} />
-        ) : null}
+        {/* ✅ preconnect/dns-prefetch для ускорения установления соединений (рекомендации PageSpeed) */}
+        <link rel="preconnect" href="https://mc.yandex.ru" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://mc.yandex.ru" />
+
+        {/* PageSpeed часто рекомендует этот домен для Яндекса */}
+        <link rel="preconnect" href="https://functions.yandexcloud.net" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://functions.yandexcloud.net" />
+
+        <link rel="preconnect" href="https://cdn.untarget.ai" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://cdn.untarget.ai" />
+
+        {YANDEX_VERIFICATION ? <meta name="yandex-verification" content={YANDEX_VERIFICATION} /> : null}
+
+        {/* ✅ Schema.org JSON-LD — просто скрипт в head (НЕ beforeInteractive) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+        />
       </head>
 
       <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
-        {/* Schema.org JSON-LD */}
-        <Script
-          id="schema-org"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
-        />
+        {/* ❌ Убрали BreadcrumbsJsonLd отсюда (клиентский, тянет JS на каждом первом экране) */}
+        {/* <BreadcrumbsJsonLd siteUrl={SITE_URL} /> */}
 
-        {/* ✅ Breadcrumbs JSON-LD */}
-        <BreadcrumbsJsonLd siteUrl={SITE_URL} />
-
-        {/* Yandex.Metrika */}
+        {/* ✅ Yandex.Metrika: не блокируем первый рендер */}
         <Script
           id="yandex-metrika"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
 (function(m,e,t,r,i,k,a){
@@ -215,7 +220,7 @@ ym(${YM_ID}, 'init', {
           }}
         />
 
-        {/* Untarget.ai */}
+        {/* ✅ Untarget.ai: сам init можно afterInteractive, а скрипт — лучше lazyOnload */}
         <Script
           id="untarget-ai"
           strategy="afterInteractive"
@@ -228,12 +233,15 @@ UntargetJS('id', '7a2be');
             `,
           }}
         />
-        <Script id="untarget-ai-src" strategy="afterInteractive" src="https://cdn.untarget.ai/untarget.min.o.js" />
+        <Script id="untarget-ai-src" strategy="lazyOnload" src="https://cdn.untarget.ai/untarget.min.o.js" />
 
-        {/* Yandex.Metrika noscript */}
         <noscript>
           <div>
-            <img src={`https://mc.yandex.ru/watch/${YM_ID}`} style={{ position: "absolute", left: "-9999px" }} alt="" />
+            <img
+              src={`https://mc.yandex.ru/watch/${YM_ID}`}
+              style={{ position: "absolute", left: "-9999px" }}
+              alt=""
+            />
           </div>
         </noscript>
 
