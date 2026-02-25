@@ -18,6 +18,18 @@ type Settings = {
   notes: string | null;
 };
 
+type WebhookInfo = {
+  url?: string;
+  has_custom_certificate?: boolean;
+  pending_update_count?: number;
+  ip_address?: string;
+  last_error_date?: number;
+  last_error_message?: string;
+  last_synchronization_error_date?: number;
+  max_connections?: number;
+  allowed_updates?: string[];
+};
+
 const empty: Settings = {
   brandName: "Вектор РФ",
   brandTagline: "трансферы и поездки по России",
@@ -37,6 +49,13 @@ const empty: Settings = {
 export default function SettingsClient() {
   const [s, setS] = useState<Settings>(empty);
   const [loading, setLoading] = useState(false);
+
+  const [tgLoading, setTgLoading] = useState(false);
+  const [tg, setTg] = useState<{
+    webhookUrlExpected?: string;
+    secretExpected?: boolean;
+    webhookInfo?: WebhookInfo;
+  } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -64,8 +83,60 @@ export default function SettingsClient() {
     load();
   }
 
+  async function loadTg() {
+    setTgLoading(true);
+    const res = await fetch("/api/admin/telegram/webhook");
+    const data = await res.json().catch(() => ({}));
+    setTgLoading(false);
+
+    if (!res.ok || !data.ok) {
+      setTg(null);
+      alert(data?.error || "Не удалось получить статус Telegram webhook");
+      return;
+    }
+
+    setTg({
+      webhookUrlExpected: data.webhookUrlExpected,
+      secretExpected: data.secretExpected,
+      webhookInfo: data.webhookInfo,
+    });
+  }
+
+  async function setTgWebhook() {
+    setTgLoading(true);
+    const res = await fetch("/api/admin/telegram/webhook", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    setTgLoading(false);
+
+    if (!res.ok || !data.ok) {
+      alert(data?.error || "Не удалось установить Telegram webhook");
+      return;
+    }
+
+    alert("Webhook установлен ✅");
+    loadTg();
+  }
+
+  async function deleteTgWebhook() {
+    if (!confirm("Удалить webhook? Кнопки в Telegram перестанут работать.")) return;
+
+    setTgLoading(true);
+    const res = await fetch("/api/admin/telegram/webhook", { method: "DELETE" });
+    const data = await res.json().catch(() => ({}));
+    setTgLoading(false);
+
+    if (!res.ok || !data.ok) {
+      alert(data?.error || "Не удалось удалить Telegram webhook");
+      return;
+    }
+
+    alert("Webhook удалён ✅");
+    loadTg();
+  }
+
   useEffect(() => {
     load();
+    loadTg();
   }, []);
 
   const inputStyle: React.CSSProperties = {
@@ -73,6 +144,13 @@ export default function SettingsClient() {
     borderRadius: 10,
     border: "1px solid #ddd",
     width: "100%",
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    cursor: "pointer",
   };
 
   const Field = (props: { label: string; value: any; onChange: (v: string) => void; placeholder?: string }) => (
@@ -98,6 +176,17 @@ export default function SettingsClient() {
       />
     </div>
   );
+
+  const webhookUrl = tg?.webhookInfo?.url || "(не установлен)";
+  const webhookOk = !!tg?.webhookInfo?.url;
+
+  const lastErr = tg?.webhookInfo?.last_error_message
+    ? `${tg.webhookInfo.last_error_message}${
+        tg.webhookInfo.last_error_date
+          ? ` (дата: ${new Date(tg.webhookInfo.last_error_date * 1000).toLocaleString()})`
+          : ""
+      }`
+    : null;
 
   return (
     <div>
@@ -128,12 +217,56 @@ export default function SettingsClient() {
         <TextArea label="Примечания" value={s.notes} onChange={(v) => setS((p) => ({ ...p, notes: v || null }))} />
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button onClick={save} disabled={loading} style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #ddd", cursor: "pointer" }}>
+          <button onClick={save} disabled={loading} style={buttonStyle}>
             {loading ? "Сохраняем…" : "Сохранить"}
           </button>
-          <button onClick={load} disabled={loading} style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #ddd", cursor: "pointer" }}>
+          <button onClick={load} disabled={loading} style={buttonStyle}>
             Обновить
           </button>
+        </div>
+
+        <hr style={{ border: 0, borderTop: "1px solid #eee", margin: "8px 0" }} />
+
+        <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>Telegram: webhook для кнопок</h2>
+        <div style={{ fontSize: 13, opacity: 0.85, lineHeight: 1.4 }}>
+          <div>
+            Текущий webhook: <b>{webhookUrl}</b> {webhookOk ? "✅" : "❌"}
+          </div>
+          {tg?.webhookUrlExpected ? (
+            <div>
+              Ожидаемый (из env): <b>{tg.webhookUrlExpected}</b>
+            </div>
+          ) : null}
+          {typeof tg?.webhookInfo?.pending_update_count === "number" ? (
+            <div>Pending updates: {tg.webhookInfo.pending_update_count}</div>
+          ) : null}
+          {lastErr ? (
+            <div style={{ color: "#b00020" }}>
+              Последняя ошибка Telegram: <b>{lastErr}</b>
+            </div>
+          ) : null}
+          {tg?.webhookInfo?.allowed_updates?.length ? (
+            <div>allowed_updates: {tg.webhookInfo.allowed_updates.join(", ")}</div>
+          ) : null}
+          {typeof tg?.secretExpected === "boolean" ? (
+            <div>Secret-token включён: {tg.secretExpected ? "да" : "нет"}</div>
+          ) : null}
+        </div>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+          <button onClick={loadTg} disabled={tgLoading} style={buttonStyle}>
+            {tgLoading ? "Проверяем…" : "Проверить webhook"}
+          </button>
+          <button onClick={setTgWebhook} disabled={tgLoading} style={buttonStyle}>
+            {tgLoading ? "Устанавливаем…" : "Установить webhook"}
+          </button>
+          <button onClick={deleteTgWebhook} disabled={tgLoading} style={buttonStyle}>
+            Удалить webhook
+          </button>
+        </div>
+
+        <div style={{ fontSize: 12, opacity: 0.75, marginTop: 8 }}>
+          Если кнопки в Telegram нажимаются, но статус не меняется — в 99% случаев webhook не установлен или установлен на другой URL.
         </div>
       </div>
     </div>
