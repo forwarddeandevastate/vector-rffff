@@ -24,16 +24,24 @@ function Field({
   hint,
   children,
   className,
+  labelFor,
 }: {
   label: string;
   hint?: string;
   children: React.ReactNode;
   className?: string;
+  labelFor?: string;
 }) {
   return (
     <div className={className}>
       <div className="flex items-end justify-between gap-2">
-        <div className="text-xs font-semibold text-zinc-700">{label}</div>
+        {labelFor ? (
+          <label htmlFor={labelFor} className="text-xs font-semibold text-zinc-700">
+            {label}
+          </label>
+        ) : (
+          <div className="text-xs font-semibold text-zinc-700">{label}</div>
+        )}
         {hint ? <div className="text-[11px] text-zinc-500">{hint}</div> : null}
       </div>
       <div className="mt-1">{children}</div>
@@ -239,6 +247,21 @@ export default function LeadForm({
 }) {
   const router = useRouter();
 
+  // ✅ ids для связки label -> input/select (исправляет Lighthouse)
+  const ids = useMemo(
+    () => ({
+      name: "lead-name",
+      phone: "lead-phone",
+      from: "lead-from",
+      to: "lead-to",
+      datetime: "lead-datetime",
+      carClass: "lead-car-class",
+      roundTrip: "lead-round-trip",
+      comment: "lead-comment",
+    }),
+    []
+  );
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [fromText, setFromText] = useState("");
@@ -274,7 +297,7 @@ export default function LeadForm({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  // ✅ НОВОЕ: если выбрана "Город", но ввели разные точки "Откуда/Куда" — переключаем на "Межгород"
+  // ✅ если выбрана "Город", но ввели разные точки "Откуда/Куда" — переключаем на "Межгород"
   useEffect(() => {
     if (routeType !== "city") return;
     const a = normalize(fromText);
@@ -467,17 +490,26 @@ export default function LeadForm({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Ваше имя *" hint="Как к вам обращаться">
-          <input className={ControlBase()} value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван" />
+        <Field label="Ваше имя *" hint="Как к вам обращаться" labelFor={ids.name}>
+          <input
+            id={ids.name}
+            className={ControlBase()}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Иван"
+            autoComplete="name"
+          />
         </Field>
 
-        <Field label="Телефон *">
+        <Field label="Телефон *" labelFor={ids.phone}>
           <input
+            id={ids.phone}
             className={ControlBase()}
             value={phone}
             onChange={(e) => setPhone(normalizePhoneLive(e.target.value))}
             placeholder="+7 999 123-45-67"
             inputMode="tel"
+            autoComplete="tel"
           />
         </Field>
 
@@ -486,9 +518,11 @@ export default function LeadForm({
           label="Откуда *"
           hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Город / адрес (можно вводить руками)"}
           className="sm:col-span-2"
+          labelFor={ids.from}
         >
           <div ref={fromBoxRef} className="relative">
             <input
+              id={ids.from}
               className={ControlBase()}
               value={fromText}
               onChange={(e) => {
@@ -497,6 +531,7 @@ export default function LeadForm({
               }}
               onFocus={() => setFromOpen(true)}
               placeholder={routeType === "airport" ? "Например: Шереметьево (SVO) или Москва" : "Например: Москва"}
+              autoComplete="off"
             />
             {fromOpen && fromSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -523,9 +558,11 @@ export default function LeadForm({
           label="Куда *"
           hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Город / адрес (можно вводить руками)"}
           className="sm:col-span-2"
+          labelFor={ids.to}
         >
           <div ref={toBoxRef} className="relative">
             <input
+              id={ids.to}
               className={ControlBase()}
               value={toText}
               onChange={(e) => {
@@ -533,7 +570,12 @@ export default function LeadForm({
                 setToOpen(true);
               }}
               onFocus={() => setToOpen(true)}
-              placeholder={routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"}
+              placeholder={
+                routeType === "airport"
+                  ? "Например: Домодедово (DME) или Санкт-Петербург"
+                  : "Например: Санкт-Петербург"
+              }
+              autoComplete="off"
             />
             {toOpen && toSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -556,9 +598,10 @@ export default function LeadForm({
         </Field>
 
         {/* Дата/время */}
-        <Field label="Дата и время" hint="Можно выбрать быстро" className="sm:col-span-2">
+        <Field label="Дата и время" hint="Можно выбрать быстро" className="sm:col-span-2" labelFor={ids.datetime}>
           <div className="grid gap-2">
             <input
+              id={ids.datetime}
               className={ControlBase()}
               type="datetime-local"
               value={datetimeLocal}
@@ -598,8 +641,13 @@ export default function LeadForm({
           </div>
         </Field>
 
-        <Field label="Класс авто">
-          <select className={ControlBase()} value={carClass} onChange={(e) => onCarClassChange(e.target.value as CarClass)}>
+        <Field label="Класс авто" labelFor={ids.carClass}>
+          <select
+            id={ids.carClass}
+            className={ControlBase()}
+            value={carClass}
+            onChange={(e) => onCarClassChange(e.target.value as CarClass)}
+          >
             <option value="standard">Стандарт</option>
             <option value="comfort">Комфорт</option>
             <option value="business">Бизнес</option>
@@ -608,8 +656,9 @@ export default function LeadForm({
         </Field>
 
         <Field label="Опции">
-          <label className={cn(ControlBase("flex items-center gap-2"), "text-zinc-800")}>
+          <label htmlFor={ids.roundTrip} className={cn(ControlBase("flex items-center gap-2"), "text-zinc-800")}>
             <input
+              id={ids.roundTrip}
               type="checkbox"
               checked={roundTrip}
               onChange={(e) => setRoundTrip(e.target.checked)}
@@ -619,8 +668,9 @@ export default function LeadForm({
           </label>
         </Field>
 
-        <Field label="Комментарий" hint="Багаж, кресло, рейс" className="sm:col-span-2">
+        <Field label="Комментарий" hint="Багаж, кресло, рейс" className="sm:col-span-2" labelFor={ids.comment}>
           <textarea
+            id={ids.comment}
             className={cn(
               "min-h-[96px] w-full rounded-xl border border-zinc-200 bg-white/90 px-3 py-2 text-sm outline-none",
               "shadow-[0_1px_0_rgba(16,24,40,0.04)]",
