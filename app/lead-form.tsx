@@ -222,6 +222,7 @@ function setTimeSameDay(base: Date, hh: number, mm: number) {
  * - 8xxxxxxxxxx -> +7xxxxxxxxxx
  * - 7xxxxxxxxxx -> +7xxxxxxxxxx
  * - +8xxxxxxxxxx -> +7xxxxxxxxxx
+ * - 9xxxxxxxxxx -> +79xxxxxxxxxx   ✅ ДОБАВИЛИ
  * Остальное не трогаем.
  */
 function normalizePhoneLive(input: string) {
@@ -230,6 +231,7 @@ function normalizePhoneLive(input: string) {
   if (v.startsWith("+8")) v = "+7" + v.slice(2);
   else if (v.startsWith("8")) v = "+7" + v.slice(1);
   else if (v.startsWith("7")) v = "+7" + v.slice(1);
+  else if (v.startsWith("9")) v = "+7" + v; // ✅ единственная правка
 
   return v;
 }
