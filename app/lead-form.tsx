@@ -1,18 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export type CarClass = "standard" | "comfort" | "business" | "minivan";
 export type RouteType = "city" | "airport" | "intercity";
-
-function isCarClass(v: string | null): v is CarClass {
-  return v === "standard" || v === "comfort" || v === "business" || v === "minivan";
-}
-
-function isRouteType(v: string | null): v is RouteType {
-  return v === "city" || v === "airport" || v === "intercity";
-}
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -235,55 +227,17 @@ function normalizePhoneLive(input: string) {
 }
 
 export default function LeadForm({
-  carClass: controlledCarClass,
-  onCarClassChange: onControlledCarClassChange,
-  routeType: controlledRouteType,
-  onRouteTypeChange: onControlledRouteTypeChange,
-  defaultCarClass = "standard",
-  defaultRouteType = "intercity",
+  carClass,
+  onCarClassChange,
+  routeType,
+  onRouteTypeChange,
 }: {
-  /**
-   * Можно использовать как контролируемый компонент (старое поведение):
-   *  carClass + onCarClassChange, routeType + onRouteTypeChange
-   *
-   * Или как автономный (для server-render страниц):
-   *  defaultCarClass + defaultRouteType
-   */
-  carClass?: CarClass;
-  onCarClassChange?: (v: CarClass) => void;
-  routeType?: RouteType;
-  onRouteTypeChange?: (v: RouteType) => void;
-  defaultCarClass?: CarClass;
-  defaultRouteType?: RouteType;
+  carClass: CarClass;
+  onCarClassChange: (v: CarClass) => void;
+  routeType: RouteType;
+  onRouteTypeChange: (v: RouteType) => void;
 }) {
   const router = useRouter();
-  const sp = useSearchParams();
-
-  // автономные стейты (используются только если не передали контролируемые пропсы)
-  const [carClassState, setCarClassState] = useState<CarClass>(defaultCarClass);
-  const [routeTypeState, setRouteTypeState] = useState<RouteType>(defaultRouteType);
-
-  const carClass = controlledCarClass ?? carClassState;
-  const routeType = controlledRouteType ?? routeTypeState;
-
-  const setCarClass = onControlledCarClassChange ?? setCarClassState;
-  const setRouteType = onControlledRouteTypeChange ?? setRouteTypeState;
-
-  // 1 раз читаем query (?class=comfort&route=intercity)
-  const didInitFromQuery = useRef(false);
-  useEffect(() => {
-    if (didInitFromQuery.current) return;
-    didInitFromQuery.current = true;
-
-    // если компонент контролируемый — не вмешиваемся
-    if (controlledCarClass || controlledRouteType) return;
-
-    const qClass = sp?.get("class");
-    const qRoute = sp?.get("route");
-
-    if (isCarClass(qClass)) setCarClassState(qClass);
-    if (isRouteType(qRoute)) setRouteTypeState(qRoute);
-  }, [sp, controlledCarClass, controlledRouteType]);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -328,7 +282,7 @@ export default function LeadForm({
     if (!a || !b) return;
     if (a === b) return;
 
-    setRouteType("intercity");
+    onRouteTypeChange("intercity");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromText, toText]);
 
@@ -473,13 +427,13 @@ export default function LeadForm({
 
             {/* ✅ ПОРЯДОК: Межгород → Аэропорт → Город */}
             <div className="mt-2 flex flex-wrap gap-2">
-              <SegButton active={routeType === "intercity"} onClick={() => setRouteType("intercity")}>
+              <SegButton active={routeType === "intercity"} onClick={() => onRouteTypeChange("intercity")}>
                 Межгород
               </SegButton>
-              <SegButton active={routeType === "airport"} onClick={() => setRouteType("airport")}>
+              <SegButton active={routeType === "airport"} onClick={() => onRouteTypeChange("airport")}>
                 Аэропорт
               </SegButton>
-              <SegButton active={routeType === "city"} onClick={() => setRouteType("city")}>
+              <SegButton active={routeType === "city"} onClick={() => onRouteTypeChange("city")}>
                 Город
               </SegButton>
             </div>
@@ -579,11 +533,7 @@ export default function LeadForm({
                 setToOpen(true);
               }}
               onFocus={() => setToOpen(true)}
-              placeholder={
-                routeType === "airport"
-                  ? "Например: Домодедово (DME) или Санкт-Петербург"
-                  : "Например: Санкт-Петербург"
-              }
+              placeholder={routeType === "airport" ? "Например: Домодедово (DME) или Санкт-Петербург" : "Например: Санкт-Петербург"}
             />
             {toOpen && toSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -649,7 +599,7 @@ export default function LeadForm({
         </Field>
 
         <Field label="Класс авто">
-          <select className={ControlBase()} value={carClass} onChange={(e) => setCarClass(e.target.value as CarClass)}>
+          <select className={ControlBase()} value={carClass} onChange={(e) => onCarClassChange(e.target.value as CarClass)}>
             <option value="standard">Стандарт</option>
             <option value="comfort">Комфорт</option>
             <option value="business">Бизнес</option>
