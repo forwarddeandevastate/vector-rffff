@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import { useMemo, useRef, useState } from "react";
 import LeadForm, { type CarClass, type RouteType } from "./lead-form";
 
@@ -264,12 +263,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen text-zinc-900">
-      <Script
-        id="faq-schema-home"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      {/* ✅ SEO: JSON-LD присутствует в HTML сразу (SSR), без afterInteractive */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />

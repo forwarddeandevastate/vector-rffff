@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import ServicePage from "../../../ui/service-page";
 import { buildSeoRoutes } from "@/lib/seo-routes";
 
@@ -13,6 +13,15 @@ const SITE_NAME = "Вектор РФ";
  * Считаем один раз на уровне модуля и дальше только фильтруем.
  */
 const SEO_ROUTES = buildSeoRoutes(2000);
+const SEO_SET = new Set(SEO_ROUTES.map((r) => `${r.from}__${r.to}`));
+
+/**
+ * (Опционально) Пререндерим топовые маршруты, чтобы они были максимально "быстрыми" для ботов.
+ * 300–800 обычно ок. 2000 тоже можно, но билд может стать тяжелее.
+ */
+export function generateStaticParams() {
+  return SEO_ROUTES.slice(0, 600).map((r) => ({ from: r.from, to: r.to }));
+}
 
 // Аккуратный fallback: если города нет в маппинге — показываем как есть, но безопасно
 function safePretty(slug: string) {
@@ -36,7 +45,6 @@ function safePretty(slug: string) {
 
 // Маппинг slug -> нормальное русское название
 const CITY_MAP: Record<string, string> = {
-  // хабы
   moskva: "Москва",
   "sankt-peterburg": "Санкт-Петербург",
   "nizhniy-novgorod": "Нижний Новгород",
@@ -60,7 +68,6 @@ const CITY_MAP: Record<string, string> = {
   novosibirsk: "Новосибирск",
   krasnoyarsk: "Красноярск",
 
-  // Москва и МО
   balashikha: "Балашиха",
   khimki: "Химки",
   podolsk: "Подольск",
@@ -81,66 +88,50 @@ const CITY_MAP: Record<string, string> = {
   reutov: "Реутов",
   noginsk: "Ногинск",
 
-  // Белгородская
   belgorod: "Белгород",
   "staryy-oskol": "Старый Оскол",
   gubkin: "Губкин",
 
-  // Брянская
   bryansk: "Брянск",
   klintsy: "Клинцы",
 
-  // Владимирская
   vladimir: "Владимир",
   kovrov: "Ковров",
   murom: "Муром",
 
-  // Ивановская
   ivanovo: "Иваново",
 
-  // Калужская
   kaluga: "Калуга",
   obninsk: "Обнинск",
 
-  // Костромская
   kostroma: "Кострома",
 
-  // Курская
   kursk: "Курск",
   "zheleznogorsk-kursk": "Железногорск",
 
-  // Липецкая
   lipetsk: "Липецк",
   yelets: "Елец",
 
-  // Орловская
   orel: "Орёл",
 
-  // Тамбовская
   tambov: "Тамбов",
 
-  // Архангельская
   arkhangelsk: "Архангельск",
   severodvinsk: "Северодвинск",
 
-  // Вологодская
   vologda: "Вологда",
   cherepovets: "Череповец",
 
-  // Волгоградская (добавочно)
   volzhskiy: "Волжский",
   kamyshin: "Камышин",
 
-  // Краснодарский край
   sochi: "Сочи",
   novorossiysk: "Новороссийск",
   armavir: "Армавир",
   anapa: "Анапа",
 
-  // Адыгея
   maykop: "Майкоп",
 
-  // Ростовская (добавочно)
   taganrog: "Таганрог",
   shakhty: "Шахты",
   novocherkassk: "Новочеркасск",
@@ -148,35 +139,29 @@ const CITY_MAP: Record<string, string> = {
   bataysk: "Батайск",
   "kamensk-shakhtinskiy": "Каменск-Шахтинский",
 
-  // Крым / Севастополь
   simferopol: "Симферополь",
   sevastopol: "Севастополь",
   kerch: "Керчь",
   evpatoriya: "Евпатория",
 
-  // Ставропольский край
   stavropol: "Ставрополь",
   pyatigorsk: "Пятигорск",
   kislovodsk: "Кисловодск",
   essentuki: "Ессентуки",
   nevinnomyssk: "Невинномысск",
 
-  // Челябинская (добавочно)
   magnitogorsk: "Магнитогорск",
   zlatoust: "Златоуст",
   miass: "Миасс",
   kopeysk: "Копейск",
 
-  // Новосибирская (добавочно)
   berdsk: "Бердск",
 
-  // Красноярский край (добавочно)
   norilsk: "Норильск",
   achinsk: "Ачинск",
   kansk: "Канск",
   "zheleznogorsk-krasnoyarsk": "Железногорск",
 
-  // Новые территории
   donetsk: "Донецк",
   makeyevka: "Макеевка",
   mariupol: "Мариуполь",
@@ -198,11 +183,12 @@ function cn(...xs: Array<string | false | null | undefined>) {
 }
 
 type Props = {
-  params: {
-    from: string;
-    to: string;
-  };
+  params: { from: string; to: string };
 };
+
+function isKnownRoute(from: string, to: string) {
+  return SEO_SET.has(`${from}__${to}`);
+}
 
 function getRelatedLinks(from: string, to: string, limit = 10) {
   const fromLinks = SEO_ROUTES
@@ -263,34 +249,46 @@ function RelatedLinksBlock({
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const from = cityName(params.from);
-  const to = cityName(params.to);
+  const fromTitle = cityName(params.from);
+  const toTitle = cityName(params.to);
 
   const url = `${SITE_URL}/route/${params.from}/${params.to}`;
+  const known = isKnownRoute(params.from, params.to);
 
   return {
-    title: `Такси ${from} — ${to} | Межгород | Вектор РФ`,
-    description: `Междугороднее такси ${from} — ${to}. Комфорт, бизнес, минивэн. Фиксируем заявку и согласуем стоимость заранее. Онлайн-заявка 24/7.`,
+    title: `Такси ${fromTitle} — ${toTitle} | Межгород | Вектор РФ`,
+    description: `Междугороднее такси ${fromTitle} — ${toTitle}. Комфорт, бизнес, минивэн. Стоимость согласуем заранее. Онлайн-заявка 24/7.`,
     alternates: { canonical: url },
+
+    // ✅ ключ: мусорные URL не индексируем
+    robots: known
+      ? { index: true, follow: true }
+      : { index: false, follow: true, googleBot: { index: false, follow: true } },
+
     openGraph: {
       type: "website",
       url,
-      title: `Такси ${from} — ${to} | Вектор РФ`,
-      description: `Поездка ${from} — ${to}: комфортные автомобили, согласуем стоимость заранее. Онлайн-заявка 24/7.`,
+      title: `Такси ${fromTitle} — ${toTitle} | Вектор РФ`,
+      description: `Поездка ${fromTitle} — ${toTitle}: согласуем стоимость заранее. Онлайн-заявка 24/7.`,
       siteName: SITE_NAME,
       locale: "ru_RU",
       images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `Такси ${from} — ${to} | Вектор РФ`,
-      description: `Междугородний трансфер ${from} — ${to}. Онлайн-заявка 24/7.`,
+      title: `Такси ${fromTitle} — ${toTitle} | Вектор РФ`,
+      description: `Междугородний трансфер ${fromTitle} — ${toTitle}. Онлайн-заявка 24/7.`,
       images: ["/og.jpg"],
     },
   };
 }
 
 export default function Page({ params }: Props) {
+  const known = isKnownRoute(params.from, params.to);
+
+  // Если хочешь прям жёстко: неизвестные пары = 404, а не noindex:
+  // if (!known) notFound();
+
   const from = cityName(params.from);
   const to = cityName(params.to);
 
@@ -310,12 +308,8 @@ export default function Page({ params }: Props) {
 
   return (
     <>
-      <Script
-        id={`ld-${params.from}-${params.to}`}
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {/* ✅ ВАЖНО ДЛЯ SEO: JSON-LD в HTML сразу (не afterInteractive) */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <ServicePage
         breadcrumbs={[
@@ -323,7 +317,11 @@ export default function Page({ params }: Props) {
           { name: `${from} — ${to}`, href: `/route/${params.from}/${params.to}` },
         ]}
         title={`Такси ${from} — ${to}`}
-        subtitle={`Междугородняя поездка ${from} — ${to}. Подбор класса авто, согласование маршрута и стоимости заранее. Работаем 24/7.`}
+        subtitle={
+          known
+            ? `Междугородняя поездка ${from} — ${to}. Подбор класса авто, согласование маршрута и стоимости заранее. Работаем 24/7.`
+            : `Маршрут ${from} — ${to}. Оставьте заявку — мы подтвердим возможность поездки и согласуем стоимость.`
+        }
         bullets={[
           `Поездка ${from} — ${to} на комфортном автомобиле`,
           "Комфорт / Бизнес / Минивэн",
