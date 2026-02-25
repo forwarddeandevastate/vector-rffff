@@ -3,7 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -44,12 +46,11 @@ model Lead {
   roundTrip      Boolean  @default(false)
   price          Int?
 
-  // Комиссия диспетчера/партнёра (в рублях). Заполняется из Telegram/админки.
   commission     Int?
 
   comment        String?
 
-  status         String   @default("new") // new | in_progress | done | canceled
+  status         String   @default("new")
 
   assignedToId   Int?
   assignedTo     User?    @relation("AssignedLeads", fields: [assignedToId], references: [id])
@@ -61,7 +62,6 @@ model Lead {
   utmMedium      String?
   utmCampaign    String?
 
-  // ✅ Для синхронизации с Telegram: где и какими сообщениями показан этот лид
   tgMessages     TelegramMessage[]
 
   createdAt      DateTime @default(now())
@@ -99,7 +99,7 @@ model SiteSettings {
 
 model AdminLoginAttempt {
   id           Int      @id @default(autoincrement())
-  key          String   @unique  // email+ip
+  key          String   @unique
   email        String
   ip           String
   attempts     Int      @default(0)
@@ -116,11 +116,11 @@ model AuditLog {
   actorId    Int?
   actorEmail String?
 
-  action     String   // например: "lead.update", "settings.update", "user.create"
-  entity     String?  // "Lead", "SiteSettings", "User"
-  entityId   Int?     // id сущности
+  action     String
+  entity     String?
+  entityId   Int?
 
-  details    Json?    // что поменяли
+  details    Json?
 
   ip         String?
   createdAt  DateTime @default(now())
@@ -135,13 +135,12 @@ model Review {
 
   name      String
   text      String
-  rating    Int?     // 1..5 (необязательно)
+  rating    Int?
 
   city      String?
-  source    String?  // например "site", "telegram", "google"
-  isPublic  Boolean  @default(false) // модерация
+  source    String?
+  isPublic  Boolean  @default(false)
 
-  // ✅ Ответ из админки (показываем под отзывом)
   replyText   String?
   replyAuthor String?
   repliedAt   DateTime?
@@ -153,14 +152,10 @@ model Review {
   @@map("reviews")
 }
 
-//
-// ✅ Telegram sync (для "пропадает из бота", "все видят изменения", и объявлений)
-//
-
 model TelegramMessage {
   id        String   @id @default(cuid())
 
-  kind      String   // "lead" | "announcement"
+  kind      String
   leadId    Int?
   annId     String?
 
@@ -214,16 +209,12 @@ model AnnouncementCommission {
   @@map("announcement_commissions")
 }
 
-/**
- * Временное состояние для ввода числа в боте:
- * пользователь нажал кнопку → бот попросил "введите сумму" → следующее сообщение мы трактуем как ввод.
- */
 model PendingInput {
   id        String   @id @default(cuid())
 
   tgUserId  String
-  kind      String   // "ann_price" | "ann_commission" | "lead_price" | "lead_commission"
-  entityId  String   // annId или leadId
+  kind      String
+  entityId  String
 
   createdAt DateTime @default(now())
 
