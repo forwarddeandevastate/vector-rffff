@@ -26,8 +26,15 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     if (body.duplicateOfId === null) data.duplicateOfId = null;
     if (typeof body.duplicateOfId === "number") data.duplicateOfId = body.duplicateOfId;
 
-    if (body.price === null) data.price = null;
-    if (typeof body.price === "number") data.price = body.price;
+    // ✅ Цена: если меняем вручную — ставим priceIsManual=true
+    if (body.price === null) {
+      data.price = null;
+      data.priceIsManual = false;
+    }
+    if (typeof body.price === "number") {
+      data.price = body.price;
+      data.priceIsManual = true;
+    }
 
     if (body.commission === null) data.commission = null;
     if (typeof body.commission === "number") data.commission = body.commission;
@@ -48,6 +55,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         isDuplicate: true,
         duplicateOfId: true,
         price: true,
+        priceIsManual: true, // ✅ добавили в ответ
         commission: true,
         comment: true,
         datetime: true,
