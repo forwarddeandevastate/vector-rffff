@@ -18,7 +18,6 @@ function env(name: string) {
 
 function isValidSecret(req: Request) {
   const expected = env("TELEGRAM_WEBHOOK_SECRET");
-  // если секрет не задан — принимаем
   if (!expected) return true;
   const got = req.headers.get("x-telegram-bot-api-secret-token");
   return !!got && got === expected;
@@ -54,7 +53,6 @@ async function getLead(leadId: number) {
 
 function shortErr(e: any) {
   const msg = String(e?.message || e || "error");
-  // укоротим чтобы в Telegram не было простыней
   return msg.length > 120 ? msg.slice(0, 120) + "…" : msg;
 }
 
@@ -124,11 +122,9 @@ export async function POST(req: Request) {
 
         const lead = await getLead(leadId);
         if (lead && chatId && msgId) {
-          // редактируем именно то сообщение, где нажали (это 100% есть)
           await editTelegramMessage(chatId, msgId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
         }
 
-        // и дополнительно, если у тебя есть маппинг на другие чаты — обновим везде
         const msgs = await prisma.telegramMessage.findMany({
           where: { kind: "lead", leadId },
           select: { chatId: true, messageId: true },
@@ -136,8 +132,9 @@ export async function POST(req: Request) {
 
         if (lead) {
           for (const mm of msgs) {
-            // текущее сообщение может совпасть — это не страшно
-            await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
+            await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(
+              () => null
+            );
           }
         }
 
@@ -145,23 +142,31 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
 
-      // --- Отмена = удалить ---
+      // --- Отмена = удалить ТОЛЬКО из Telegram, в БД оставить ---
       if (action === "canceled") {
-        // 1) сначала достанем messageId, чтобы удалить в TG
+        // 1) пометим в БД как canceled (история сохраняется)
+        await prisma.lead
+          .update({
+            where: { id: leadId },
+            data: { status: "canceled" },
+          })
+          .catch(() => null);
+
+        // 2) найдём все сообщения этой заявки
         const msgs = await prisma.telegramMessage.findMany({
           where: { kind: "lead", leadId },
           select: { chatId: true, messageId: true },
         });
 
-        // 2) удалим сообщения в TG
+        // 3) удалим сообщения в Telegram
         for (const mm of msgs) {
           await deleteTelegramMessage(mm.chatId, mm.messageId).catch(() => null);
         }
 
-        // 3) удалим из БД (и записи telegram_messages удалятся каскадом)
-        await prisma.lead.delete({ where: { id: leadId } });
+        // 4) удалим маппинг из БД, чтобы больше не пытаться редактировать удалённые сообщения
+        await prisma.telegramMessage.deleteMany({ where: { kind: "lead", leadId } });
 
-        if (cqId) await answerCallbackQuery(cqId, "Удалено");
+        if (cqId) await answerCallbackQuery(cqId, "Убрано из Telegram");
         return NextResponse.json({ ok: true });
       }
 
@@ -213,7 +218,6 @@ export async function POST(req: Request) {
 
       const amount = parseMoney(text);
       if (amount === null) {
-        // вернём pending обратно
         await prisma.pendingInput.upsert({
           where: { tgUserId },
           update: { kind: pending.kind, entityId: pending.entityId, createdAt: new Date() },
@@ -245,7 +249,9 @@ export async function POST(req: Request) {
         });
 
         for (const mm of msgs) {
-          await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
+          await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(
+            () => null
+          );
         }
       }
 
