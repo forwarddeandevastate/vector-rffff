@@ -19,8 +19,20 @@ function tgEnabled() {
 function getChatIds(): string[] {
   const ids = env("TELEGRAM_CHAT_IDS") || env("TELEGRAM_CHAT_ID");
   if (!ids) return [];
-  return ids
-    .split(",")
+
+  // Поддержка форматов:
+  // 1) 123,456
+  // 2) "123","456" (часто так случайно задают в .env)
+  // 3) ["123","456"]
+  const cleaned = ids
+    .trim()
+    .replace(/^\[/, "")
+    .replace(/\]$/, "")
+    .replaceAll('"', "")
+    .replaceAll("'", "");
+
+  return cleaned
+    .split(/[,\s]+/)
     .map((s) => s.trim())
     .filter(Boolean);
 }
@@ -32,10 +44,7 @@ function tgBase() {
 }
 
 function escHtml(s: string) {
-  return s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 function extractLeadIdFromHtml(htmlText: string): number | null {
@@ -46,12 +55,7 @@ function extractLeadIdFromHtml(htmlText: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-async function saveTelegramMessage(params: {
-  kind: "lead";
-  leadId: number;
-  chatId: string;
-  messageId: number;
-}) {
+async function saveTelegramMessage(params: { kind: "lead"; leadId: number; chatId: string; messageId: number }) {
   try {
     await prisma.telegramMessage.create({
       data: {
@@ -62,7 +66,6 @@ async function saveTelegramMessage(params: {
       },
     });
   } catch (e) {
-    // если вдруг дубль (редко) — не валим процесс
     console.warn("saveTelegramMessage failed:", e);
   }
 }
@@ -97,8 +100,7 @@ export async function sendTelegramText(chatId: string, htmlText: string, keyboar
 
 /**
  * Отправка сразу во все чаты из TELEGRAM_CHAT_IDS.
- * ВАЖНО: теперь автоматически сохраняем chatId/messageId в БД,
- * если в тексте распознали leadId (из строки "Заявка #ID").
+ * ВАЖНО: автоматически сохраняем chatId/messageId в БД, если в тексте распознали leadId.
  */
 export async function sendTelegramToAll(htmlText: string, keyboard?: any) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
@@ -111,21 +113,12 @@ export async function sendTelegramToAll(htmlText: string, keyboard?: any) {
 
   const leadId = extractLeadIdFromHtml(htmlText);
 
-  const results: Array<{
-    chatId: string;
-    ok: boolean;
-    status?: number;
-    data?: any;
-    messageId?: number;
-  }> = [];
+  const results: Array<{ chatId: string; ok: boolean; status?: number; data?: any; messageId?: number }> = [];
 
   for (const chatId of chatIds) {
     const r = await sendTelegramText(chatId, htmlText, keyboard);
 
-    const messageId =
-      (r as any)?.data?.result?.message_id ??
-      (r as any)?.data?.message_id ??
-      undefined;
+    const messageId = (r as any)?.data?.result?.message_id ?? (r as any)?.data?.message_id ?? undefined;
 
     results.push({
       chatId,
@@ -135,7 +128,6 @@ export async function sendTelegramToAll(htmlText: string, keyboard?: any) {
       messageId,
     });
 
-    // ✅ Автосохранение message_id для синхронизации всем
     if ((r as any).ok && leadId && typeof messageId === "number") {
       await saveTelegramMessage({
         kind: "lead",
@@ -185,8 +177,6 @@ export async function deleteTelegramMessage(chatId: string, messageId: number) {
   });
 
   const data = (await res.json().catch(() => null)) as TgApiResult | null;
-
-  // deleteMessage часто падает, если уже удалено/нет прав/слишком старое — это не критично
   if (!res.ok || !data?.ok) {
     return { ok: false, status: res.status, data };
   }
@@ -214,7 +204,7 @@ export async function answerCallbackQuery(callbackQueryId: string, text?: string
   return { ok: true, data };
 }
 
-// -------------------- SYNC HELPERS (все видят изменения) --------------------
+// -------------------- SYNC HELPERS --------------------
 
 export async function editLeadMessagesEverywhere(leadId: number, htmlText: string, keyboard?: any) {
   const msgs = await prisma.telegramMessage.findMany({
@@ -292,7 +282,7 @@ export function leadMessage(lead: {
   return lines.join("\n");
 }
 
-// -------------------- UPDATE LEAD STATUS (for webhook buttons) --------------------
+// -------------------- UPDATE LEAD STATUS --------------------
 
 export async function updateLeadStatusFromTelegram(leadId: number, status: string) {
   const allowed = new Set(["new", "in_progress", "done", "canceled"]);
