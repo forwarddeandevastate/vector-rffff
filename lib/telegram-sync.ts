@@ -6,9 +6,12 @@ export type TgInlineKeyboardMarkup = {
   inline_keyboard: Array<Array<{ text: string; callback_data?: string; url?: string }>>;
 };
 
-export async function deleteOrderMessagesEverywhere(orderId: string) {
+export async function deleteLeadMessagesEverywhere(leadId: number) {
   const msgs = await prisma.telegramMessage.findMany({
-    where: { kind: "order", orderId },
+    where: {
+      kind: "lead",
+      leadId: leadId,
+    },
     select: { chatId: true, messageId: true },
   });
 
@@ -16,39 +19,28 @@ export async function deleteOrderMessagesEverywhere(orderId: string) {
     try {
       await deleteTelegramMessage(m.chatId, m.messageId);
     } catch {
-      // уже удалено/нет прав/слишком старое — игнор
+      // сообщение уже удалено / нет прав / устарело — игнор
     }
   }
 
-  await prisma.telegramMessage.deleteMany({ where: { kind: "order", orderId } });
-}
-
-export async function editOrderMessagesEverywhere(
-  orderId: string,
-  text: string,
-  replyMarkup?: TgInlineKeyboardMarkup
-) {
-  const msgs = await prisma.telegramMessage.findMany({
-    where: { kind: "order", orderId },
-    select: { chatId: true, messageId: true },
+  await prisma.telegramMessage.deleteMany({
+    where: {
+      kind: "lead",
+      leadId: leadId,
+    },
   });
-
-  for (const m of msgs) {
-    try {
-      await editTelegramMessage(m.chatId, m.messageId, text, replyMarkup);
-    } catch {
-      // сообщение могло исчезнуть — игнор
-    }
-  }
 }
 
-export async function editAnnouncementEverywhere(
-  annId: string,
+export async function editLeadMessagesEverywhere(
+  leadId: number,
   text: string,
   replyMarkup?: TgInlineKeyboardMarkup
 ) {
   const msgs = await prisma.telegramMessage.findMany({
-    where: { kind: "announcement", annId },
+    where: {
+      kind: "lead",
+      leadId: leadId,
+    },
     select: { chatId: true, messageId: true },
   });
 
