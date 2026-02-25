@@ -13,17 +13,16 @@ function tgEnabled() {
 }
 
 /**
- * TELEGRAM_CHAT_IDS="id1,id2"
- * Можно оставить старый TELEGRAM_CHAT_ID — он тоже будет учитываться.
+ * TELEGRAM_CHAT_IDS поддержка:
+ * 1) 123,456
+ * 2) "123","456"
+ * 3) ["123","456"]
+ * Также поддерживает TELEGRAM_CHAT_ID (один чат).
  */
 function getChatIds(): string[] {
   const ids = env("TELEGRAM_CHAT_IDS") || env("TELEGRAM_CHAT_ID");
   if (!ids) return [];
 
-  // Поддержка форматов:
-  // 1) 123,456
-  // 2) "123","456" (часто так случайно задают в .env)
-  // 3) ["123","456"]
   const cleaned = ids
     .trim()
     .replace(/^\[/, "")
@@ -48,7 +47,6 @@ function escHtml(s: string) {
 }
 
 function extractLeadIdFromHtml(htmlText: string): number | null {
-  // leadMessage делает: <b>Заявка #123</b>
   const m = htmlText.match(/Заявка\s+#(\d+)/i);
   if (!m) return null;
   const n = Number(m[1]);
@@ -69,8 +67,6 @@ async function saveTelegramMessage(params: { kind: "lead"; leadId: number; chatI
     console.warn("saveTelegramMessage failed:", e);
   }
 }
-
-// -------------------- SEND / EDIT / DELETE / CALLBACK --------------------
 
 export async function sendTelegramText(chatId: string, htmlText: string, keyboard?: any) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
@@ -98,10 +94,6 @@ export async function sendTelegramText(chatId: string, htmlText: string, keyboar
   return { ok: true, data };
 }
 
-/**
- * Отправка сразу во все чаты из TELEGRAM_CHAT_IDS.
- * ВАЖНО: автоматически сохраняем chatId/messageId в БД, если в тексте распознали leadId.
- */
 export async function sendTelegramToAll(htmlText: string, keyboard?: any) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
 
@@ -204,8 +196,6 @@ export async function answerCallbackQuery(callbackQueryId: string, text?: string
   return { ok: true, data };
 }
 
-// -------------------- SYNC HELPERS --------------------
-
 export async function editLeadMessagesEverywhere(leadId: number, htmlText: string, keyboard?: any) {
   const msgs = await prisma.telegramMessage.findMany({
     where: { kind: "lead", leadId },
@@ -229,8 +219,6 @@ export async function deleteLeadMessagesEverywhere(leadId: number) {
 
   await prisma.telegramMessage.deleteMany({ where: { kind: "lead", leadId } });
 }
-
-// -------------------- LEADS MESSAGE + KEYBOARD --------------------
 
 export function leadKeyboard(leadId: number) {
   return {
@@ -281,8 +269,6 @@ export function leadMessage(lead: {
   if (lead.comment) lines.push(`💬 ${escHtml(lead.comment)}`);
   return lines.join("\n");
 }
-
-// -------------------- UPDATE LEAD STATUS --------------------
 
 export async function updateLeadStatusFromTelegram(leadId: number, status: string) {
   const allowed = new Set(["new", "in_progress", "done", "canceled"]);
