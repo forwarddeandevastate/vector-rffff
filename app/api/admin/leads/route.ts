@@ -36,6 +36,7 @@ export async function GET(req: Request) {
         carClass: true,
         roundTrip: true,
         price: true,
+        commission: true,
         comment: true,
         status: true,
         assignedToId: true,

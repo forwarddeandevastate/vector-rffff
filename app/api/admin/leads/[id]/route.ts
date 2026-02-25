@@ -29,6 +29,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     if (body.price === null) data.price = null;
     if (typeof body.price === "number") data.price = body.price;
 
+    if (body.commission === null) data.commission = null;
+    if (typeof body.commission === "number") data.commission = body.commission;
+
     if (body.comment === null) data.comment = null;
     if (typeof body.comment === "string") data.comment = body.comment;
 
@@ -45,6 +48,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         isDuplicate: true,
         duplicateOfId: true,
         price: true,
+        commission: true,
         comment: true,
         datetime: true,
         updatedAt: true,

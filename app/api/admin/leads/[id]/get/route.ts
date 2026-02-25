@@ -28,6 +28,7 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
         carClass: true,
         roundTrip: true,
         price: true,
+        commission: true,
         comment: true,
         status: true,
         assignedToId: true,

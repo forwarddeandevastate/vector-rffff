@@ -227,7 +227,11 @@ export function leadKeyboard(leadId: number) {
         { text: "✅ В работу", callback_data: `L:${leadId}:in_progress` },
         { text: "✅ Завершить", callback_data: `L:${leadId}:done` },
       ],
-      [{ text: "❌ Отменить", callback_data: `L:${leadId}:canceled` }],
+      [
+        { text: "✏️ Изменить цену", callback_data: `L:${leadId}:set_price` },
+        { text: "💸 Комиссия", callback_data: `L:${leadId}:set_commission` },
+      ],
+      [{ text: "❌ Отменить (удалить)", callback_data: `L:${leadId}:canceled` }],
     ],
   };
 }
@@ -243,6 +247,7 @@ export function leadMessage(lead: {
   roundTrip?: boolean | null;
   comment?: string | null;
   price?: number | null;
+  commission?: number | null;
   status?: string | null;
 }) {
   const status = lead.status || "new";
@@ -266,6 +271,7 @@ export function leadMessage(lead: {
   if (lead.datetime) lines.push(`🕒 ${escHtml(lead.datetime)}`);
   lines.push(`🚗 Класс: <b>${escHtml(lead.carClass)}</b>${lead.roundTrip ? " • туда-обратно" : ""}`);
   if (typeof lead.price === "number") lines.push(`💰 Итог: <b>${lead.price} ₽</b>`);
+  if (typeof lead.commission === "number") lines.push(`💸 Комиссия: <b>${lead.commission} ₽</b>`);
   if (lead.comment) lines.push(`💬 ${escHtml(lead.comment)}`);
   return lines.join("\n");
 }
@@ -288,6 +294,7 @@ export async function updateLeadStatusFromTelegram(leadId: number, status: strin
       roundTrip: true,
       comment: true,
       price: true,
+      commission: true,
       status: true,
     },
   });

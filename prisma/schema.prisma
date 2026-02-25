@@ -44,6 +44,9 @@ model Lead {
   roundTrip      Boolean  @default(false)
   price          Int?
 
+  // Комиссия диспетчера/партнёра (в рублях). Заполняется из Telegram/админки.
+  commission     Int?
+
   comment        String?
 
   status         String   @default("new") // new | in_progress | done | canceled
@@ -219,8 +222,8 @@ model PendingInput {
   id        String   @id @default(cuid())
 
   tgUserId  String
-  kind      String   // "ann_price" | "ann_commission"
-  entityId  String   // annId
+  kind      String   // "ann_price" | "ann_commission" | "lead_price" | "lead_commission"
+  entityId  String   // annId или leadId
 
   createdAt DateTime @default(now())
 
