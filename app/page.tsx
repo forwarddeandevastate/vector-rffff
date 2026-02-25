@@ -1,8 +1,5 @@
-"use client";
-
-import Script from "next/script";
-import { useMemo, useRef, useState } from "react";
-import LeadForm, { type CarClass, type RouteType } from "./lead-form";
+import { Suspense } from "react";
+import LeadForm from "./lead-form";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -45,19 +42,6 @@ function Wordmark() {
       </div>
       <div className="text-xs text-zinc-600">Трансферы и поездки по России</div>
     </div>
-  );
-}
-
-function IconPhone({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M9.5 3.75h5A2.75 2.75 0 0 1 17.25 6.5v11A2.75 2.75 0 0 1 14.5 20.25h-5A2.75 2.75 0 0 1 6.75 17.5v-11A2.75 2.75 0 0 1 9.5 3.75Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path d="M10 17.25h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -104,6 +88,14 @@ function NavPill({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
+function Badge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
+      {children}
+    </span>
+  );
+}
+
 function SectionTitle({ title, desc }: { title: string; desc: string }) {
   return (
     <div className="mb-5">
@@ -122,39 +114,27 @@ function Card({ title, text }: { title: string; text: string }) {
   );
 }
 
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
-      {children}
-    </span>
-  );
-}
-
-function ClassCardButton({
+function ClassLinkCard({
+  href,
   title,
   priceHint,
   features,
   note,
-  active,
-  onClick,
 }: {
+  href: string;
   title: string;
   priceHint: string;
   features: string[];
   note?: string;
-  active?: boolean;
-  onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <a
+      href={href}
       className={cn(
-        "text-left rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur transition w-full",
-        "focus:outline-none focus:ring-2 focus:ring-sky-200/80",
-        active ? "border-sky-300 ring-2 ring-sky-200/70 shadow-md bg-white" : "border-zinc-200 hover:border-sky-200/70 hover:bg-white/90"
+        "block rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur transition",
+        "hover:border-sky-200/70 hover:bg-white/95",
+        "focus:outline-none focus:ring-2 focus:ring-sky-200/80"
       )}
-      aria-pressed={active ? "true" : "false"}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -162,7 +142,7 @@ function ClassCardButton({
           <div className="mt-1 text-xs text-zinc-600">{priceHint}</div>
         </div>
 
-        <div className={cn("grid h-9 w-9 place-items-center rounded-xl ring-1", active ? "bg-sky-100 ring-sky-200" : "bg-sky-50 ring-sky-100")}>
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-sky-50 ring-1 ring-sky-100">
           <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600" />
         </div>
       </div>
@@ -177,7 +157,7 @@ function ClassCardButton({
       </ul>
 
       {note ? <div className="mt-4 text-xs text-zinc-500">{note}</div> : null}
-    </button>
+    </a>
   );
 }
 
@@ -186,90 +166,40 @@ export default function HomePage() {
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
-  // ✅ Межгород по умолчанию
-  const [selectedRouteType, setSelectedRouteType] = useState<RouteType>("intercity");
-
-  const orderRef = useRef<HTMLDivElement | null>(null);
-
-  function scrollToOrder() {
-    orderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  function pickClass(v: CarClass, scrollToForm = true) {
-    setSelectedClass(v);
-    if (scrollToForm) scrollToOrder();
-  }
-
-  function pickRouteType(v: RouteType) {
-    setSelectedRouteType(v);
-    scrollToOrder();
-  }
-
-  const faqSchema = useMemo(
-    () => ({
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "Сколько стоит трансфер и как считается цена?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text:
-              "Цена зависит от маршрута и класса авто (Стандарт/Комфорт/Бизнес/Минивэн). После заявки мы подтверждаем стоимость до подачи автомобиля — без сюрпризов.",
-          },
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Сколько стоит межгород?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Стоимость зависит от маршрута и класса авто. Заполните заявку — быстро рассчитаем и подтвердим цену.",
         },
-        {
-          "@type": "Question",
-          name: "Как быстро подаётся машина?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "По городу обычно 15–30 минут (зависит от района и времени). В аэропорт/межгород — подача к согласованному времени.",
-          },
+      },
+      {
+        "@type": "Question",
+        name: "Можно ли заказать межгород туда-обратно?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да, выберите «Туда-обратно» в форме — согласуем детали обратной поездки.",
         },
-        {
-          "@type": "Question",
-          name: "Встречаете в аэропорту с табличкой?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Да. Водитель встречает в зоне прилёта с табличкой. Можно указать номер рейса в комментарии к заявке.",
-          },
+      },
+      {
+        "@type": "Question",
+        name: "Работаете с компаниями?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Да. Корпоративные перевозки, договор, безнал и закрывающие документы.",
         },
-        {
-          "@type": "Question",
-          name: "Можно ли заказать межгород туда-обратно?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Да, отметьте «Туда-обратно» в форме (или напишите в комментарии) — согласуем детали обратной поездки.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Работаете с компаниями?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Да. Корпоративные перевозки для сотрудников и гостей. Работаем по договору, возможен безнал и закрывающие документы.",
-          },
-        },
-      ],
-    }),
-    []
-  );
-
-  const routeButtonBase =
-    "rounded-2xl border bg-white/80 p-4 text-left shadow-sm backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-sky-200/80";
-  const routeActive = "border-sky-300 ring-2 ring-sky-200/70 bg-white";
-  const routeIdle = "border-zinc-200 hover:bg-white";
+      },
+    ],
+  };
 
   return (
     <div className="min-h-screen text-zinc-900">
-      <Script
-        id="faq-schema-home"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
@@ -286,7 +216,6 @@ export default function HomePage() {
             <NavPill href="#order">Заявка</NavPill>
             <NavPill href="#classes">Классы</NavPill>
             <NavPill href="/reviews">Отзывы</NavPill>
-            <NavPill href="#corporate">Корпоративным</NavPill>
             <NavPill href="#how">Как работаем</NavPill>
             <NavPill href="/faq">Вопросы</NavPill>
             <NavPill href="/contacts">Контакты</NavPill>
@@ -333,530 +262,97 @@ export default function HomePage() {
             </div>
 
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
-              Трансфер, которому
+              Трансфер, которому{" "}
               <span className="bg-gradient-to-r from-sky-600 via-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                {" "}
                 доверяют
               </span>
             </h1>
 
             <p className="mt-4 max-w-xl text-base leading-7 text-zinc-700">
-              Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
+              Межгород по России, город и аэропорты. Подберём авто под задачу и подтвердим цену до поездки.
             </p>
 
-            {/* ✅ Порядок: Межгород → Аэропорт → Город */}
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => pickRouteType("intercity")}
-                className={cn(routeButtonBase, selectedRouteType === "intercity" ? routeActive : routeIdle)}
-              >
-                <div className="text-sm font-extrabold text-zinc-900">Межгород</div>
-                <div className="mt-1 text-sm text-zinc-600">Трансферы между городами</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => pickRouteType("airport")}
-                className={cn(routeButtonBase, selectedRouteType === "airport" ? routeActive : routeIdle)}
-              >
-                <div className="text-sm font-extrabold text-zinc-900">Аэропорты</div>
-                <div className="mt-1 text-sm text-zinc-600">Встреча по времени прилёта</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => pickRouteType("city")}
-                className={cn(routeButtonBase, selectedRouteType === "city" ? routeActive : routeIdle)}
-              >
-                <div className="text-sm font-extrabold text-zinc-900">Город</div>
-                <div className="mt-1 text-sm text-zinc-600">Встреча и поездки по городу</div>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={scrollToOrder}
-              className="mt-6 w-full rounded-2xl border border-sky-200/70 bg-white/70 p-4 text-left shadow-sm backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-200/80"
-            >
-              <div className="text-sm font-extrabold text-zinc-900">Гарантии</div>
-              <div className="mt-2 grid gap-2 text-sm text-zinc-700">
-                <div className="flex items-start gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
-                  <span>Стоимость согласуем до подачи автомобиля.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
-                  <span>Заявка фиксируется — ничего не теряется.</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-sky-500" />
-                  <span>Учитываем пожелания: багаж, кресло, рейс, остановки.</span>
-                </div>
-              </div>
-            </button>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={scrollToOrder}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a
+                href="#order"
                 className={cn(
-                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
-                  "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
+                  "inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-extrabold",
+                  "bg-gradient-to-r from-sky-600 via-blue-700 to-indigo-700 text-white shadow-md",
+                  "hover:opacity-95"
                 )}
               >
                 Оставить заявку
-              </button>
-
-              <a
-                href="#classes"
-                className={cn(
-                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                )}
-              >
-                Выбрать класс авто
               </a>
 
               <a
-                href="/reviews"
-                className={cn(
-                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                )}
-              >
-                Отзывы
-              </a>
-
-              <a
-                href="/faq"
-                className={cn(
-                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                )}
-              >
-                Вопросы и ответы
-              </a>
-
-              <a
-                href="/contacts"
-                className={cn(
-                  "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                  "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                )}
-              >
-                Контакты
-              </a>
-            </div>
-          </div>
-
-          <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
-            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
-              <div className="border-b border-zinc-200 p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
-                    <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
-                  </div>
-                  <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
-                    ~ 1 мин
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5">
-                <LeadForm
-                  carClass={selectedClass}
-                  onCarClassChange={(v) => pickClass(v, false)}
-                  routeType={selectedRouteType}
-                  onRouteTypeChange={setSelectedRouteType}
-                />
-              </div>
-
-              <div className="border-t border-zinc-200 bg-white/70 p-5">
-                <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
-                <div className="mt-3 grid gap-2">
-                  <a
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={`tel:${PHONE_TEL}`}
-                  >
-                    <IconPhone className="h-4 w-4 text-sky-700" />
-                    {PHONE_DISPLAY}
-                  </a>
-
-                  <a
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={TELEGRAM}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <IconTelegram className="h-4 w-4 text-sky-700" />
-                    Telegram
-                  </a>
-                </div>
-
-                <div className="mt-4 text-xs text-zinc-500">Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="classes" className="mx-auto max-w-6xl px-4 pb-12">
-        <SectionTitle title="Классы авто" desc="Нажмите на карточку — класс подставится в форму и подсветится." />
-        <div className="grid gap-3 md:grid-cols-2">
-          <ClassCardButton
-            title="Стандарт"
-            priceHint="Оптимально для города"
-            features={["Базовый комфорт, аккуратная подача", "Подходит для 1–3 пассажиров", "Хороший выбор для коротких поездок"]}
-            note="Точную стоимость подтверждаем до подачи."
-            active={selectedClass === "standard"}
-            onClick={() => pickClass("standard", true)}
-          />
-          <ClassCardButton
-            title="Комфорт"
-            priceHint="Чаще выбирают для аэропортов"
-            features={["Больше пространства и мягче ход", "Удобно с багажом", "Подходит для деловых и семейных поездок"]}
-            note="Можно указать пожелания: детское кресло, остановки."
-            active={selectedClass === "comfort"}
-            onClick={() => pickClass("comfort", true)}
-          />
-          <ClassCardButton
-            title="Бизнес"
-            priceHint="Максимально спокойно и представительно"
-            features={["Повышенный комфорт и тишина в салоне", "Подходит для встреч и важных поездок", "Акцент на сервис и пунктуальность"]}
-            note="Уточняем детали заранее и фиксируем заявку."
-            active={selectedClass === "business"}
-            onClick={() => pickClass("business", true)}
-          />
-          <ClassCardButton
-            title="Минивэн"
-            priceHint="Когда нужно больше мест"
-            features={["Для семьи/компании и большого багажа", "Подходит для 4–7 пассажиров", "Удобно на межгород и в аэропорт"]}
-            note="Сообщите количество пассажиров и багаж — подберём вариант."
-            active={selectedClass === "minivan"}
-            onClick={() => pickClass("minivan", true)}
-          />
-        </div>
-      </section>
-
-      <section id="reviews" className="mx-auto max-w-6xl px-4 pb-12">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="md:flex md:items-start md:justify-between md:gap-8">
-            <div className="md:max-w-2xl">
-              <SectionTitle title="Отзывы клиентов" desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше." />
-
-              <div className="grid gap-3 md:grid-cols-3">
-                <Card title="Реальные отзывы" text="Публикуем отзывы после модерации, чтобы сохранять качество и честность." />
-                <Card title="Оставить отзыв" text="Имя, город и текст — достаточно. Отправка занимает меньше минуты." />
-                <Card title="Открытая обратная связь" text="Ваше мнение важно: учитываем пожелания и улучшаем сервис." />
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur md:mt-0 md:w-[360px]">
-              <div className="text-sm font-extrabold text-zinc-900">Перейти к отзывам</div>
-              <div className="mt-3 grid gap-2">
-                <a
-                  href="/reviews"
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm w-full",
-                    "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
-                  )}
-                >
-                  Смотреть и оставить отзыв
-                </a>
-
-                <button
-                  type="button"
-                  onClick={scrollToOrder}
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
-                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                  )}
-                >
-                  Оставить заявку
-                </button>
-
-                <a
-                  href="/faq"
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
-                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                  )}
-                >
-                  Вопросы и ответы
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="corporate" className="mx-auto max-w-6xl px-4 pb-12">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="md:flex md:items-start md:justify-between md:gap-8">
-            <div className="md:max-w-2xl">
-              <SectionTitle
-                title="Для корпоративных клиентов"
-                desc="Организуем регулярные поездки для сотрудников и гостей: быстрое согласование, единые правила, удобная отчётность."
-              />
-
-              <div className="grid gap-3 md:grid-cols-3">
-                <Card title="Договор и безнал" text="Работаем по договору, возможна оплата по счёту. Закрывающие документы — по запросу." />
-                <Card title="Единые условия" text="Фиксируем правила подачи, ожидания, маршруты и требования к автомобилю. Всё прозрачно для вашей команды." />
-                <Card title="Отчётность" text="Собираем заявки в одном формате: кто, куда, когда. Удобно для бухгалтерии и администрирования." />
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur md:mt-0 md:w-[360px]">
-              <div className="text-sm font-extrabold text-zinc-900">Связаться по корпоративным поездкам</div>
-              <div className="mt-3 grid gap-2">
-                <a
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                    "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                  )}
-                  href={`tel:${PHONE_TEL}`}
-                >
-                  <IconPhone className="h-4 w-4 text-sky-700" />
-                  {PHONE_DISPLAY}
-                </a>
-
-                <a
-                  className={cn(
-                    "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                    "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                  )}
-                  href={TELEGRAM}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <IconTelegram className="h-4 w-4 text-sky-700" />
-                  Telegram
-                </a>
-
-                <a
-                  href="/corporate"
-                  className={cn(
-                    "mt-1 inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
-                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                  )}
-                >
-                  Подробнее
-                </a>
-
-                <button
-                  type="button"
-                  onClick={scrollToOrder}
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm w-full",
-                    "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
-                  )}
-                >
-                  Оставить заявку
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="how" className="mx-auto max-w-6xl px-4 pb-12 scroll-mt-24">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <SectionTitle title="Как работаем" desc="Простой процесс: заявка → подтверждение → подача → поездка. Стоимость согласуем заранее." />
-
-          <div className="grid gap-3 md:grid-cols-4">
-            <Card title="1) Оставляете заявку" text="Заполняете форму: маршрут, дата/время, класс авто и пожелания." />
-            <Card title="2) Уточняем детали" text="Мы связываемся, подтверждаем стоимость и время подачи. Всё фиксируем." />
-            <Card title="3) Подача авто" text="Автомобиль приезжает к адресу или встречаем в аэропорту/на вокзале." />
-            <Card title="4) Поездка" text="Едете спокойно. Учтём багаж, кресло, остановки по пути." />
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={scrollToOrder}
-              className={cn(
-                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
-                "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
-              )}
-            >
-              Оставить заявку
-            </button>
-
-            <a
-              href={`tel:${PHONE_TEL}`}
-              className={cn(
-                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-              )}
-            >
-              Позвонить
-            </a>
-
-            <a
-              href={TELEGRAM}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(
-                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-              )}
-            >
-              Telegram
-            </a>
-
-            <a
-              href="/faq"
-              className={cn(
-                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-              )}
-            >
-              Вопросы и ответы
-            </a>
-
-            <a
-              href="/contacts"
-              className={cn(
-                "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-              )}
-            >
-              Контакты
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
-              <LogoMark />
-              <Wordmark />
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
                 href={`tel:${PHONE_TEL}`}
+                className={cn(
+                  "inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-extrabold",
+                  "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                )}
               >
-                <IconPhone className="h-4 w-4 text-sky-700" />
-                {PHONE_DISPLAY}
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href={TELEGRAM}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <IconTelegram className="h-4 w-4 text-sky-700" />
-                Telegram
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/reviews"
-              >
-                Отзывы
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/corporate"
-              >
-                Корпоративным
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/faq"
-              >
-                Вопросы и ответы
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/requisites"
-              >
-                Реквизиты компании
-              </a>
-
-              <a
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur hover:bg-white"
-                href="/prices"
-              >
-                Цены
+                Позвонить
               </a>
             </div>
           </div>
 
-          <div className="mt-6 border-t border-zinc-200/70 pt-5">
-            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-              <div>
-                <div className="text-xs font-semibold text-zinc-700">Услуги</div>
-                <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                  <a href="/city-transfer" className="hover:text-zinc-900 hover:underline">
-                    Поездки по городу
-                  </a>
-                  <a href="/airport-transfer" className="hover:text-zinc-900 hover:underline">
-                    Трансфер в аэропорт
-                  </a>
-                  <a href="/intercity-taxi" className="hover:text-zinc-900 hover:underline">
-                    Междугородние поездки
-                  </a>
-                  <a href="/minivan-transfer" className="hover:text-zinc-900 hover:underline">
-                    Минивэн / групповые поездки
-                  </a>
-                  <a href="/corporate" className="hover:text-zinc-900 hover:underline">
-                    Корпоративные перевозки
-                  </a>
-                </div>
+          <div id="order" className="md:col-span-5">
+            <div className="rounded-3xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
+              <div className="text-sm font-extrabold text-zinc-900">Заявка на поездку</div>
+              <div className="mt-1 text-xs text-zinc-600">
+                По умолчанию выбран межгород. Класс и тип поездки можно поменять в форме.
               </div>
 
-              <div>
-                <div className="text-xs font-semibold text-zinc-700">Навигация</div>
-                <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                  <a href="/services" className="hover:text-zinc-900 hover:underline">
-                    Наш сервис
-                  </a>
-                  <a href="/reviews" className="hover:text-zinc-900 hover:underline">
-                    Отзывы
-                  </a>
-                  <a href="/faq" className="hover:text-zinc-900 hover:underline">
-                    Вопросы и ответы
-                  </a>
-                  <a href="/contacts" className="hover:text-zinc-900 hover:underline">
-                    Контакты
-                  </a>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs font-semibold text-zinc-700">Информация</div>
-                <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                  <a href="/prices" className="hover:text-zinc-900 hover:underline">
-                    Цены
-                  </a>
-                  <a href="/requisites" className="hover:text-zinc-900 hover:underline">
-                    Реквизиты компании
-                  </a>
-                </div>
+              <div className="mt-4">
+                <Suspense fallback={<div className="text-sm text-zinc-600">Загружаем форму…</div>}>
+                  <LeadForm defaultRouteType="intercity" defaultCarClass="standard" />
+                </Suspense>
               </div>
             </div>
           </div>
-
-          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
         </div>
-      </footer>
+      </section>
+
+      <section id="classes" className="mx-auto max-w-6xl px-4 pb-4 pt-2">
+        <SectionTitle title="Классы авто" desc="Нажмите на класс — форма откроется с выбранным вариантом." />
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <ClassLinkCard
+            href="/?class=standard#order"
+            title="Стандарт"
+            priceHint="Оптимально по цене"
+            features={["Комфортная подача", "Подходит для города и межгорода", "Багаж"]}
+          />
+          <ClassLinkCard
+            href="/?class=comfort#order"
+            title="Комфорт"
+            priceHint="Больше места и тише салон"
+            features={["Улучшенный комфорт", "Кондиционер", "Подходит для длительных поездок"]}
+          />
+          <ClassLinkCard
+            href="/?class=business#order"
+            title="Бизнес"
+            priceHint="Для встреч и важных поездок"
+            features={["Водители с опытом", "Строгий внешний вид", "Максимальный комфорт"]}
+          />
+          <ClassLinkCard
+            href="/?class=minivan#order"
+            title="Минивэн"
+            priceHint="Для семьи и группы"
+            features={["Больше пассажиров", "Удобно с багажом", "Трансферы в аэропорт"]}
+            note="Нужно больше мест? Укажите в комментарии — подберём вариант."
+          />
+        </div>
+      </section>
+
+      <section id="how" className="mx-auto max-w-6xl px-4 py-10">
+        <SectionTitle title="Как работаем" desc="Быстро, прозрачно и без сюрпризов." />
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card title="1) Оставляете заявку" text="Укажите маршрут, дату и класс. Мы уточним детали." />
+          <Card title="2) Подтверждаем стоимость" text="Согласуем цену и время подачи до поездки." />
+          <Card title="3) Поездка" text="Водитель приезжает вовремя. Едете комфортно и безопасно." />
+        </div>
+      </section>
     </div>
   );
 }
