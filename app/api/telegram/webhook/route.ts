@@ -2,12 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   answerCallbackQuery,
-  editLeadMessagesEverywhere,
+  deleteTelegramMessage,
+  editTelegramMessage,
   leadKeyboard,
   leadMessage,
   sendTelegramText,
-  deleteLeadMessagesEverywhere as deleteLeadTgMessagesEverywhere,
-  updateLeadStatusFromTelegram,
 } from "@/lib/telegram";
 
 export const runtime = "nodejs";
@@ -19,23 +18,21 @@ function env(name: string) {
 
 function isValidSecret(req: Request) {
   const expected = env("TELEGRAM_WEBHOOK_SECRET");
-  // если секрет не задан — принимаем (но лучше задать в проде)
+  // если секрет не задан — принимаем
   if (!expected) return true;
   const got = req.headers.get("x-telegram-bot-api-secret-token");
   return !!got && got === expected;
 }
 
 function parseMoney(text: string): number | null {
-  // допускаем: "25440", "25 440", "25,440", "25.440"
   const digits = (text || "").replace(/[^0-9]/g, "");
   if (!digits) return null;
   const n = Number(digits);
-  if (!Number.isFinite(n)) return null;
-  if (n < 0) return null;
+  if (!Number.isFinite(n) || n < 0) return null;
   return Math.round(n);
 }
 
-async function fetchLeadForMessage(leadId: number) {
+async function getLead(leadId: number) {
   return prisma.lead.findUnique({
     where: { id: leadId },
     select: {
@@ -55,14 +52,10 @@ async function fetchLeadForMessage(leadId: number) {
   });
 }
 
-async function handleLeadStatus(leadId: number, status: string) {
-  const updated = await updateLeadStatusFromTelegram(leadId, status);
-  await editLeadMessagesEverywhere(updated.id, leadMessage(updated), leadKeyboard(updated.id));
-}
-
-async function handleLeadDelete(leadId: number) {
-  await prisma.lead.delete({ where: { id: leadId } });
-  await deleteLeadTgMessagesEverywhere(leadId);
+function shortErr(e: any) {
+  const msg = String(e?.message || e || "error");
+  // укоротим чтобы в Telegram не было простыней
+  return msg.length > 120 ? msg.slice(0, 120) + "…" : msg;
 }
 
 async function setPendingInput(tgUserId: string, kind: "lead_price" | "lead_commission", leadId: number) {
@@ -92,22 +85,19 @@ export async function POST(req: Request) {
   const update = await req.json().catch(() => null);
   if (!update) return NextResponse.json({ ok: true });
 
-  // 1) Inline-кнопки
+  // ===== 1) Inline кнопки =====
   if (update.callback_query) {
     const cq = update.callback_query;
     const cqId: string | undefined = cq.id;
     const data: string | undefined = cq.data;
+
     const tgUserId = String(cq?.from?.id ?? "");
     const chatId = String(cq?.message?.chat?.id ?? "");
+    const msgId = Number(cq?.message?.message_id ?? 0);
 
     try {
       if (!data) {
         if (cqId) await answerCallbackQuery(cqId, "Ок");
-        return NextResponse.json({ ok: true });
-      }
-
-      if (data.startsWith("TEST:")) {
-        if (cqId) await answerCallbackQuery(cqId, `Нажато: ${data}`);
         return NextResponse.json({ ok: true });
       }
 
@@ -125,25 +115,62 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
 
+      // --- Статусы ---
       if (action === "in_progress" || action === "done" || action === "new") {
-        await handleLeadStatus(leadId, action);
+        await prisma.lead.update({
+          where: { id: leadId },
+          data: { status: action },
+        });
+
+        const lead = await getLead(leadId);
+        if (lead && chatId && msgId) {
+          // редактируем именно то сообщение, где нажали (это 100% есть)
+          await editTelegramMessage(chatId, msgId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
+        }
+
+        // и дополнительно, если у тебя есть маппинг на другие чаты — обновим везде
+        const msgs = await prisma.telegramMessage.findMany({
+          where: { kind: "lead", leadId },
+          select: { chatId: true, messageId: true },
+        });
+
+        if (lead) {
+          for (const mm of msgs) {
+            // текущее сообщение может совпасть — это не страшно
+            await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
+          }
+        }
+
         if (cqId) await answerCallbackQuery(cqId, "Готово");
         return NextResponse.json({ ok: true });
       }
 
+      // --- Отмена = удалить ---
       if (action === "canceled") {
-        // по твоей просьбе: «отмена» = удаление заявки
-        await handleLeadDelete(leadId);
+        // 1) сначала достанем messageId, чтобы удалить в TG
+        const msgs = await prisma.telegramMessage.findMany({
+          where: { kind: "lead", leadId },
+          select: { chatId: true, messageId: true },
+        });
+
+        // 2) удалим сообщения в TG
+        for (const mm of msgs) {
+          await deleteTelegramMessage(mm.chatId, mm.messageId).catch(() => null);
+        }
+
+        // 3) удалим из БД (и записи telegram_messages удалятся каскадом)
+        await prisma.lead.delete({ where: { id: leadId } });
+
         if (cqId) await answerCallbackQuery(cqId, "Удалено");
         return NextResponse.json({ ok: true });
       }
 
+      // --- Цена/Комиссия ---
       if (action === "set_price") {
         if (!tgUserId || !chatId) {
           if (cqId) await answerCallbackQuery(cqId, "Нет данных чата");
           return NextResponse.json({ ok: true });
         }
-
         await setPendingInput(tgUserId, "lead_price", leadId);
         await sendTelegramText(chatId, `Введите новую цену для заявки <b>#${leadId}</b> (только число).`);
         if (cqId) await answerCallbackQuery(cqId, "Жду цену");
@@ -155,7 +182,6 @@ export async function POST(req: Request) {
           if (cqId) await answerCallbackQuery(cqId, "Нет данных чата");
           return NextResponse.json({ ok: true });
         }
-
         await setPendingInput(tgUserId, "lead_commission", leadId);
         await sendTelegramText(chatId, `Введите комиссию для заявки <b>#${leadId}</b> (только число).`);
         if (cqId) await answerCallbackQuery(cqId, "Жду комиссию");
@@ -166,12 +192,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     } catch (e: any) {
       console.error("telegram webhook callback_query error:", e);
-      if (cqId) await answerCallbackQuery(cqId, "Ошибка").catch(() => null);
+      if (cqId) await answerCallbackQuery(cqId, `Ошибка: ${shortErr(e)}`).catch(() => null);
       return NextResponse.json({ ok: true });
     }
   }
 
-  // 2) Сообщение (ввод суммы)
+  // ===== 2) Сообщения (ввод суммы) =====
   if (update.message) {
     const msg = update.message;
     const tgUserId = String(msg?.from?.id ?? "");
@@ -187,7 +213,7 @@ export async function POST(req: Request) {
 
       const amount = parseMoney(text);
       if (amount === null) {
-        // возвращаем pending обратно, чтобы можно было ввести снова
+        // вернём pending обратно
         await prisma.pendingInput.upsert({
           where: { tgUserId },
           update: { kind: pending.kind, entityId: pending.entityId, createdAt: new Date() },
@@ -197,27 +223,30 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
 
-      if (pending.kind === "lead_price" || pending.kind === "lead_commission") {
-        const leadId = Number(pending.entityId);
-        if (!Number.isFinite(leadId)) {
-          await sendTelegramText(chatId, "Ошибка: некорректный ID заявки");
-          return NextResponse.json({ ok: true });
-        }
-
-        if (pending.kind === "lead_price") {
-          await prisma.lead.update({ where: { id: leadId }, data: { price: amount } });
-          await sendTelegramText(chatId, `Цена для заявки <b>#${leadId}</b> обновлена: <b>${amount} ₽</b>`);
-        } else {
-          await prisma.lead.update({ where: { id: leadId }, data: { commission: amount } });
-          await sendTelegramText(chatId, `Комиссия для заявки <b>#${leadId}</b> обновлена: <b>${amount} ₽</b>`);
-        }
-
-        const lead = await fetchLeadForMessage(leadId);
-        if (lead) {
-          await editLeadMessagesEverywhere(lead.id, leadMessage(lead), leadKeyboard(lead.id));
-        }
-
+      const leadId = Number(pending.entityId);
+      if (!Number.isFinite(leadId)) {
+        await sendTelegramText(chatId, "Ошибка: некорректный ID заявки");
         return NextResponse.json({ ok: true });
+      }
+
+      if (pending.kind === "lead_price") {
+        await prisma.lead.update({ where: { id: leadId }, data: { price: amount } });
+        await sendTelegramText(chatId, `Цена для заявки <b>#${leadId}</b> обновлена: <b>${amount} ₽</b>`);
+      } else if (pending.kind === "lead_commission") {
+        await prisma.lead.update({ where: { id: leadId }, data: { commission: amount } });
+        await sendTelegramText(chatId, `Комиссия для заявки <b>#${leadId}</b> обновлена: <b>${amount} ₽</b>`);
+      }
+
+      const lead = await getLead(leadId);
+      if (lead) {
+        const msgs = await prisma.telegramMessage.findMany({
+          where: { kind: "lead", leadId },
+          select: { chatId: true, messageId: true },
+        });
+
+        for (const mm of msgs) {
+          await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
+        }
       }
 
       return NextResponse.json({ ok: true });
