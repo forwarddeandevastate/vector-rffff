@@ -58,6 +58,9 @@ model Lead {
   utmMedium      String?
   utmCampaign    String?
 
+  // ✅ Для синхронизации с Telegram: где и какими сообщениями показан этот лид
+  tgMessages     TelegramMessage[]
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -145,4 +148,82 @@ model Review {
 
   @@index([isPublic, createdAt])
   @@map("reviews")
+}
+
+//
+// ✅ Telegram sync (для "пропадает из бота", "все видят изменения", и объявлений)
+//
+
+model TelegramMessage {
+  id        String   @id @default(cuid())
+
+  kind      String   // "lead" | "announcement"
+  leadId    Int?
+  annId     String?
+
+  chatId    String
+  messageId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead Lead?          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  ann  Announcement?  @relation(fields: [annId], references: [id], onDelete: Cascade)
+
+  @@index([kind])
+  @@index([leadId])
+  @@index([annId])
+  @@unique([chatId, messageId])
+  @@map("telegram_messages")
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+
+  title     String
+  text      String?
+  price     Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  commissions AnnouncementCommission[]
+  tgMessages  TelegramMessage[]
+
+  @@index([isActive, updatedAt])
+  @@map("announcements")
+}
+
+model AnnouncementCommission {
+  id        String   @id @default(cuid())
+
+  annId     String
+  tgUserId  String
+  amount    Int      @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  ann Announcement @relation(fields: [annId], references: [id], onDelete: Cascade)
+
+  @@unique([annId, tgUserId])
+  @@index([annId])
+  @@map("announcement_commissions")
+}
+
+/**
+ * Временное состояние для ввода числа в боте:
+ * пользователь нажал кнопку → бот попросил "введите сумму" → следующее сообщение мы трактуем как ввод.
+ */
+model PendingInput {
+  id        String   @id @default(cuid())
+
+  tgUserId  String
+  kind      String   // "ann_price" | "ann_commission"
+  entityId  String   // annId
+
+  createdAt DateTime @default(now())
+
+  @@unique([tgUserId])
+  @@map("pending_inputs")
 }

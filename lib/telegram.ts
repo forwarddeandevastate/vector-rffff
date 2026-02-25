@@ -38,13 +38,38 @@ function escHtml(s: string) {
     .replaceAll(">", "&gt;");
 }
 
-// -------------------- SEND / EDIT / CALLBACK --------------------
+function extractLeadIdFromHtml(htmlText: string): number | null {
+  // leadMessage делает: <b>Заявка #123</b>
+  const m = htmlText.match(/Заявка\s+#(\d+)/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
 
-export async function sendTelegramText(
-  chatId: string,
-  htmlText: string,
-  keyboard?: any
-) {
+async function saveTelegramMessage(params: {
+  kind: "lead";
+  leadId: number;
+  chatId: string;
+  messageId: number;
+}) {
+  try {
+    await prisma.telegramMessage.create({
+      data: {
+        kind: params.kind,
+        leadId: params.leadId,
+        chatId: params.chatId,
+        messageId: params.messageId,
+      },
+    });
+  } catch (e) {
+    // если вдруг дубль (редко) — не валим процесс
+    console.warn("saveTelegramMessage failed:", e);
+  }
+}
+
+// -------------------- SEND / EDIT / DELETE / CALLBACK --------------------
+
+export async function sendTelegramText(chatId: string, htmlText: string, keyboard?: any) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
 
   const payload: any = {
@@ -66,12 +91,14 @@ export async function sendTelegramText(
     console.error("TG sendMessage failed:", res.status, data);
     return { ok: false, status: res.status, data };
   }
+
   return { ok: true, data };
 }
 
 /**
  * Отправка сразу во все чаты из TELEGRAM_CHAT_IDS.
- * Возвращает результаты по каждому чату.
+ * ВАЖНО: теперь автоматически сохраняем chatId/messageId в БД,
+ * если в тексте распознали leadId (из строки "Заявка #ID").
  */
 export async function sendTelegramToAll(htmlText: string, keyboard?: any) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
@@ -82,22 +109,47 @@ export async function sendTelegramToAll(htmlText: string, keyboard?: any) {
     return { ok: false, error: "no chat ids" };
   }
 
-  const results: Array<{ chatId: string; ok: boolean; status?: number; data?: any }> = [];
+  const leadId = extractLeadIdFromHtml(htmlText);
+
+  const results: Array<{
+    chatId: string;
+    ok: boolean;
+    status?: number;
+    data?: any;
+    messageId?: number;
+  }> = [];
 
   for (const chatId of chatIds) {
     const r = await sendTelegramText(chatId, htmlText, keyboard);
-    results.push({ chatId, ok: !!r.ok, status: (r as any).status, data: (r as any).data });
+
+    const messageId =
+      (r as any)?.data?.result?.message_id ??
+      (r as any)?.data?.message_id ??
+      undefined;
+
+    results.push({
+      chatId,
+      ok: !!(r as any).ok,
+      status: (r as any).status,
+      data: (r as any).data,
+      messageId,
+    });
+
+    // ✅ Автосохранение message_id для синхронизации всем
+    if ((r as any).ok && leadId && typeof messageId === "number") {
+      await saveTelegramMessage({
+        kind: "lead",
+        leadId,
+        chatId: String(chatId),
+        messageId,
+      });
+    }
   }
 
   return { ok: results.every((r) => r.ok), results };
 }
 
-export async function editTelegramMessage(
-  chatId: string,
-  messageId: number,
-  htmlText: string,
-  keyboard?: any
-) {
+export async function editTelegramMessage(chatId: string, messageId: number, htmlText: string, keyboard?: any) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
 
   const payload: any = {
@@ -123,6 +175,24 @@ export async function editTelegramMessage(
   return { ok: true, data };
 }
 
+export async function deleteTelegramMessage(chatId: string, messageId: number) {
+  if (!tgEnabled()) return { ok: true, skipped: true as const };
+
+  const res = await fetch(`${tgBase()}/deleteMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, message_id: messageId }),
+  });
+
+  const data = (await res.json().catch(() => null)) as TgApiResult | null;
+
+  // deleteMessage часто падает, если уже удалено/нет прав/слишком старое — это не критично
+  if (!res.ok || !data?.ok) {
+    return { ok: false, status: res.status, data };
+  }
+  return { ok: true, data };
+}
+
 export async function answerCallbackQuery(callbackQueryId: string, text?: string) {
   if (!tgEnabled()) return { ok: true, skipped: true as const };
 
@@ -142,6 +212,32 @@ export async function answerCallbackQuery(callbackQueryId: string, text?: string
     return { ok: false, status: res.status, data };
   }
   return { ok: true, data };
+}
+
+// -------------------- SYNC HELPERS (все видят изменения) --------------------
+
+export async function editLeadMessagesEverywhere(leadId: number, htmlText: string, keyboard?: any) {
+  const msgs = await prisma.telegramMessage.findMany({
+    where: { kind: "lead", leadId },
+    select: { chatId: true, messageId: true },
+  });
+
+  for (const m of msgs) {
+    await editTelegramMessage(m.chatId, m.messageId, htmlText, keyboard).catch(() => null);
+  }
+}
+
+export async function deleteLeadMessagesEverywhere(leadId: number) {
+  const msgs = await prisma.telegramMessage.findMany({
+    where: { kind: "lead", leadId },
+    select: { chatId: true, messageId: true },
+  });
+
+  for (const m of msgs) {
+    await deleteTelegramMessage(m.chatId, m.messageId).catch(() => null);
+  }
+
+  await prisma.telegramMessage.deleteMany({ where: { kind: "lead", leadId } });
 }
 
 // -------------------- LEADS MESSAGE + KEYBOARD --------------------

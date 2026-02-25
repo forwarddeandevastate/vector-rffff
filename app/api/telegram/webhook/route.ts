@@ -5,6 +5,8 @@ import {
   leadKeyboard,
   leadMessage,
   updateLeadStatusFromTelegram,
+  editLeadMessagesEverywhere,
+  deleteLeadMessagesEverywhere,
 } from "@/lib/telegram";
 
 export const runtime = "nodejs";
@@ -56,11 +58,25 @@ export async function POST(req: Request) {
 
     const updated = await updateLeadStatusFromTelegram(leadId, status);
 
-    await editTelegramMessage(
-      String(chatId),
-      Number(messageId),
-      leadMessage(updated),
-      leadKeyboard(updated.id)
+    // ✅ Если отменили — удаляем во всех чатах (пропадает из телеги), но в админке остаётся со статусом canceled
+    if (status === "canceled") {
+      await deleteLeadMessagesEverywhere(updated.id);
+      // на всякий случай попробуем удалить и текущую (если она не была в базе)
+      // (ошибки игнорим)
+      await (async () => {
+        // delete через editTelegramMessage не получится, поэтому просто не трогаем тут
+      })();
+
+      await answerCallbackQuery(callbackId, "Отменено ✅");
+      return ok();
+    }
+
+    // ✅ В остальных статусах — обновляем ВСЕ сообщения во всех чатах
+    await editLeadMessagesEverywhere(updated.id, leadMessage(updated), leadKeyboard(updated.id));
+
+    // Фоллбек: если по какой-то причине нет записей в telegram_messages, обновим хотя бы текущую
+    await editTelegramMessage(String(chatId), Number(messageId), leadMessage(updated), leadKeyboard(updated.id)).catch(
+      () => null
     );
 
     await answerCallbackQuery(callbackId, "Готово ✅");
