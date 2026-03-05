@@ -105,7 +105,8 @@ const CITY_MAP: Record<string, string> = {
   kostroma: "Кострома",
 
   kursk: "Курск",
-  "zheleznogorsk-kursk": "Железногорск",
+  // ⚠️ есть несколько Железногорск — делаем уникально для SEO (иначе дубли Title/Description)
+  "zheleznogorsk-kursk": "Железногорск (Курская обл.)",
 
   lipetsk: "Липецк",
   yelets: "Елец",
@@ -158,7 +159,7 @@ const CITY_MAP: Record<string, string> = {
   norilsk: "Норильск",
   achinsk: "Ачинск",
   kansk: "Канск",
-  "zheleznogorsk-krasnoyarsk": "Железногорск",
+  "zheleznogorsk-krasnoyarsk": "Железногорск (Красноярский край)",
 
   donetsk: "Донецк",
   makeyevka: "Макеевка",
