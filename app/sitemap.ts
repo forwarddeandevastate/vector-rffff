@@ -138,8 +138,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // ✅ Только популярные маршруты (чтобы не раздувать sitemap тысячами URL)
   const popularRoutes: MetadataRoute.Sitemap = CITY_LANDINGS.flatMap((c) =>
-    c.popularTo.slice(0, 5).map((to) => ({
-      url: `${baseUrl}/route/${c.slug}/${to}`,
+    c.popularTo.slice(0, 10).map((to) => ({
+      url: `${baseUrl}/${c.slug}/${to}`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.5,
