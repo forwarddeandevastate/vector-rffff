@@ -53,11 +53,11 @@ function IconPhone({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
-        d="M9.5 3.75h5A2.75 2.75 0 0 1 17.25 6.5v11A2.75 2.75 0 0 1 14.5 20.25h-5A2.75 2.75 0 0 1 6.75 17.5v-11A2.75 2.75 0 0 1 9.5 3.75Z"
+        d="M7.8 3.9c.6-.5 1.5-.5 2.1 0l2.1 2.1c.6.6.6 1.5 0 2.1l-1 1a1 1 0 0 0-.2 1.1c.8 1.6 2.1 2.9 3.7 3.7a1 1 0 0 0 1.1-.2l1-1c.6-.6 1.5-.6 2.1 0l2.1 2.1c.5.6.5 1.5 0 2.1l-1.2 1.2c-.9.9-2.2 1.2-3.4.8-6.7-2.2-12.1-7.6-14.3-14.3-.4-1.2-.1-2.5.8-3.4L7.8 3.9Z"
         stroke="currentColor"
         strokeWidth="1.8"
+        strokeLinejoin="round"
       />
-      <path d="M10 17.25h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
@@ -147,7 +147,7 @@ export default function SeoCityClient(props: {
 
       <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
         <div className="grid gap-8 md:grid-cols-12">
-          <div className="md:col-span-7">
+          <div className="order-2 md:order-1 md:col-span-7">
             <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
               Междугороднее такси из {props.fromGenitive}
             </h1>
@@ -194,11 +194,37 @@ export default function SeoCityClient(props: {
             </div>
           </div>
 
-          <div className="md:col-span-5">
+          <div className="order-1 md:order-2 md:col-span-5">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
-                <div className="text-sm font-extrabold text-zinc-900">Заявка на поездку</div>
-                <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`tel:${PHONE_TEL}`}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                    )}
+                    title="Позвонить"
+                  >
+                    <IconPhone className="h-4 w-4 text-sky-700" />
+                    Позвонить
+                  </a>
+                  <a
+                    href={TELEGRAM}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                    )}
+                    title="Написать в Telegram"
+                  >
+                    <IconTelegram className="h-4 w-4 text-sky-700" />
+                    TG
+                  </a>
+                </div>
+
+                <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
               </div>
 
               <div className="p-5">

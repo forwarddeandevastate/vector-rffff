@@ -22,6 +22,33 @@ function SmallBadge({ children }: { children: React.ReactNode }) {
   );
 }
 
+function IconPhone({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M7.8 3.9c.6-.5 1.5-.5 2.1 0l2.1 2.1c.6.6.6 1.5 0 2.1l-1 1a1 1 0 0 0-.2 1.1c.8 1.6 2.1 2.9 3.7 3.7a1 1 0 0 0 1.1-.2l1-1c.6-.6 1.5-.6 2.1 0l2.1 2.1c.5.6.5 1.5 0 2.1l-1.2 1.2c-.9.9-2.2 1.2-3.4.8-6.7-2.2-12.1-7.6-14.3-14.3-.4-1.2-.1-2.5.8-3.4L7.8 3.9Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconTelegram({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M20.75 5.6 3.9 12.2c-.8.3-.79 1.44.02 1.72l4.2 1.45 1.6 4.93c.26.8 1.27.95 1.74.27l2.4-3.5 4.1 3.01c.63.46 1.51.12 1.7-.66l2.2-13.96c.13-.83-.7-1.46-1.41-1.18Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="M8.1 15.4 18.4 7.9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function SeoRouteClient(props: {
   fromSlug: string;
   toSlug: string;
@@ -33,6 +60,9 @@ export default function SeoRouteClient(props: {
   faq: FAQItem[];
   moreFromCity: Array<{ toSlug: string; toName: string }>;
 }) {
+  const PHONE_TEL = "+78314233929";
+  const TELEGRAM = "https://t.me/vector_rf52";
+
   const [carClass, setCarClass] = useState<CarClass>("standard");
   const [routeType, setRouteType] = useState<RouteType>("intercity");
 
@@ -58,7 +88,7 @@ export default function SeoRouteClient(props: {
 
       <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
         <div className="grid gap-8 md:grid-cols-12">
-          <div className="md:col-span-7">
+          <div className="order-2 md:order-1 md:col-span-7">
             <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
               Такси {props.fromName} — {props.toName}
             </h1>
@@ -105,13 +135,37 @@ export default function SeoRouteClient(props: {
             </div>
           </div>
 
-          <div className="md:col-span-5">
+          <div className="order-1 md:order-2 md:col-span-5">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
               <div className="border-b border-zinc-200 p-5">
-                <div className="text-sm font-extrabold text-zinc-900">Заявка на маршрут</div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Укажите контакты — подтвердим стоимость и подачу авто.
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`tel:${PHONE_TEL}`}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                    )}
+                    title="Позвонить"
+                  >
+                    <IconPhone className="h-4 w-4 text-sky-700" />
+                    Позвонить
+                  </a>
+                  <a
+                    href={TELEGRAM}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                    )}
+                    title="Написать в Telegram"
+                  >
+                    <IconTelegram className="h-4 w-4 text-sky-700" />
+                    TG
+                  </a>
                 </div>
+
+                <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
               </div>
 
               <div className="p-5">

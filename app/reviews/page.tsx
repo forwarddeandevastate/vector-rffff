@@ -322,7 +322,8 @@ export default async function ReviewsPage() {
       <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
         <div className="flex flex-wrap gap-2">
           <Badge>Отзывы клиентов</Badge>
-          <Badge>Только реальные отзывы</Badge>
+          <Badge>Только реальные отзывы клиентов</Badge>
+          {ratingCount > 0 ? <Badge>Всего отзывов: {ratingCount}</Badge> : null}
           {ratingCount > 0 ? <Badge>Средняя оценка: {ratingValue}/5</Badge> : null}
         </div>
 
@@ -331,6 +332,21 @@ export default async function ReviewsPage() {
             title="Отзывы о «Вектор РФ»"
             desc="Здесь можно посмотреть отзывы и оставить свой."
           />
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <a
+              href="#leave"
+              className={cn(
+                "inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold",
+                "bg-sky-600 text-white shadow-sm hover:bg-sky-700"
+              )}
+            >
+              Оставить отзыв
+            </a>
+            <div className="text-sm text-zinc-600">
+              Мы ценим обратную связь и публикуем отзывы без накруток.
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-12">
@@ -424,6 +440,28 @@ export default async function ReviewsPage() {
             </div>
           </div>
         </div>
+
+        <section className="mx-auto mt-10 max-w-6xl px-4 pb-2">
+          <div className="rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-xl backdrop-blur md:p-7">
+            <h2 className="text-xl font-extrabold tracking-tight text-zinc-900">
+              Отзывы о трансферах «Вектор РФ»
+            </h2>
+            <div className="mt-3 space-y-3 text-sm leading-relaxed text-zinc-700">
+              <p>
+                На этой странице собраны реальные отзывы клиентов сервиса «Вектор РФ» о поездках по городу, трансферах в
+                аэропорт и междугородних поездках. Мы показываем оценку, текст отзыва и дату публикации.
+              </p>
+              <p>
+                Если вы уже пользовались нашими услугами — оставьте отзыв. Это помогает другим клиентам выбрать надёжный
+                трансфер, а нам — улучшать сервис, скорость подачи и качество поездок.
+              </p>
+              <p>
+                Нужен трансфер прямо сейчас? Оформите заявку на сайте или напишите в Telegram — мы на связи 24/7.
+              </p>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <footer className="border-t border-zinc-200 bg-white/65 backdrop-blur">
