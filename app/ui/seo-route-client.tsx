@@ -161,18 +161,11 @@ export default function SeoRouteClient(props: {
                     title="Написать в Telegram"
                   >
                     <IconTelegram className="h-4 w-4 text-sky-700" />
-                    Telegram
+                    TG
                   </a>
                 </div>
 
-                <div className="mt-4">
-                  <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
-                    Трансфер, которому <span className="text-sky-700">доверяют</span>
-                  </h1>
-                  <p className="mt-2 text-sm leading-6 text-zinc-600">
-                    Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
-                  </p>
-                </div>
+                <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
               </div>
 
               <div className="p-5">

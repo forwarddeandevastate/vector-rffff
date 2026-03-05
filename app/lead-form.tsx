@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import GooglePlacesInput from "@/app/ui/google-places-input";
 
 export type CarClass = "standard" | "comfort" | "business" | "minivan";
 export type RouteType = "city" | "airport" | "intercity";
@@ -272,6 +273,8 @@ export default function LeadForm({
   const [phone, setPhone] = useState("");
   const [fromText, setFromText] = useState(initialFrom ?? "");
   const [toText, setToText] = useState(initialTo ?? "");
+  const [fromPlaceId, setFromPlaceId] = useState<string | null>(null);
+  const [toPlaceId, setToPlaceId] = useState<string | null>(null);
   const [datetimeLocal, setDatetimeLocal] = useState<string>("");
 
   const [roundTrip, setRoundTrip] = useState(false);
@@ -350,11 +353,17 @@ export default function LeadForm({
       setCalcLoading(true);
 
       try {
-        const url = `/api/distance?from=${encodeURIComponent(fromText.trim())}&to=${encodeURIComponent(
-          toText.trim()
-        )}`;
-
-        const res = await fetch(url, { signal: controller.signal });
+        const res = await fetch("/api/distance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            from: fromText.trim(),
+            to: toText.trim(),
+            fromPlaceId,
+            toPlaceId,
+          }),
+        });
         const data = await res.json().catch(() => ({}));
 
         if (cancelled) return;
@@ -383,7 +392,7 @@ export default function LeadForm({
       controller.abort();
       clearTimeout(t);
     };
-  }, [routeType, fromText, toText]);
+  }, [routeType, fromText, toText, fromPlaceId, toPlaceId]);
 
   const finalPrice = useMemo(() => {
     if (routeType !== "intercity") return null;
@@ -527,17 +536,21 @@ export default function LeadForm({
           labelFor={ids.from}
         >
           <div ref={fromBoxRef} className="relative">
-            <input
+            <GooglePlacesInput
               id={ids.from}
               className={ControlBase()}
               value={fromText}
-              onChange={(e) => {
-                setFromText(e.target.value);
-                setFromOpen(true);
+              onValueChange={(v) => {
+                setFromText(v);
+                setFromPlaceId(null);
+                setFromOpen(false);
               }}
-              onFocus={() => setFromOpen(true)}
+              onPlacePick={({ placeId, address }) => {
+                setFromText(address);
+                setFromPlaceId(placeId);
+                setFromOpen(false);
+              }}
               placeholder={routeType === "airport" ? "Например: Шереметьево (SVO) или Москва" : "Например: Москва"}
-              autoComplete="off"
             />
             {fromOpen && fromSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -548,6 +561,7 @@ export default function LeadForm({
                     className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
                     onClick={() => {
                       setFromText(s);
+                      setFromPlaceId(null);
                       setFromOpen(false);
                     }}
                   >
@@ -567,21 +581,25 @@ export default function LeadForm({
           labelFor={ids.to}
         >
           <div ref={toBoxRef} className="relative">
-            <input
+            <GooglePlacesInput
               id={ids.to}
               className={ControlBase()}
               value={toText}
-              onChange={(e) => {
-                setToText(e.target.value);
-                setToOpen(true);
+              onValueChange={(v) => {
+                setToText(v);
+                setToPlaceId(null);
+                setToOpen(false);
               }}
-              onFocus={() => setToOpen(true)}
+              onPlacePick={({ placeId, address }) => {
+                setToText(address);
+                setToPlaceId(placeId);
+                setToOpen(false);
+              }}
               placeholder={
                 routeType === "airport"
                   ? "Например: Домодедово (DME) или Санкт-Петербург"
                   : "Например: Санкт-Петербург"
               }
-              autoComplete="off"
             />
             {toOpen && toSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -592,6 +610,7 @@ export default function LeadForm({
                     className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
                     onClick={() => {
                       setToText(s);
+                      setToPlaceId(null);
                       setToOpen(false);
                     }}
                   >
