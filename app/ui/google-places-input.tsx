@@ -73,6 +73,7 @@ export default function GooglePlacesInput({
       autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         fields: ["place_id", "formatted_address", "name"],
         types: ["geocode"],
+        componentRestrictions: { country: ["ru"] },
       });
 
       autocomplete.addListener("place_changed", () => {

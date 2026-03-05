@@ -89,11 +89,37 @@ function formatRub(n: number) {
 
 // тариф ₽/км по классу
 const PER_KM: Record<CarClass, number> = {
-  standard: 30,
-  comfort: 37,
+  standard: 31,
+  comfort: 46,
   minivan: 55,
-  business: 65,
+  business: 80,
 };
+
+// Минимальная стоимость для межгорода/аэропорта
+const MIN_INTERCITY_PRICE = 1500;
+
+// Наценки для аэропорта (к межгородному тарифу)
+const AIRPORT_PICKUP_SURCHARGE = 800; // забрать из аэропорта
+const AIRPORT_DROPOFF_SURCHARGE = 700; // отвезти в аэропорт
+
+function looksLikeAirport(s: string) {
+  const v = normalize(s);
+  if (!v) return false;
+  if (v.includes("аэроп")) return true;
+  // IATA в скобках
+  if (/\((svo|dme|vko|led|aer|svx|ovb|kuf|kzn|krr|kgd)\)/i.test(s)) return true;
+  // популярные подсказки
+  return AIRPORT_HINTS.some((x) => normalize(x) === v);
+}
+
+function formatDurationRU(totalSeconds: number) {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.max(0, Math.round((s - h * 3600) / 60));
+  if (h <= 0) return `${m} мин`;
+  if (m <= 0) return `${h} ч`;
+  return `${h} ч ${m} мин`;
+}
 
 // ====== БАЗОВЫЕ ЦЕНЫ ДЛЯ ФОРМЫ (НЕ ФИНАЛ) ======
 const CITY_BASE_PRICE: Record<CarClass, number> = {
@@ -285,6 +311,7 @@ export default function LeadForm({
 
   // авто-расчёт
   const [km, setKm] = useState<number | null>(null);
+  const [travelSeconds, setTravelSeconds] = useState<number | null>(null);
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
 
@@ -338,7 +365,7 @@ export default function LeadForm({
     setDatetimeLocal(toDatetimeLocal(d));
   }
 
-  // Авто-расчёт км только для межгорода, с debounce
+  // Авто-расчёт км/времени для межгорода и аэропорта, с debounce
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -346,8 +373,9 @@ export default function LeadForm({
     async function run() {
       setCalcError(null);
       setKm(null);
+      setTravelSeconds(null);
 
-      if (routeType !== "intercity") return;
+      if (routeType !== "intercity" && routeType !== "airport") return;
       if (!fromText.trim() || !toText.trim()) return;
 
       setCalcLoading(true);
@@ -375,11 +403,13 @@ export default function LeadForm({
         }
 
         setKm(Number(data.km) || null);
+        setTravelSeconds(Number(data.seconds) || null);
       } catch (e: any) {
         if (cancelled) return;
         if (e?.name === "AbortError") return;
         setCalcError("Не удалось рассчитать расстояние");
         setKm(null);
+        setTravelSeconds(null);
       } finally {
         if (!cancelled) setCalcLoading(false);
       }
@@ -395,12 +425,35 @@ export default function LeadForm({
   }, [routeType, fromText, toText, fromPlaceId, toPlaceId]);
 
   const finalPrice = useMemo(() => {
-    if (routeType !== "intercity") return null;
+    if (routeType !== "intercity" && routeType !== "airport") return null;
     if (!km) return null;
-    let price = Math.round(km * PER_KM[carClass]);
-    if (roundTrip) price *= 2;
-    return price;
-  }, [routeType, km, carClass, roundTrip]);
+
+    // базовая часть по межгородному тарифу
+    let base = Math.round(km * PER_KM[carClass]);
+    if (roundTrip) base *= 2;
+
+    // аэропорт: +700/800
+    let surcharge = 0;
+    if (routeType === "airport") {
+      const fromIsAirport = looksLikeAirport(fromText);
+      const toIsAirport = looksLikeAirport(toText);
+
+      if (fromIsAirport && !toIsAirport) surcharge = AIRPORT_PICKUP_SURCHARGE;
+      else if (!fromIsAirport && toIsAirport) surcharge = AIRPORT_DROPOFF_SURCHARGE;
+      else surcharge = AIRPORT_DROPOFF_SURCHARGE;
+
+      if (roundTrip) surcharge *= 2;
+    }
+
+    const total = base + surcharge;
+    return Math.max(MIN_INTERCITY_PRICE, total);
+  }, [routeType, km, carClass, roundTrip, fromText, toText]);
+
+  const travelTimeText = useMemo(() => {
+    if (travelSeconds == null || !Number.isFinite(travelSeconds)) return null;
+    if (travelSeconds <= 0) return null;
+    return formatDurationRU(travelSeconds);
+  }, [travelSeconds]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -415,8 +468,10 @@ export default function LeadForm({
     try {
       // ✅ СКРЫЛИ ВНУТРЕННИЕ ДЕТАЛИ: только итог (без ₽/км и без км)
       const calcNote =
-        routeType === "intercity" && finalPrice
-          ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}: ${formatRub(finalPrice)}`
+        (routeType === "intercity" || routeType === "airport") && finalPrice
+          ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}${travelTimeText ? ` (~${travelTimeText})` : ""}: ${formatRub(
+              finalPrice
+            )}`
           : "";
 
       const payload = {
@@ -455,12 +510,9 @@ export default function LeadForm({
           <div className="min-w-0">
             <div className="text-xs font-semibold text-zinc-700">Тип поездки</div>
 
-            {/* Базовая цена для города / аэропорта */}
-            {routeType !== "intercity" && (
-              <div className="mt-2 text-sm font-extrabold text-zinc-900">
-                {routeType === "city" && formatFrom(CITY_BASE_PRICE[carClass])}
-                {routeType === "airport" && formatFrom(airportPriceFromCity(CITY_BASE_PRICE[carClass]))}
-              </div>
+            {/* Базовая цена только для города */}
+            {routeType === "city" && (
+              <div className="mt-2 text-sm font-extrabold text-zinc-900">{formatFrom(CITY_BASE_PRICE[carClass])}</div>
             )}
 
             {/* ✅ ПОРЯДОК: Межгород → Аэропорт → Город */}
@@ -476,7 +528,7 @@ export default function LeadForm({
               </SegButton>
             </div>
 
-            {routeType === "intercity" ? (
+            {routeType === "intercity" || routeType === "airport" ? (
               <div className="mt-3 rounded-xl border border-sky-200/70 bg-sky-50/60 px-3 py-2">
                 <div className="text-[11px] font-semibold text-sky-900">Итоговая стоимость (авторасчёт)</div>
 
@@ -487,6 +539,9 @@ export default function LeadForm({
                 ) : finalPrice ? (
                   <>
                     <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(finalPrice)}</div>
+                    {travelTimeText ? (
+                      <div className="mt-0.5 text-[11px] text-zinc-600">Время в пути: ~{travelTimeText}</div>
+                    ) : null}
                     {roundTrip ? <div className="mt-0.5 text-[11px] text-zinc-600">Туда-обратно</div> : null}
                   </>
                 ) : (
