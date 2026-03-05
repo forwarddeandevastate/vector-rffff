@@ -322,7 +322,7 @@ export default async function ReviewsPage() {
       <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
         <div className="flex flex-wrap gap-2">
           <Badge>Отзывы клиентов</Badge>
-          <Badge>Модерация перед публикацией</Badge>
+          <Badge>Только реальные отзывы</Badge>
           {ratingCount > 0 ? <Badge>Средняя оценка: {ratingValue}/5</Badge> : null}
         </div>
 
