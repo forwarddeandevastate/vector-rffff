@@ -127,7 +127,6 @@ function looksLikeAirport(s: string) {
     "пашков",
     "адлер",
     "сочи",
-    "казань",
     "аэропорт",
   ];
   if (airportTokens.some((t) => v.includes(t))) return true;
@@ -141,6 +140,29 @@ function looksLikeAirport(s: string) {
     const baseName = nx.replace(/\s*\([^)]*\)\s*/g, "").trim();
     return baseName && v.includes(baseName);
   });
+}
+
+type PlaceMeta = {
+  placeId: string;
+  types: string[];
+  city?: string | null;
+  name?: string;
+  formattedAddress?: string;
+};
+
+function isAirportByMeta(m: PlaceMeta | null, fallbackText: string) {
+  if (m && Array.isArray(m.types) && m.types.includes("airport")) return true;
+  return looksLikeAirport(fallbackText);
+}
+
+function normalizeCityKey(s?: string | null) {
+  const v = (s ?? "").trim().toLowerCase();
+  if (!v) return null;
+  return v
+    .replace(/ё/g, "е")
+    .replace(/[\u2011\u2012\u2013\u2014\u2212]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function isMskOrSpb(s: string) {
@@ -398,6 +420,8 @@ export default function LeadForm({
   const [toText, setToText] = useState(initialTo ?? "");
   const [fromPlaceId, setFromPlaceId] = useState<string | null>(null);
   const [toPlaceId, setToPlaceId] = useState<string | null>(null);
+  const [fromMeta, setFromMeta] = useState<PlaceMeta | null>(null);
+  const [toMeta, setToMeta] = useState<PlaceMeta | null>(null);
   const [datetimeLocal, setDatetimeLocal] = useState<string>("");
 
   const [roundTrip, setRoundTrip] = useState(false);
@@ -430,31 +454,83 @@ export default function LeadForm({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
+  // ✅ подтягиваем метаданные place_id (город + types), чтобы точно определять "аэропорт" и "один город"
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    async function load(placeId: string, set: (v: PlaceMeta | null) => void) {
+      try {
+        const res = await fetch(`/api/place?placeId=${encodeURIComponent(placeId)}`, {
+          signal: controller.signal,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (!res.ok || !data?.ok) {
+          set(null);
+          return;
+        }
+        set({
+          placeId: String(data.placeId || placeId),
+          types: Array.isArray(data.types) ? data.types : [],
+          city: normalizeCityKey(data.city),
+          name: data.name ? String(data.name) : undefined,
+          formattedAddress: data.formattedAddress ? String(data.formattedAddress) : undefined,
+        });
+      } catch (e: any) {
+        if (cancelled) return;
+        if (e?.name === "AbortError") return;
+        set(null);
+      }
+    }
+
+    // сбрасываем если placeId нет
+    if (!fromPlaceId) setFromMeta(null);
+    if (!toPlaceId) setToMeta(null);
+
+    if (fromPlaceId) load(fromPlaceId, setFromMeta);
+    if (toPlaceId) load(toPlaceId, setToMeta);
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [fromPlaceId, toPlaceId]);
+
   // ✅ авто-переключение типа поездки по введённым точкам
+  // Приоритет:
+  // 1) если где-то аэропорт (по place types или по тексту) — "Аэропорт"
+  // 2) если place_id у обеих точек и город совпал — "Город"
+  // 3) иначе fallback по строкам sameCity()
+  // 4) иначе — "Межгород"
   useEffect(() => {
     const a = normalize(fromText);
     const b = normalize(toText);
     if (!a || !b) return;
 
-    const fromIsAirport = looksLikeAirport(fromText);
-    const toIsAirport = looksLikeAirport(toText);
+    const fromIsAirport = isAirportByMeta(fromMeta, fromText);
+    const toIsAirport = isAirportByMeta(toMeta, toText);
 
-    // 1) если где-то аэропорт — это всегда "Аэропорт"
     if (fromIsAirport || toIsAirport) {
       if (routeType !== "airport") onRouteTypeChange("airport");
       return;
     }
 
-    // 2) если точки в одном городе — "Город"
+    const fromCity = normalizeCityKey(fromMeta?.city);
+    const toCity = normalizeCityKey(toMeta?.city);
+    if (fromCity && toCity && fromCity === toCity) {
+      if (routeType !== "city") onRouteTypeChange("city");
+      return;
+    }
+
     if (sameCity(fromText, toText)) {
       if (routeType !== "city") onRouteTypeChange("city");
       return;
     }
 
-    // 3) иначе — межгород
     if (routeType !== "intercity") onRouteTypeChange("intercity");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromText, toText]);
+  }, [fromText, toText, fromMeta, toMeta]);
 
   const canSubmit = useMemo(() => {
     return name.trim() && phone.trim() && fromText.trim() && toText.trim();
@@ -555,8 +631,8 @@ export default function LeadForm({
     // Аэропорт: Москва/СПб фикс 1000, остальные — 700/800 по направлению
     let surcharge = 0;
     if (routeType === "airport") {
-      const fromIsAirport = looksLikeAirport(fromText);
-      const toIsAirport = looksLikeAirport(toText);
+      const fromIsAirport = isAirportByMeta(fromMeta, fromText);
+      const toIsAirport = isAirportByMeta(toMeta, toText);
 
       const inMskSpb = isMskOrSpb(fromText) || isMskOrSpb(toText);
 
@@ -573,7 +649,7 @@ export default function LeadForm({
 
     const total = base + surcharge;
     return Math.max(MIN_INTERCITY_PRICE, total);
-  }, [routeType, km, carClass, roundTrip, fromText, toText]);
+  }, [routeType, km, carClass, roundTrip, fromText, toText, fromMeta, toMeta]);
 
   const travelTimeText = useMemo(() => {
     if (travelSeconds == null || !Number.isFinite(travelSeconds)) return null;
