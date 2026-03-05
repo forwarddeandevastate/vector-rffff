@@ -95,6 +95,14 @@ const PER_KM: Record<CarClass, number> = {
   business: 80,
 };
 
+// Город: посадка и небольшой коэффициент к тарифам (чтобы город был чуть дороже межгорода)
+const CITY_LANDING_FEE = 500;
+const CITY_PER_KM_ADD = 5;
+
+// Аэропорт: для Москвы/СПб фиксированная наценка, для остальных — как раньше (700/800)
+const AIRPORT_SURCHARGE_MSK_SPB = 1000;
+
+
 // Минимальная стоимость для межгорода/аэропорта
 const MIN_INTERCITY_PRICE = 1500;
 
@@ -110,6 +118,72 @@ function looksLikeAirport(s: string) {
   if (/\((svo|dme|vko|led|aer|svx|ovb|kuf|kzn|krr|kgd)\)/i.test(s)) return true;
   // популярные подсказки
   return AIRPORT_HINTS.some((x) => normalize(x) === v);
+}
+
+function isMskOrSpb(s: string) {
+  const v = normalize(s);
+  if (!v) return false;
+  // Москва
+  if (v.includes("москва") || v.includes("moscow")) return true;
+  // Санкт‑Петербург / СПб
+  if (v.includes("санкт") || v.includes("петербург") || v.includes("спб") || v.includes("saint petersburg") || v.includes("st petersburg")) return true;
+  return false;
+}
+
+function sameCity(a: string, b: string) {
+  const x = normalize(a);
+  const y = normalize(b);
+  if (!x || !y) return false;
+
+  // Пытаемся определить город по вхождению названия в адрес
+  const CITIES = [
+    "москва",
+    "санкт-петербург",
+    "санкт петербург",
+    "спб",
+    "казань",
+    "нижний новгород",
+    "екатеринбург",
+    "самара",
+    "ростов-на-дону",
+    "краснодар",
+    "воронеж",
+    "уфа",
+    "челябинск",
+    "пермь",
+    "волгоград",
+    "саратов",
+    "тюмень",
+    "ярославль",
+    "тула",
+    "рязань",
+    "тверь",
+    "иваново",
+    "калуга",
+    "кострома",
+    "белгород",
+    "курск",
+    "брянск",
+    "липецк",
+    "орел",
+    "чебоксары",
+    "йошкар-ола",
+    "смоленск",
+  ];
+
+  const pick = (s: string) => CITIES.find((c) => s.includes(c)) || null;
+
+  const ca = pick(x);
+  const cb = pick(y);
+
+  if (ca && cb) {
+    // "санкт-петербург" и "санкт петербург" считаем одним городом
+    const norm = (c: string) => c.replace("-", " ").trim();
+    return norm(ca) === norm(cb) || (norm(ca).includes("санкт") && norm(cb).includes("санкт"));
+  }
+
+  // fallback: если явно одинаковые строки (или очень похожи)
+  return x === y;
 }
 
 function formatDurationRU(totalSeconds: number) {
@@ -333,15 +407,29 @@ export default function LeadForm({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  // ✅ если выбрана "Город", но ввели разные точки "Откуда/Куда" — переключаем на "Межгород"
+  // ✅ авто-переключение типа поездки по введённым точкам
   useEffect(() => {
-    if (routeType !== "city") return;
     const a = normalize(fromText);
     const b = normalize(toText);
     if (!a || !b) return;
-    if (a === b) return;
 
-    onRouteTypeChange("intercity");
+    const fromIsAirport = looksLikeAirport(fromText);
+    const toIsAirport = looksLikeAirport(toText);
+
+    // 1) если где-то аэропорт — это всегда "Аэропорт"
+    if (fromIsAirport || toIsAirport) {
+      if (routeType !== "airport") onRouteTypeChange("airport");
+      return;
+    }
+
+    // 2) если точки в одном городе — "Город"
+    if (sameCity(fromText, toText)) {
+      if (routeType !== "city") onRouteTypeChange("city");
+      return;
+    }
+
+    // 3) иначе — межгород
+    if (routeType !== "intercity") onRouteTypeChange("intercity");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromText, toText]);
 
@@ -375,7 +463,7 @@ export default function LeadForm({
       setKm(null);
       setTravelSeconds(null);
 
-      if (routeType !== "intercity" && routeType !== "airport") return;
+      if (routeType !== "intercity" && routeType !== "airport" && routeType !== "city") return;
       if (!fromText.trim() || !toText.trim()) return;
 
       setCalcLoading(true);
@@ -425,22 +513,37 @@ export default function LeadForm({
   }, [routeType, fromText, toText, fromPlaceId, toPlaceId]);
 
   const finalPrice = useMemo(() => {
-    if (routeType !== "intercity" && routeType !== "airport") return null;
+    // Цена считаем для межгорода / аэропорта / города (если удалось получить км)
+    if (routeType !== "intercity" && routeType !== "airport" && routeType !== "city") return null;
     if (!km) return null;
 
-    // базовая часть по межгородному тарифу
+    // Город: посадка 500 + тариф как межгород, но +5 ₽/км
+    if (routeType === "city") {
+      const perKm = PER_KM[carClass] + CITY_PER_KM_ADD;
+      const base = Math.round(km * perKm);
+      const total = CITY_LANDING_FEE + base;
+      return total;
+    }
+
+    // Межгород / Аэропорт: базовая часть по тарифу
     let base = Math.round(km * PER_KM[carClass]);
     if (roundTrip) base *= 2;
 
-    // аэропорт: +700/800
+    // Аэропорт: Москва/СПб фикс 1000, остальные — 700/800 по направлению
     let surcharge = 0;
     if (routeType === "airport") {
       const fromIsAirport = looksLikeAirport(fromText);
       const toIsAirport = looksLikeAirport(toText);
 
-      if (fromIsAirport && !toIsAirport) surcharge = AIRPORT_PICKUP_SURCHARGE;
-      else if (!fromIsAirport && toIsAirport) surcharge = AIRPORT_DROPOFF_SURCHARGE;
-      else surcharge = AIRPORT_DROPOFF_SURCHARGE;
+      const inMskSpb = isMskOrSpb(fromText) || isMskOrSpb(toText);
+
+      if (inMskSpb) {
+        surcharge = AIRPORT_SURCHARGE_MSK_SPB;
+      } else {
+        if (fromIsAirport && !toIsAirport) surcharge = AIRPORT_PICKUP_SURCHARGE; // из аэропорта
+        else if (!fromIsAirport && toIsAirport) surcharge = AIRPORT_DROPOFF_SURCHARGE; // в аэропорт
+        else surcharge = AIRPORT_DROPOFF_SURCHARGE;
+      }
 
       if (roundTrip) surcharge *= 2;
     }
@@ -528,7 +631,7 @@ export default function LeadForm({
               </SegButton>
             </div>
 
-            {routeType === "intercity" || routeType === "airport" ? (
+            {routeType === "intercity" || routeType === "airport" || routeType === "city" ? (
               <div className="mt-3 rounded-xl border border-sky-200/70 bg-sky-50/60 px-3 py-2">
                 <div className="text-[11px] font-semibold text-sky-900">Итоговая стоимость (авторасчёт)</div>
 
