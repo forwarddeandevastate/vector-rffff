@@ -286,10 +286,8 @@ export default function HomePage() {
             <NavPill href="#order">Заявка</NavPill>
             <NavPill href="#classes">Классы</NavPill>
             <NavPill href="/reviews">Отзывы</NavPill>
-            <NavPill href="#corporate">Корпоративным</NavPill>
-            <NavPill href="#how">Как работаем</NavPill>
+            <NavPill href="#corporate">Юр лицам</NavPill>
             <NavPill href="/faq">Вопросы</NavPill>
-            <NavPill href="/contacts">Контакты</NavPill>
           </nav>
 
           <div className="flex items-center gap-2">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import Script from "next/script";
 import ReviewsClient from "./reviews-client";
+import ReviewsListClient from "./reviews-list-client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ const PHONE_E164 = "+78314233929";
 export const metadata: Metadata = {
   title: "Отзывы клиентов — Вектор РФ",
   description:
-    "Отзывы клиентов о «Вектор РФ»: трансферы по городу, в аэропорт и межгород. Посмотрите отзывы и оставьте свой — публикуем после проверки.",
+    "Отзывы клиентов о «Вектор РФ»: трансферы по городу, в аэропорт и межгород. Посмотрите отзывы и оставьте свой.",
   alternates: { canonical: CANONICAL },
   robots: { index: true, follow: true },
   openGraph: {
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     url: CANONICAL,
     title: "Отзывы клиентов — Вектор РФ",
     description:
-      "Отзывы клиентов о «Вектор РФ»: посмотрите реальные отзывы и оставьте свой. Публикуем после проверки.",
+      "Отзывы клиентов о «Вектор РФ»: посмотрите реальные отзывы и оставьте свой.",
     siteName: SITE_NAME,
     locale: "ru_RU",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
@@ -328,7 +329,7 @@ export default async function ReviewsPage() {
         <div className="mt-6">
           <SectionTitle
             title="Отзывы о «Вектор РФ»"
-            desc="Здесь можно посмотреть отзывы и оставить свой. Публикуем после проверки."
+            desc="Здесь можно посмотреть отзывы и оставить свой."
           />
         </div>
 
@@ -417,35 +418,8 @@ export default async function ReviewsPage() {
                 </a>
               </div>
 
-              <div className="mt-5 grid gap-3">
-                {rows.map((r) => {
-                  const stars = Math.max(1, Math.min(5, Number(r.rating) || 5));
-                  return (
-                    <div key={r.id} className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="text-sm font-extrabold text-zinc-900">{r.name}</div>
-                        {r.city ? <div className="text-sm text-zinc-500">• {r.city}</div> : null}
-                        <div className="text-xs text-zinc-400">• {formatDate(r.createdAt)}</div>
-                      </div>
-
-                      <div className="mt-1 text-sm text-zinc-700">
-                        {"★".repeat(stars)} <span className="text-zinc-400">({stars}/5)</span>
-                      </div>
-
-                      <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.text}</div>
-
-                      {r.replyText ? (
-                        <div className="mt-4 rounded-2xl border border-zinc-200 bg-slate-50 p-4">
-                          <div className="text-xs font-semibold text-zinc-700">
-                            Ответ {r.replyAuthor ? `— ${r.replyAuthor}` : "администрации"}
-                            {r.repliedAt ? <span className="text-zinc-400"> • {formatDate(r.repliedAt)}</span> : null}
-                          </div>
-                          <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.replyText}</div>
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
+              <div className="mt-5">
+                <ReviewsListClient reviews={rowsForClient} />
               </div>
             </div>
           </div>

@@ -214,6 +214,65 @@ export default function SeoCityClient(props: {
           </div>
         </div>
       </main>
+
+      <footer className="border-t border-zinc-200/70 bg-white/70">
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <div>
+              <div className="text-xs font-semibold text-zinc-700">Услуги</div>
+              <div className="mt-3 grid gap-2 text-xs text-zinc-600">
+                <a href="/city-transfer" className="hover:text-zinc-900 hover:underline">
+                  Поездки по городу
+                </a>
+                <a href="/airport-transfer" className="hover:text-zinc-900 hover:underline">
+                  Трансфер в аэропорт
+                </a>
+                <a href="/intercity-taxi" className="hover:text-zinc-900 hover:underline">
+                  Междугородние поездки
+                </a>
+                <a href="/minivan-transfer" className="hover:text-zinc-900 hover:underline">
+                  Минивэн / групповые поездки
+                </a>
+                <a href="/corporate" className="hover:text-zinc-900 hover:underline">
+                  Корпоративные перевозки
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold text-zinc-700">Навигация</div>
+              <div className="mt-3 grid gap-2 text-xs text-zinc-600">
+                <a href="/services" className="hover:text-zinc-900 hover:underline">
+                  Наш сервис
+                </a>
+                <a href="/reviews" className="hover:text-zinc-900 hover:underline">
+                  Отзывы
+                </a>
+                <a href="/faq" className="hover:text-zinc-900 hover:underline">
+                  Вопросы и ответы
+                </a>
+                <a href="/contacts" className="hover:text-zinc-900 hover:underline">
+                  Контакты
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold text-zinc-700">Информация</div>
+              <div className="mt-3 grid gap-2 text-xs text-zinc-600">
+                <a href="/prices" className="hover:text-zinc-900 hover:underline">
+                  Цены
+                </a>
+                <a href="/requisites" className="hover:text-zinc-900 hover:underline">
+                  Реквизиты компании
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
+        </div>
+      </footer>
     </div>
   );
 }
