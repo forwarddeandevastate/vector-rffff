@@ -241,11 +241,15 @@ export default function LeadForm({
   onCarClassChange,
   routeType,
   onRouteTypeChange,
+  initialFrom,
+  initialTo,
 }: {
   carClass: CarClass;
   onCarClassChange: (v: CarClass) => void;
   routeType: RouteType;
   onRouteTypeChange: (v: RouteType) => void;
+  initialFrom?: string;
+  initialTo?: string;
 }) {
   const router = useRouter();
 
@@ -266,8 +270,8 @@ export default function LeadForm({
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [fromText, setFromText] = useState("");
-  const [toText, setToText] = useState("");
+  const [fromText, setFromText] = useState(initialFrom ?? "");
+  const [toText, setToText] = useState(initialTo ?? "");
   const [datetimeLocal, setDatetimeLocal] = useState<string>("");
 
   const [roundTrip, setRoundTrip] = useState(false);

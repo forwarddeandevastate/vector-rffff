@@ -1,0 +1,1 @@
+export const CITY_FAQ={moskva:[{question:'Сколько стоит такси межгород из Москвы?',answer:'Цена зависит от расстояния.'}]}

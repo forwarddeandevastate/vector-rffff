@@ -21,7 +21,6 @@ Clean-param: gclid&yclid&fbclid /
 
 Host: vector-rf.ru
 Sitemap: ${BASE}/sitemap.xml
-Sitemap: ${BASE}/sitemap-yandex.xml
 `;
 
   return new NextResponse(body, {

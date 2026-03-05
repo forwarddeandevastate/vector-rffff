@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { buildSeoRouteUrls } from "@/lib/seo-routes";
+import { CITY_LANDINGS } from "@/lib/city-landings";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://vector-rf.ru";
@@ -128,15 +128,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // },
   ];
 
-  // ✅ Полный список SEO-маршрутов /route/from/to (Google нормально переварит)
-  const routeUrls = buildSeoRouteUrls(baseUrl, 2000);
-
-  const routePages: MetadataRoute.Sitemap = routeUrls.map((url) => ({
-    url,
+  // ✅ Городские лендинги /moskva, /kazan ... (под рекламу и SEO)
+  const cityPages: MetadataRoute.Sitemap = CITY_LANDINGS.map((c) => ({
+    url: `${baseUrl}/${c.slug}`,
     lastModified: now,
     changeFrequency: "weekly",
-    priority: 0.45,
+    priority: 0.85,
   }));
 
-  return [...staticPages, ...routePages];
+  // ✅ Только популярные маршруты (чтобы не раздувать sitemap тысячами URL)
+  const popularRoutes: MetadataRoute.Sitemap = CITY_LANDINGS.flatMap((c) =>
+    c.popularTo.slice(0, 5).map((to) => ({
+      url: `${baseUrl}/route/${c.slug}/${to}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.5,
+    }))
+  );
+
+  return [...staticPages, ...cityPages, ...popularRoutes];
 }
