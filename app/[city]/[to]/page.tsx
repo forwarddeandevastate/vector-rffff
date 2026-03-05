@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import SeoRouteClient from "@/app/ui/seo-route-client";
 import { CITY_BY_SLUG, prettyCityNameFromSlug } from "@/lib/city-landings";
 import { CITY_CONTENT } from "@/lib/city-content";
+import { type FAQItem } from "@/lib/city-faq";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
@@ -74,6 +75,30 @@ export default function Page({ params }: { params: { city: string; to: string } 
 
   const content = `${baseCityText}\n\nЧасто заказывают маршрут ${fromCity.name} — ${toName}. Подберём класс авто и согласуем детали поездки заранее.`;
 
+  const faq: FAQItem[] = [
+    {
+      question: `Сколько стоит такси ${fromCity.name} — ${toName}?`,
+      answer: "Стоимость зависит от расстояния и класса авто. Итоговую цену подтверждаем заранее до поездки.",
+    },
+    {
+      question: "Можно ли заказать поездку заранее?",
+      answer: "Да, можно оформить заказ на нужную дату и время — подачу согласуем заранее.",
+    },
+    {
+      question: "Какие классы автомобилей доступны?",
+      answer: "Доступны стандарт, комфорт, бизнес и минивэн. Подберём вариант под задачу.",
+    },
+    {
+      question: "Работаете круглосуточно?",
+      answer: "Да, заявки принимаем 24/7.",
+    },
+  ];
+
+  const moreFromCity = fromCity.popularTo
+    .filter((s) => s !== toSlug)
+    .slice(0, 10)
+    .map((s) => ({ toSlug: s, toName: prettyCityNameFromSlug(s) }));
+
   const breadcrumbsJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -95,11 +120,14 @@ export default function Page({ params }: { params: { city: string; to: string } 
 
       <SeoRouteClient
         fromSlug={fromCity.slug}
+        cityBackHref={`/${fromCity.slug}`}
+        cityBackLabel={`← Из ${fromCity.fromGenitive}`}
         fromName={fromCity.name}
-        fromGenitive={fromCity.fromGenitive}
         toSlug={toSlug}
         toName={toName}
         content={content}
+        faq={faq}
+        moreFromCity={moreFromCity}
       />
     </>
   );
