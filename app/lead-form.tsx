@@ -114,10 +114,33 @@ function looksLikeAirport(s: string) {
   const v = normalize(s);
   if (!v) return false;
   if (v.includes("аэроп")) return true;
+  // Частые названия аэропортов (в адресах Google часто нет слова "аэропорт")
+  const airportTokens = [
+    "шереметьево",
+    "домодедово",
+    "внуково",
+    "пулково",
+    "храброво",
+    "кольцово",
+    "толмач",
+    "курумоч",
+    "пашков",
+    "адлер",
+    "сочи",
+    "казань",
+    "аэропорт",
+  ];
+  if (airportTokens.some((t) => v.includes(t))) return true;
   // IATA в скобках
-  if (/\((svo|dme|vko|led|aer|svx|ovb|kuf|kzn|krr|kgd)\)/i.test(s)) return true;
+  if (/\b(svo|dme|vko|led|aer|svx|ovb|kuf|kzn|krr|kgd)\b/i.test(s)) return true;
   // популярные подсказки
-  return AIRPORT_HINTS.some((x) => normalize(x) === v);
+  return AIRPORT_HINTS.some((x) => {
+    const nx = normalize(x);
+    // точное совпадение или вхождение части названия ("Пулково" внутри адреса)
+    if (nx === v) return true;
+    const baseName = nx.replace(/\s*\([^)]*\)\s*/g, "").trim();
+    return baseName && v.includes(baseName);
+  });
 }
 
 function isMskOrSpb(s: string) {
