@@ -146,8 +146,7 @@ async function handleDistance(body: ReqBody) {
   // 1) Google Routes (если ключ задан)
   const g = await routeKmSecondsGoogle(body);
   if (g) {
-    const km = Math.round(g.km * 10) / 10; // точнее для города/коротких поездок
-    return okJson({ km, seconds: g.seconds, source: "google" });
+    return okJson({ km: Math.round(g.km), seconds: g.seconds, source: "google" });
   }
 
   // 2) Fallback OSRM
@@ -159,8 +158,7 @@ async function handleDistance(body: ReqBody) {
     );
   }
 
-  const km = Math.round(o.km * 10) / 10;
-  return okJson({ km, seconds: o.seconds, source: "osrm" });
+  return okJson({ km: Math.round(o.km), seconds: o.seconds, source: "osrm" });
 }
 
 export async function GET(req: Request) {
