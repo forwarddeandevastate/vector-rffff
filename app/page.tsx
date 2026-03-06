@@ -449,14 +449,12 @@ export default function HomePage() {
           </div>
 
           <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
-            <div className="max-w-[520px] md:ml-auto">
-              <LeadForm
-                carClass={selectedClass}
-                onCarClassChange={(v) => pickClass(v, false)}
-                routeType={selectedRouteType}
-                onRouteTypeChange={setSelectedRouteType}
-              />
-            </div>
+            <LeadForm
+              carClass={selectedClass}
+              onCarClassChange={(v) => pickClass(v, false)}
+              routeType={selectedRouteType}
+              onRouteTypeChange={setSelectedRouteType}
+            />
           </div>
         </div>
       </section>
