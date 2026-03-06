@@ -145,9 +145,53 @@ export default function SeoCityClient(props: {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
-        <div className="grid gap-8 md:grid-cols-12">
-          <div className="order-2 md:order-1 md:col-span-7">
+      <main className="mx-auto max-w-6xl px-4 py-8 md:py-10">
+        <div className="rounded-[28px] border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
+          <div className="border-b border-zinc-200 p-4 md:p-5">
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`tel:${PHONE_TEL}`}
+                className={cn(
+                  "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold",
+                  "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                )}
+                title="Позвонить"
+              >
+                <IconPhone className="h-4 w-4 text-sky-700" />
+                Позвонить
+              </a>
+
+              <a
+                href={TELEGRAM}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold",
+                  "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                )}
+                title="Написать в Telegram"
+              >
+                <IconTelegram className="h-4 w-4 text-sky-700" />
+                Telegram
+              </a>
+            </div>
+
+            <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
+          </div>
+
+          <div className="p-4 md:p-5">
+            <LeadForm
+              carClass={carClass}
+              onCarClassChange={setCarClass}
+              routeType={routeType}
+              onRouteTypeChange={setRouteType}
+              initialFrom={initialFrom}
+            />
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-8">
+          <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
               Междугороднее такси из {props.fromGenitive}
             </h1>
@@ -160,82 +204,39 @@ export default function SeoCityClient(props: {
               <SmallCard title="Подача по времени" text="Укажете адрес и время — подстроимся под график." />
               <SmallCard title="Классы авто" text="Стандарт / комфорт / бизнес / минивэн." />
             </div>
+          </div>
 
-            <div className="mt-8 rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-              <div className="text-sm font-extrabold text-zinc-900">О городе</div>
-              <p className="mt-3 text-sm leading-6 text-zinc-700">{props.content}</p>
+          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">О городе</div>
+            <p className="mt-3 text-sm leading-6 text-zinc-700">{props.content}</p>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">
+              Популярные маршруты из {props.fromGenitive}
             </div>
-
-            <div className="mt-8 rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-              <div className="text-sm font-extrabold text-zinc-900">Популярные маршруты из {props.fromGenitive}</div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {props.popular.map((p) => (
-                  <Link
-                    key={p.toSlug}
-                    href={`/${props.citySlug}/${p.toSlug}`}
-                    className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
-                  >
-                    {props.cityName} — {p.toName}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-8 rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-              <div className="text-sm font-extrabold text-zinc-900">Часто задаваемые вопросы</div>
-              <div className="mt-4 space-y-4">
-                {props.faq.map((f, idx) => (
-                  <div key={idx} className="rounded-2xl border border-zinc-200 bg-white/70 p-4">
-                    <div className="text-sm font-semibold text-zinc-900">{f.question}</div>
-                    <div className="mt-2 text-sm leading-6 text-zinc-600">{f.answer}</div>
-                  </div>
-                ))}
-              </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {props.popular.map((p) => (
+                <Link
+                  key={p.toSlug}
+                  href={`/${props.citySlug}/${p.toSlug}`}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {props.cityName} — {p.toName}
+                </Link>
+              ))}
             </div>
           </div>
 
-          <div className="order-1 md:order-2 md:col-span-5">
-            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
-              <div className="border-b border-zinc-200 p-5">
-                <div className="grid grid-cols-2 gap-2">
-                  <a
-                    href={`tel:${PHONE_TEL}`}
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
-                    )}
-                    title="Позвонить"
-                  >
-                    <IconPhone className="h-4 w-4 text-sky-700" />
-                    Позвонить
-                  </a>
-                  <a
-                    href={TELEGRAM}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
-                    )}
-                    title="Написать в Telegram"
-                  >
-                    <IconTelegram className="h-4 w-4 text-sky-700" />
-                    TG
-                  </a>
+          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Часто задаваемые вопросы</div>
+            <div className="mt-4 space-y-4">
+              {props.faq.map((f, idx) => (
+                <div key={idx} className="rounded-2xl border border-zinc-200 bg-white/70 p-4">
+                  <div className="text-sm font-semibold text-zinc-900">{f.question}</div>
+                  <div className="mt-2 text-sm leading-6 text-zinc-600">{f.answer}</div>
                 </div>
-
-                <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
-              </div>
-
-              <div className="p-5">
-                <LeadForm
-                  carClass={carClass}
-                  onCarClassChange={setCarClass}
-                  routeType={routeType}
-                  onRouteTypeChange={setRouteType}
-                  initialFrom={initialFrom}
-                />
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -296,7 +297,9 @@ export default function SeoCityClient(props: {
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
+          <div className="mt-6 text-xs text-zinc-500">
+            © {new Date().getFullYear()} Вектор РФ. Все права защищены.
+          </div>
         </div>
       </footer>
     </div>
