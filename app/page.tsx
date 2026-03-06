@@ -2,7 +2,15 @@
 
 import Script from "next/script";
 import { useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import LeadForm, { type CarClass, type RouteType } from "./lead-form";
+import {
+  CORE_SERVICE_LINKS,
+  POPULAR_ROUTE_LINKS,
+  REGIONAL_ROUTE_GROUPS,
+  TRUST_FACTS,
+  TRUST_METRICS,
+} from "@/lib/internal-links";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -198,6 +206,36 @@ export default function HomePage() {
 
   const orderRef = useRef<HTMLDivElement | null>(null);
 
+  const navItemListSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Основные страницы сайта Вектор РФ",
+      itemListElement: CORE_SERVICE_LINKS.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.label,
+        url: `https://vector-rf.ru${item.href}`,
+      })),
+    }),
+    []
+  );
+
+  const popularRoutesSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Популярные маршруты",
+      itemListElement: POPULAR_ROUTE_LINKS.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.label,
+        url: `https://vector-rf.ru${item.href}`,
+      })),
+    }),
+    []
+  );
+
   function scrollToOrder() {
     orderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -211,6 +249,39 @@ export default function HomePage() {
     setSelectedRouteType(v);
     scrollToOrder();
   }
+
+
+
+  const businessSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "TaxiService",
+      name: "Вектор РФ",
+      url: "https://vector-rf.ru",
+      telephone: PHONE_TEL,
+      areaServed: "Россия",
+      serviceType: ["Междугороднее такси", "Трансфер в аэропорт", "Поездки по городу"],
+      sameAs: [TELEGRAM],
+    }),
+    []
+  );
+
+  const regionalRoutesSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Популярные направления по регионам",
+      itemListElement: REGIONAL_ROUTE_GROUPS.flatMap((group) =>
+        group.links.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: `${group.title}: ${item.label}`,
+          url: `https://vector-rf.ru${item.href}`,
+        }))
+      ),
+    }),
+    []
+  );
 
   const faqSchema = useMemo(
     () => ({
@@ -270,6 +341,34 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen text-zinc-900">
+      <Script
+        id="business-schema-home"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }}
+      />
+
+      <Script
+        id="nav-item-list-schema-home"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(navItemListSchema) }}
+      />
+
+      <Script
+        id="popular-routes-schema-home"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(popularRoutesSchema) }}
+      />
+
+      <Script
+        id="regional-routes-schema-home"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(regionalRoutesSchema) }}
+      />
+
       <Script
         id="faq-schema-home"
         type="application/ld+json"
@@ -533,6 +632,43 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="grid gap-3 md:grid-cols-3">
+          {TRUST_METRICS.map((item) => (
+            <div key={item.label} className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+              <div className="text-3xl font-black tracking-tight text-zinc-900">{item.value}</div>
+              <div className="mt-2 text-sm text-zinc-600">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
+          <SectionTitle
+            title="Почему выбирают Вектор РФ"
+            desc="Без лишних обещаний: понятная заявка, подтверждение деталей и подбор машины под маршрут."
+          />
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {TRUST_FACTS.map((fact) => (
+              <div key={fact} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-sky-500" />
+                  <div className="text-sm font-semibold leading-6 text-zinc-800">{fact}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <Card title="Для аэропорта" text="Учитываем время подачи, багаж и особенности рейса. Можно сразу оставить комментарий в заявке." />
+            <Card title="Для межгорода" text="Маршруты между городами по России. Уточняем остановки, обратную поездку и класс автомобиля." />
+            <Card title="Для компаний" text="Поездки сотрудников и гостей, подача к нужному времени, согласование деталей заранее." />
+          </div>
+        </div>
+      </section>
+
       <section id="classes" className="mx-auto max-w-6xl px-4 pb-12">
         <SectionTitle title="Классы авто" desc="Нажмите на карточку — класс подставится в форму и подсветится." />
         <div className="grid gap-3 md:grid-cols-2">
@@ -644,6 +780,105 @@ export default function HomePage() {
                 </a>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+
+      <section className="mx-auto max-w-6xl px-4 py-6 md:py-8">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <SectionTitle
+              title="Основные разделы"
+              desc="Нормальная внутренняя перелинковка для людей и поисковиков."
+            />
+            <div className="flex flex-wrap gap-2">
+              {CORE_SERVICE_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <SectionTitle
+              title="Популярные маршруты"
+              desc="Быстрые переходы на важные маршрутные страницы."
+            />
+            <div className="flex flex-wrap gap-2">
+              {POPULAR_ROUTE_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
+          <SectionTitle
+            title="Популярные направления по регионам"
+            desc="Ещё больше быстрых переходов на маршрутные страницы для пользователей и поисковых систем."
+          />
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {REGIONAL_ROUTE_GROUPS.map((group) => (
+              <div key={group.title} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+                <div className="text-sm font-extrabold text-zinc-900">{group.title}</div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {group.links.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:flex md:items-center md:justify-between md:gap-6 md:p-8">
+          <div className="max-w-2xl">
+            <div className="text-2xl font-extrabold tracking-tight text-zinc-900">Нужен трансфер или межгород?</div>
+            <p className="mt-3 text-sm leading-6 text-zinc-600">
+              Оставьте заявку на сайте или напишите в Telegram. Уточним маршрут, класс авто и подтвердим детали поездки.
+            </p>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2 md:mt-0">
+            <button
+              type="button"
+              onClick={scrollToOrder}
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
+            >
+              Оставить заявку
+            </button>
+
+            <a
+              href={TELEGRAM}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+            >
+              Telegram
+            </a>
           </div>
         </div>
       </section>

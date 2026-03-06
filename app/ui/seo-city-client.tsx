@@ -4,6 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import LeadForm, { type CarClass, type RouteType } from "../lead-form";
 import type { FAQItem } from "@/lib/city-faq";
+import {
+  CORE_SERVICE_LINKS,
+  POPULAR_ROUTE_LINKS,
+  REGIONAL_ROUTE_GROUPS,
+  TRUST_FACTS,
+  TRUST_METRICS,
+} from "@/lib/internal-links";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -191,7 +198,7 @@ export default function SeoCityClient(props: {
         </div>
 
         <div className="mt-8 grid gap-8">
-          <div>
+          <section>
             <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
               Междугороднее такси из {props.fromGenitive}
             </h1>
@@ -204,14 +211,35 @@ export default function SeoCityClient(props: {
               <SmallCard title="Подача по времени" text="Укажете адрес и время — подстроимся под график." />
               <SmallCard title="Классы авто" text="Стандарт / комфорт / бизнес / минивэн." />
             </div>
-          </div>
+          </section>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+          <section className="grid gap-3 md:grid-cols-3">
+            {TRUST_METRICS.map((item) => (
+              <div key={item.label} className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+                <div className="text-2xl font-black tracking-tight text-zinc-900">{item.value}</div>
+                <div className="mt-2 text-sm text-zinc-600">{item.label}</div>
+              </div>
+            ))}
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Почему выбирают Вектор РФ</div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {TRUST_FACTS.map((fact) => (
+                <div key={fact} className="flex items-start gap-3 rounded-2xl border border-zinc-200 bg-white/70 p-4">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-sky-500" />
+                  <span className="text-sm leading-6 text-zinc-700">{fact}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">О городе</div>
             <p className="mt-3 text-sm leading-6 text-zinc-700">{props.content}</p>
-          </div>
+          </section>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">
               Популярные маршруты из {props.fromGenitive}
             </div>
@@ -226,9 +254,46 @@ export default function SeoCityClient(props: {
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Основные разделы сайта</div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {CORE_SERVICE_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Ещё популярные направления</div>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              {REGIONAL_ROUTE_GROUPS.map((group) => (
+                <div key={group.title} className="rounded-2xl border border-zinc-200 bg-white/70 p-4">
+                  <div className="text-sm font-bold text-zinc-900">{group.title}</div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {group.links.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Часто задаваемые вопросы</div>
             <div className="mt-4 space-y-4">
               {props.faq.map((f, idx) => (
@@ -238,7 +303,7 @@ export default function SeoCityClient(props: {
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         </div>
       </main>
 
@@ -248,58 +313,42 @@ export default function SeoCityClient(props: {
             <div>
               <div className="text-xs font-semibold text-zinc-700">Услуги</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                <a href="/city-transfer" className="hover:text-zinc-900 hover:underline">
-                  Поездки по городу
-                </a>
-                <a href="/airport-transfer" className="hover:text-zinc-900 hover:underline">
-                  Трансфер в аэропорт
-                </a>
-                <a href="/intercity-taxi" className="hover:text-zinc-900 hover:underline">
-                  Междугородние поездки
-                </a>
-                <a href="/minivan-transfer" className="hover:text-zinc-900 hover:underline">
-                  Минивэн / групповые поездки
-                </a>
-                <a href="/corporate" className="hover:text-zinc-900 hover:underline">
-                  Корпоративные перевозки
-                </a>
+                {CORE_SERVICE_LINKS.slice(0, 5).map((item) => (
+                  <Link key={item.href} href={item.href} className="hover:text-zinc-900 hover:underline">
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-semibold text-zinc-700">Навигация</div>
+              <div className="text-xs font-semibold text-zinc-700">Популярные маршруты</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                <a href="/services" className="hover:text-zinc-900 hover:underline">
-                  Наш сервис
-                </a>
-                <a href="/reviews" className="hover:text-zinc-900 hover:underline">
-                  Отзывы
-                </a>
-                <a href="/faq" className="hover:text-zinc-900 hover:underline">
-                  Вопросы и ответы
-                </a>
-                <a href="/contacts" className="hover:text-zinc-900 hover:underline">
-                  Контакты
-                </a>
+                {POPULAR_ROUTE_LINKS.slice(0, 6).map((item) => (
+                  <Link key={item.href} href={item.href} className="hover:text-zinc-900 hover:underline">
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-semibold text-zinc-700">Информация</div>
+              <div className="text-xs font-semibold text-zinc-700">Контакты</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                <a href="/prices" className="hover:text-zinc-900 hover:underline">
-                  Цены
+                <a href={`tel:${PHONE_TEL}`} className="hover:text-zinc-900 hover:underline">
+                  {PHONE_DISPLAY}
                 </a>
-                <a href="/requisites" className="hover:text-zinc-900 hover:underline">
-                  Реквизиты компании
+                <a href={TELEGRAM} target="_blank" rel="noreferrer" className="hover:text-zinc-900 hover:underline">
+                  Telegram
                 </a>
+                <Link href="/contacts" className="hover:text-zinc-900 hover:underline">
+                  Контакты и реквизиты
+                </Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-zinc-500">
-            © {new Date().getFullYear()} Вектор РФ. Все права защищены.
-          </div>
+          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
         </div>
       </footer>
     </div>

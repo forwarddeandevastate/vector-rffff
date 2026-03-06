@@ -4,6 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import LeadForm, { type CarClass, type RouteType } from "../lead-form";
 import type { FAQItem } from "@/lib/city-faq";
+import {
+  CORE_SERVICE_LINKS,
+  POPULAR_ROUTE_LINKS,
+  REGIONAL_ROUTE_GROUPS,
+  TRUST_FACTS,
+} from "@/lib/internal-links";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -49,6 +55,31 @@ function IconTelegram({ className }: { className?: string }) {
   );
 }
 
+function IntentCard({
+  title,
+  text,
+  href,
+  hrefLabel,
+}: {
+  title: string;
+  text: string;
+  href: string;
+  hrefLabel: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
+      <div className="text-sm font-extrabold text-zinc-900">{title}</div>
+      <p className="mt-3 text-sm leading-6 text-zinc-700">{text}</p>
+      <Link
+        href={href}
+        className="mt-4 inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 shadow-sm hover:bg-zinc-50"
+      >
+        {hrefLabel}
+      </Link>
+    </div>
+  );
+}
+
 export default function SeoRouteClient(props: {
   fromSlug: string;
   toSlug: string;
@@ -57,14 +88,23 @@ export default function SeoRouteClient(props: {
   cityBackHref: string;
   cityBackLabel: string;
   content: string;
+  keywordText: string[];
   faq: FAQItem[];
   moreFromCity: Array<{ toSlug: string; toName: string }>;
 }) {
   const PHONE_TEL = "+78314233929";
+  const PHONE_DISPLAY = "+7 (831) 423-39-29";
   const TELEGRAM = "https://t.me/vector_rf52";
 
   const [carClass, setCarClass] = useState<CarClass>("standard");
   const [routeType, setRouteType] = useState<RouteType>("intercity");
+
+  const keywordBadges = [
+    `такси ${props.fromName} — ${props.toName}`,
+    `междугороднее такси ${props.fromName} — ${props.toName}`,
+    `такси межгород ${props.fromName} — ${props.toName}`,
+    `трансфер ${props.fromName} — ${props.toName}`,
+  ];
 
   return (
     <div className="min-h-screen text-zinc-900">
@@ -77,10 +117,7 @@ export default function SeoRouteClient(props: {
           <Link href="/" className="text-sm font-extrabold text-zinc-900 hover:opacity-90">
             Вектор РФ
           </Link>
-          <Link
-            href={props.cityBackHref}
-            className="text-sm font-semibold text-sky-700 hover:text-sky-800"
-          >
+          <Link href={props.cityBackHref} className="text-sm font-semibold text-sky-700 hover:text-sky-800">
             {props.cityBackLabel}
           </Link>
         </div>
@@ -133,7 +170,7 @@ export default function SeoRouteClient(props: {
         </div>
 
         <div className="mt-8 grid gap-8">
-          <div>
+          <section>
             <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
               Такси {props.fromName} — {props.toName}
             </h1>
@@ -146,14 +183,60 @@ export default function SeoRouteClient(props: {
               <SmallBadge>Комфорт / бизнес / минивэн</SmallBadge>
               <SmallBadge>Заявка онлайн</SmallBadge>
             </div>
-          </div>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="mt-4 flex flex-wrap gap-2">
+              {keywordBadges.map((item) => (
+                <SmallBadge key={item}>{item}</SmallBadge>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {TRUST_FACTS.map((fact) => (
+              <div key={fact} className="rounded-3xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
+                <div className="text-sm leading-6 text-zinc-700">{fact}</div>
+              </div>
+            ))}
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Описание маршрута</div>
             <p className="mt-3 text-sm leading-6 text-zinc-700">{props.content}</p>
-          </div>
+          </section>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+          <section className="grid gap-4 lg:grid-cols-3">
+            <IntentCard
+              title={`Междугороднее такси ${props.fromName} — ${props.toName}`}
+              text={`Маршрут ${props.fromName} — ${props.toName} подходит для поездок между городами без пересадок. Это удобный вариант, когда нужно заранее заказать машину на конкретное время.`}
+              href="/intercity-taxi"
+              hrefLabel="Подробнее о междугороднем такси"
+            />
+            <IntentCard
+              title={`Такси межгород ${props.fromName} — ${props.toName}`}
+              text={`Такси межгород по направлению ${props.fromName} — ${props.toName} выбирают для командировок, семейных поездок, поездок с багажом и встреч без ожиданий на вокзалах и пересадках.`}
+              href={`/${props.fromSlug}`}
+              hrefLabel={`Все маршруты из ${props.fromName}`}
+            />
+            <IntentCard
+              title="Трансфер в аэропорт и обратно"
+              text={`Если кроме маршрута ${props.fromName} — ${props.toName} нужен трансфер в аэропорт или из аэропорта, его можно оформить отдельно. Подберём класс авто и время подачи под рейс.`}
+              href="/airport-transfer"
+              hrefLabel="Перейти к аэропортному трансферу"
+            />
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Текст по ключевым запросам</div>
+            <div className="mt-4 space-y-4">
+              {props.keywordText.map((text, index) => (
+                <p key={index} className="text-sm leading-6 text-zinc-700">
+                  {text}
+                </p>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Ещё маршруты из {props.fromName}</div>
             <div className="mt-4 flex flex-wrap gap-2">
               {props.moreFromCity.map((p) => (
@@ -166,9 +249,46 @@ export default function SeoRouteClient(props: {
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Полезные разделы</div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {CORE_SERVICE_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Популярные маршруты по регионам</div>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              {REGIONAL_ROUTE_GROUPS.map((group) => (
+                <div key={group.title} className="rounded-2xl border border-zinc-200 bg-white/70 p-4">
+                  <div className="text-sm font-bold text-zinc-900">{group.title}</div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {group.links.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">FAQ</div>
             <div className="mt-4 space-y-4">
               {props.faq.map((f, idx) => (
@@ -178,7 +298,7 @@ export default function SeoRouteClient(props: {
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         </div>
       </main>
 
@@ -188,58 +308,42 @@ export default function SeoRouteClient(props: {
             <div>
               <div className="text-xs font-semibold text-zinc-700">Услуги</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                <a href="/city-transfer" className="hover:text-zinc-900 hover:underline">
-                  Поездки по городу
-                </a>
-                <a href="/airport-transfer" className="hover:text-zinc-900 hover:underline">
-                  Трансфер в аэропорт
-                </a>
-                <a href="/intercity-taxi" className="hover:text-zinc-900 hover:underline">
-                  Междугородние поездки
-                </a>
-                <a href="/minivan-transfer" className="hover:text-zinc-900 hover:underline">
-                  Минивэн / групповые поездки
-                </a>
-                <a href="/corporate" className="hover:text-zinc-900 hover:underline">
-                  Корпоративные перевозки
-                </a>
+                {CORE_SERVICE_LINKS.slice(0, 5).map((item) => (
+                  <Link key={item.href} href={item.href} className="hover:text-zinc-900 hover:underline">
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-semibold text-zinc-700">Навигация</div>
+              <div className="text-xs font-semibold text-zinc-700">Популярные маршруты</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                <a href="/services" className="hover:text-zinc-900 hover:underline">
-                  Наш сервис
-                </a>
-                <a href="/reviews" className="hover:text-zinc-900 hover:underline">
-                  Отзывы
-                </a>
-                <a href="/faq" className="hover:text-zinc-900 hover:underline">
-                  Вопросы и ответы
-                </a>
-                <a href="/contacts" className="hover:text-zinc-900 hover:underline">
-                  Контакты
-                </a>
+                {POPULAR_ROUTE_LINKS.slice(0, 6).map((item) => (
+                  <Link key={item.href} href={item.href} className="hover:text-zinc-900 hover:underline">
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-semibold text-zinc-700">Информация</div>
+              <div className="text-xs font-semibold text-zinc-700">Контакты</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                <a href="/prices" className="hover:text-zinc-900 hover:underline">
-                  Цены
+                <a href={`tel:${PHONE_TEL}`} className="hover:text-zinc-900 hover:underline">
+                  {PHONE_DISPLAY}
                 </a>
-                <a href="/requisites" className="hover:text-zinc-900 hover:underline">
-                  Реквизиты компании
+                <a href={TELEGRAM} target="_blank" rel="noreferrer" className="hover:text-zinc-900 hover:underline">
+                  Telegram
                 </a>
+                <Link href="/contacts" className="hover:text-zinc-900 hover:underline">
+                  Контакты и реквизиты
+                </Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-zinc-500">
-            © {new Date().getFullYear()} Вектор РФ. Все права защищены.
-          </div>
+          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
         </div>
       </footer>
     </div>

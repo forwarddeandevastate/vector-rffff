@@ -3,12 +3,10 @@ import Script from "next/script";
 import { notFound } from "next/navigation";
 
 import SeoCityClient from "@/app/ui/seo-city-client";
-import { CITY_BY_SLUG, prettyCityNameFromSlug } from "@/lib/city-landings";
+import { CITY_BY_SLUG, CITY_LANDINGS, prettyCityNameFromSlug } from "@/lib/city-landings";
+import { buildBreadcrumbJsonLd, buildCityMetadata, buildFaqJsonLd } from "@/lib/seo";
 import { CITY_CONTENT } from "@/lib/city-content";
 import { CITY_FAQ } from "@/lib/city-faq";
-
-const SITE_URL = "https://vector-rf.ru";
-const SITE_NAME = "Вектор РФ";
 
 function normalizeSlug(input: string) {
   const raw = (input ?? "").trim();
@@ -34,30 +32,15 @@ export async function generateMetadata({ params }: { params: { city: string } })
   const city = CITY_BY_SLUG.get(slug);
   if (!city) return { robots: { index: false, follow: false } };
 
-  const title = `Междугороднее такси из ${city.fromGenitive} — трансфер 24/7 | ${SITE_NAME}`;
-  const description = `Заказать междугороднее такси из ${city.fromGenitive}: комфорт, бизнес, минивэн. Стоимость согласуем заранее, подача по времени. Заявка онлайн 24/7.`;
+  return buildCityMetadata({
+    slug: city.slug,
+    cityName: city.name,
+    fromGenitive: city.fromGenitive,
+  });
+}
 
-  return {
-    title,
-    description,
-    alternates: { canonical: `${SITE_URL}/${city.slug}` },
-    robots: { index: true, follow: true },
-    openGraph: {
-      type: "website",
-      url: `${SITE_URL}/${city.slug}`,
-      title,
-      description,
-      siteName: SITE_NAME,
-      locale: "ru_RU",
-      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ["/og.jpg"],
-    },
-  };
+export function generateStaticParams() {
+  return CITY_LANDINGS.map((city) => ({ city: city.slug }));
 }
 
 export default function Page({ params }: { params: { city: string } }) {
@@ -83,22 +66,22 @@ export default function Page({ params }: { params: { city: string } }) {
     toName: prettyCityNameFromSlug(toSlug),
   }));
 
-  const breadcrumbsJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: city.name, item: `${SITE_URL}/${city.slug}` },
-    ],
-  };
+  const breadcrumbsJsonLd = buildBreadcrumbJsonLd([
+    { name: "Главная", path: "/" },
+    { name: city.name, path: `/${city.slug}` },
+  ]);
 
-  const faqJsonLd = {
+  const faqJsonLd = buildFaqJsonLd(faq);
+
+  const popularRoutesJsonLd = {
     "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((f) => ({
-      "@type": "Question",
-      name: f.question,
-      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    "@type": "ItemList",
+    name: `Популярные маршруты из ${city.name}`,
+    itemListElement: popular.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: `${city.name} — ${item.toName}`,
+      url: `https://vector-rf.ru/${city.slug}/${item.toSlug}`,
     })),
   };
 
@@ -115,6 +98,12 @@ export default function Page({ params }: { params: { city: string } }) {
         type="application/ld+json"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <Script
+        id={`ld-city-routes-${city.slug}`}
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(popularRoutesJsonLd) }}
       />
 
       <SeoCityClient

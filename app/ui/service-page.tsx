@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo } from "react";
+import { CORE_SERVICE_LINKS, POPULAR_ROUTE_LINKS } from "@/lib/internal-links";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -222,6 +223,38 @@ export default function ServicePage({
               </div>
             </div>
           </aside>
+        </div>
+
+        <div className="mt-8 grid gap-6 md:grid-cols-2">
+          <section className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Полезные разделы</div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {CORE_SERVICE_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-zinc-900">Популярные маршруты</div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {POPULAR_ROUTE_LINKS.slice(0, 8).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </main>
