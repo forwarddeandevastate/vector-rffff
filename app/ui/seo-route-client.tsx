@@ -88,7 +88,7 @@ export default function SeoRouteClient(props: {
   cityBackHref: string;
   cityBackLabel: string;
   content: string;
-  keywordText: string[];
+  keywordText?: string[];
   faq: FAQItem[];
   moreFromCity: Array<{ toSlug: string; toName: string }>;
 }) {
@@ -238,7 +238,13 @@ export default function SeoRouteClient(props: {
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Текст по ключевым запросам</div>
             <div className="mt-4 space-y-4">
-              {props.keywordText.map((text, index) => (
+              {(props.keywordText && props.keywordText.length > 0
+                ? props.keywordText
+                : [
+                    `Такси ${props.fromName} — ${props.toName} доступно для поездок между городами без пересадок и ожиданий.`,
+                    `Маршрут ${props.fromName} — ${props.toName} можно заранее оформить как междугороднее такси с подачей ко времени.`,
+                    `Трансфер ${props.fromName} — ${props.toName} подойдёт для деловых поездок, семейных выездов и поездок с багажом.`,
+                  ]).map((text, index) => (
                 <p key={index} className="text-sm leading-6 text-zinc-700">
                   {text}
                 </p>
