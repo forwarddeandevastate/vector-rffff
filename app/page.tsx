@@ -448,8 +448,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div id="order" ref={orderRef} className="scroll-mt-24 md:col-span-12">
-            <div className="mx-auto max-w-[980px]">
+          <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
+            <div className="max-w-[520px] md:ml-auto">
               <LeadForm
                 carClass={selectedClass}
                 onCarClassChange={(v) => pickClass(v, false)}
