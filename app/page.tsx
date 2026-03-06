@@ -331,16 +331,36 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-6xl gap-6 px-4 pb-10 pt-4 md:grid-cols-12 md:gap-8 md:py-14">
           <div id="order" ref={orderRef} className="order-1 scroll-mt-24 md:order-2 md:col-span-5">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
-              <div className="border-b border-zinc-200 px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
-                    <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
-                  </div>
-                  <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
-                    ~ 1 мин
-                  </div>
+              <div className="border-b border-zinc-200 p-4 md:p-5">
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`tel:${PHONE_TEL}`}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                    )}
+                    title="Позвонить"
+                  >
+                    <IconCall className="h-4 w-4 text-sky-700" />
+                    Позвонить
+                  </a>
+
+                  <a
+                    href={TELEGRAM}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
+                    )}
+                    title="Написать в Telegram"
+                  >
+                    <IconTelegram className="h-4 w-4 text-sky-700" />
+                    Telegram
+                  </a>
                 </div>
+
+                <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
               </div>
 
               <div className="p-3">
