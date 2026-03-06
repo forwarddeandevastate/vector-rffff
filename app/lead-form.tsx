@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 export type CarClass = "standard" | "comfort" | "business" | "minivan";
 export type RouteType = "city" | "airport" | "intercity";
@@ -18,119 +20,74 @@ function ControlBase(className?: string) {
   );
 }
 
-function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={ControlBase(props.className)} />;
-}
-
-function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={ControlBase(props.className)} />;
+function Field({
+  label,
+  hint,
+  children,
+  className,
+  labelFor,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+  className?: string;
+  labelFor?: string;
+}) {
+  return (
+    <div className={className}>
+      <div className="flex items-end justify-between gap-2">
+        {labelFor ? (
+          <label htmlFor={labelFor} className="text-xs font-semibold text-zinc-700">
+            {label}
+          </label>
+        ) : (
+          <div className="text-xs font-semibold text-zinc-700">{label}</div>
+        )}
+        {hint ? <div className="text-[11px] text-zinc-500">{hint}</div> : null}
+      </div>
+      <div className="mt-1">{children}</div>
+    </div>
+  );
 }
 
 function SegButton({
   active,
-  onClick,
   children,
+  onClick,
 }: {
-  active: boolean;
-  onClick: () => void;
+  active?: boolean;
   children: React.ReactNode;
+  onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-xl border px-3 py-2 text-sm font-semibold transition",
+        "h-10 rounded-xl px-3 text-sm font-semibold transition",
+        "border shadow-[0_1px_0_rgba(16,24,40,0.04)]",
         active
-          ? "border-sky-200 bg-sky-50 text-sky-700"
-          : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+          ? "border-sky-300 bg-sky-50 text-sky-900 ring-2 ring-sky-100"
+          : "border-zinc-200 bg-white/85 text-zinc-800 hover:bg-white"
       )}
+      aria-pressed={active ? "true" : "false"}
     >
       {children}
     </button>
-  );
-}
-
-function MiniButton({
-  children,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      {...props}
-      className={cn(
-        "h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-800 shadow-sm hover:bg-zinc-50",
-        props.className
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function SuggestList({
-  items,
-  onPick,
-}: {
-  items: string[];
-  onPick: (v: string) => void;
-}) {
-  return (
-    <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
-      {items.slice(0, 6).map((x) => (
-        <button
-          key={x}
-          type="button"
-          className="block w-full px-3 py-2 text-left text-sm hover:bg-zinc-50"
-          onClick={() => onPick(x)}
-        >
-          {x}
-        </button>
-      ))}
-    </div>
   );
 }
 
 function formatRub(n: number) {
-  return new Intl.NumberFormat("ru-RU").format(Math.round(n)) + " ₽";
+  const s = String(n);
+  const parts: string[] = [];
+  for (let i = s.length; i > 0; i -= 3) {
+    const start = Math.max(0, i - 3);
+    parts.unshift(s.slice(start, i));
+  }
+  return `${parts.join(" ")} ₽`;
 }
 
-function formatFrom(n: number) {
-  return `от ${formatRub(n)}`;
-}
-
-function normalizePhoneLive(input: string) {
-  const s = input ?? "";
-  const trimmed = s.trimStart();
-  if (!trimmed) return "";
-  if (trimmed.startsWith("+8")) return "+7" + trimmed.slice(2);
-  if (trimmed.startsWith("8")) return "+7" + trimmed.slice(1);
-  if (trimmed.startsWith("7")) return "+7" + trimmed.slice(1);
-  return s;
-}
-
-function shortPlace(s: string) {
-  const v = (s || "").trim();
-  if (!v) return "";
-  return v.split(",")[0]?.trim() || v;
-}
-
-function formatDurationRu(totalMinutes: number) {
-  const m = Math.max(0, Math.round(totalMinutes));
-  const h = Math.floor(m / 60);
-  const mm = m % 60;
-  if (!h) return `${mm} мин`;
-  if (!mm) return `${h} ч`;
-  return `${h} ч ${mm} мин`;
-}
-
-const CITY_BASE_PRICE: Record<CarClass, number> = {
-  standard: 1000,
-  comfort: 1500,
-  business: 3000,
-  minivan: 3500,
-};
-
+// тариф ₽/км по классу
 const PER_KM: Record<CarClass, number> = {
   standard: 30,
   comfort: 37,
@@ -138,254 +95,352 @@ const PER_KM: Record<CarClass, number> = {
   business: 65,
 };
 
+// ====== БАЗОВЫЕ ЦЕНЫ ДЛЯ ФОРМЫ (НЕ ФИНАЛ) ======
+const CITY_BASE_PRICE: Record<CarClass, number> = {
+  standard: 1000,
+  comfort: 1500,
+  business: 3000,
+  minivan: 3500,
+};
+
 function airportPriceFromCity(cityPrice: number) {
   return Math.round(cityPrice * 1.1);
 }
 
-export default function LeadForm() {
+function formatFrom(n: number) {
+  return `от ${n.toLocaleString("ru-RU")} ₽`;
+}
+
+// --- Подсказки мест (можно вводить руками) ---
+const POPULAR_CITIES = [
+  "Москва",
+  "Санкт-Петербург",
+  "Казань",
+  "Сочи",
+  "Екатеринбург",
+  "Новосибирск",
+  "Нижний Новгород",
+  "Самара",
+  "Ростов-на-Дону",
+  "Краснодар",
+  "Уфа",
+  "Красноярск",
+  "Воронеж",
+  "Пермь",
+  "Волгоград",
+  "Омск",
+  "Челябинск",
+  "Калининград",
+  "Тюмень",
+  "Иркутск",
+  "Хабаровск",
+  "Владивосток",
+
+  "Донецк (ДНР)",
+  "Луганск (ЛНР)",
+  "Макеевка (ДНР)",
+  "Мариуполь (ДНР)",
+  "Горловка (ДНР)",
+  "Енакиево (ДНР)",
+  "Алчевск (ЛНР)",
+  "Стаханов (ЛНР)",
+  "Северодонецк (ЛНР)",
+  "Лисичанск (ЛНР)",
+
+  "Запорожье",
+  "Мелитополь",
+  "Бердянск",
+
+  "Херсон",
+  "Геническ",
+  "Скадовск",
+  "Новая Каховка",
+];
+
+const AIRPORT_HINTS = [
+  "Шереметьево (SVO)",
+  "Домодедово (DME)",
+  "Внуково (VKO)",
+  "Пулково (LED)",
+  "Сочи (AER)",
+  "Кольцово (SVX)",
+  "Толмачёво (OVB)",
+  "Курумоч (KUF)",
+  "Казань (KZN)",
+  "Пашковский (KRR)",
+  "Храброво (KGD)",
+];
+
+function normalize(s: string) {
+  return s.trim().toLowerCase();
+}
+
+function pickSuggestions(value: string, routeType: RouteType) {
+  const q = normalize(value);
+  if (!q) return routeType === "airport" ? AIRPORT_HINTS.slice(0, 8) : POPULAR_CITIES.slice(0, 12);
+
+  const source = routeType === "airport" ? [...AIRPORT_HINTS, ...POPULAR_CITIES] : POPULAR_CITIES;
+
+  const scored = source
+    .map((name) => {
+      const n = normalize(name);
+      const idx = n.indexOf(q);
+      if (idx === -1) return null;
+      const score = idx === 0 ? 100 : 50 - idx;
+      return { name, score };
+    })
+    .filter(Boolean) as Array<{ name: string; score: number }>;
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 10).map((x) => x.name);
+}
+
+// --- Дата/время helpers ---
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+function toDatetimeLocal(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = pad2(d.getMonth() + 1);
+  const dd = pad2(d.getDate());
+  const hh = pad2(d.getHours());
+  const mi = pad2(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+function addMinutes(base: Date, minutes: number) {
+  const d = new Date(base.getTime());
+  d.setMinutes(d.getMinutes() + minutes);
+  return d;
+}
+function setTimeSameDay(base: Date, hh: number, mm: number) {
+  const d = new Date(base.getTime());
+  d.setHours(hh, mm, 0, 0);
+  return d;
+}
+
+/**
+ * ✅ Правка телефона (РФ)
+ * - 8xxxxxxxxxx -> +7xxxxxxxxxx
+ * - 7xxxxxxxxxx -> +7xxxxxxxxxx
+ * - +8xxxxxxxxxx -> +7xxxxxxxxxx
+ * - 9xxxxxxxxxx -> +79xxxxxxxxxx   ✅ ДОБАВИЛИ
+ * Остальное не трогаем.
+ */
+function normalizePhoneLive(input: string) {
+  let v = input;
+
+  if (v.startsWith("+8")) v = "+7" + v.slice(2);
+  else if (v.startsWith("8")) v = "+7" + v.slice(1);
+  else if (v.startsWith("7")) v = "+7" + v.slice(1);
+  else if (v.startsWith("9")) v = "+7" + v; // ✅ единственная правка
+
+  return v;
+}
+
+type LeadFormProps = {
+  /**
+   * Опционально: можно управлять формой снаружи.
+   * Если не передано — форма будет полностью автономной.
+   */
+  carClass?: CarClass;
+  onCarClassChange?: (v: CarClass) => void;
+  routeType?: RouteType;
+  onRouteTypeChange?: (v: RouteType) => void;
+};
+
+export default function LeadForm(props: LeadFormProps) {
+  const router = useRouter();
+
+  const isCarControlled = props.carClass !== undefined && typeof props.onCarClassChange === "function";
+  const isRouteControlled = props.routeType !== undefined && typeof props.onRouteTypeChange === "function";
+
+  const [carClassState, setCarClassState] = useState<CarClass>(props.carClass ?? "standard");
+  const [routeTypeState, setRouteTypeState] = useState<RouteType>(props.routeType ?? "intercity");
+
+  const carClass = isCarControlled ? (props.carClass as CarClass) : carClassState;
+  const setCarClass = isCarControlled ? (props.onCarClassChange as (v: CarClass) => void) : setCarClassState;
+
+  const routeType = isRouteControlled ? (props.routeType as RouteType) : routeTypeState;
+  const setRouteType = isRouteControlled ? (props.onRouteTypeChange as (v: RouteType) => void) : setRouteTypeState;
+
+  // ✅ ids для связки label -> input/select (исправляет Lighthouse)
   const ids = useMemo(
     () => ({
-      name: "lead_name",
-      phone: "lead_phone",
-      from: "lead_from",
-      to: "lead_to",
-      datetime: "lead_dt",
-      carClass: "lead_class",
-      roundTrip: "lead_roundtrip",
-      comment: "lead_comment",
+      name: "lead-name",
+      phone: "lead-phone",
+      from: "lead-from",
+      to: "lead-to",
+      datetime: "lead-datetime",
+      carClass: "lead-car-class",
+      roundTrip: "lead-round-trip",
+      comment: "lead-comment",
     }),
     []
   );
 
-  const [routeType, setRouteType] = useState<RouteType>("intercity");
-  const [carClass, setCarClass] = useState<CarClass>("comfort");
-
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
+  const [datetimeLocal, setDatetimeLocal] = useState<string>("");
 
-  const [comment, setComment] = useState("");
   const [roundTrip, setRoundTrip] = useState(false);
+  const [comment, setComment] = useState("");
 
-  const [datetimeLocal, setDatetimeLocal] = useState("");
-
-  // suggestions (простая локальная подсказка — как в твоей версии)
-  const CITIES = useMemo(
-    () => [
-      "Москва",
-      "Санкт-Петербург",
-      "Казань",
-      "Нижний Новгород",
-      "Екатеринбург",
-      "Самара",
-      "Ростов-на-Дону",
-      "Краснодар",
-      "Воронеж",
-      "Уфа",
-    ],
-    []
-  );
-
-  const [fromOpen, setFromOpen] = useState(false);
-  const [toOpen, setToOpen] = useState(false);
-
-  const fromBoxRef = useRef<HTMLDivElement | null>(null);
-  const toBoxRef = useRef<HTMLDivElement | null>(null);
-
-  const fromSuggestions = useMemo(() => {
-    const q = fromText.trim().toLowerCase();
-    if (!q) return [];
-    return CITIES.filter((c) => c.toLowerCase().includes(q));
-  }, [fromText, CITIES]);
-
-  const toSuggestions = useMemo(() => {
-    const q = toText.trim().toLowerCase();
-    if (!q) return [];
-    return CITIES.filter((c) => c.toLowerCase().includes(q));
-  }, [toText, CITIES]);
-
-  useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      const t = e.target as any;
-      if (fromBoxRef.current && !fromBoxRef.current.contains(t)) setFromOpen(false);
-      if (toBoxRef.current && !toBoxRef.current.contains(t)) setToOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // авто-расчёт
   const [km, setKm] = useState<number | null>(null);
-  const [minutes, setMinutes] = useState<number | null>(null);
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
 
+  const fromSuggestions = useMemo(() => pickSuggestions(fromText, routeType), [fromText, routeType]);
+  const toSuggestions = useMemo(() => pickSuggestions(toText, routeType), [toText, routeType]);
+
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
+  const fromBoxRef = useRef<HTMLDivElement | null>(null);
+  const toBoxRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      const t = e.target as Node;
+      if (fromBoxRef.current && !fromBoxRef.current.contains(t)) setFromOpen(false);
+      if (toBoxRef.current && !toBoxRef.current.contains(t)) setToOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  // ✅ если выбрана "Город", но ввели разные точки "Откуда/Куда" — переключаем на "Межгород"
+  useEffect(() => {
+    if (routeType !== "city") return;
+    const a = normalize(fromText);
+    const b = normalize(toText);
+    if (!a || !b) return;
+    if (a === b) return;
+
+    setRouteType("intercity");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromText, toText]);
+
+  const canSubmit = useMemo(() => {
+    return name.trim() && phone.trim() && fromText.trim() && toText.trim();
+  }, [name, phone, fromText, toText]);
+
+  function applyQuickTime(kind: "plus1" | "plus2" | "today18" | "tomorrow10") {
+    const now = new Date();
+    let d = now;
+
+    if (kind === "plus1") d = addMinutes(now, 60);
+    if (kind === "plus2") d = addMinutes(now, 120);
+    if (kind === "today18") d = setTimeSameDay(now, 18, 0);
+    if (kind === "tomorrow10") {
+      const t = new Date(now.getTime());
+      t.setDate(t.getDate() + 1);
+      d = setTimeSameDay(t, 10, 0);
+    }
+
+    setDatetimeLocal(toDatetimeLocal(d));
+  }
+
+  // Авто-расчёт км только для межгорода, с debounce
   useEffect(() => {
     let cancelled = false;
-    const a = fromText.trim();
-    const b = toText.trim();
+    const controller = new AbortController();
 
-    if (routeType !== "intercity") {
-      setKm(null);
-      setMinutes(null);
+    async function run() {
       setCalcError(null);
-      setCalcLoading(false);
-      return;
-    }
-
-    if (!a || !b) {
       setKm(null);
-      setMinutes(null);
-      setCalcError(null);
-      setCalcLoading(false);
-      return;
-    }
 
-    const ctrl = new AbortController();
-    const t = setTimeout(async () => {
+      if (routeType !== "intercity") return;
+      if (!fromText.trim() || !toText.trim()) return;
+
+      setCalcLoading(true);
+
       try {
-        setCalcLoading(true);
-        setCalcError(null);
-        setKm(null);
-        setMinutes(null);
+        const url = `/api/distance?from=${encodeURIComponent(fromText.trim())}&to=${encodeURIComponent(
+          toText.trim()
+        )}`;
 
-        const res = await fetch("/api/distance", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ from: a, to: b }),
-          signal: ctrl.signal,
-        });
+        const res = await fetch(url, { signal: controller.signal });
+        const data = await res.json().catch(() => ({}));
 
-        const data = (await res.json().catch(() => null)) as any;
+        if (cancelled) return;
 
-        if (!res.ok || !data?.ok) {
+        if (!res.ok || !data.ok) {
           setCalcError(data?.error || "Не удалось рассчитать расстояние");
           setKm(null);
-          setMinutes(null);
           return;
         }
 
         setKm(Number(data.km) || null);
-        setMinutes(Number(data.minutes) || null);
       } catch (e: any) {
         if (cancelled) return;
         if (e?.name === "AbortError") return;
         setCalcError("Не удалось рассчитать расстояние");
         setKm(null);
-        setMinutes(null);
       } finally {
         if (!cancelled) setCalcLoading(false);
       }
-    }, 300);
+    }
+
+    const t = setTimeout(run, 450);
 
     return () => {
       cancelled = true;
+      controller.abort();
       clearTimeout(t);
-      ctrl.abort();
     };
   }, [routeType, fromText, toText]);
 
   const finalPrice = useMemo(() => {
-    if (routeType === "city") return null;
-    if (routeType === "airport") return null;
-
-    if (!km) return null;
-    const oneWay = Math.round(km * PER_KM[carClass]);
-    return roundTrip ? oneWay * 2 : oneWay;
-  }, [routeType, km, carClass, roundTrip]);
-
-  const intercityPrices = useMemo(() => {
     if (routeType !== "intercity") return null;
     if (!km) return null;
-    const base: Record<CarClass, number> = {
-      standard: Math.round(km * PER_KM.standard),
-      comfort: Math.round(km * PER_KM.comfort),
-      business: Math.round(km * PER_KM.business),
-      minivan: Math.round(km * PER_KM.minivan),
-    };
-    if (!roundTrip) return base;
-    return {
-      standard: base.standard * 2,
-      comfort: base.comfort * 2,
-      business: base.business * 2,
-      minivan: base.minivan * 2,
-    };
-  }, [routeType, km, roundTrip]);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function applyQuickTime(kind: "plus1" | "today18" | "tomorrow10") {
-    const now = new Date();
-    let d = new Date(now);
-
-    if (kind === "plus1") d = new Date(now.getTime() + 60 * 60 * 1000);
-    if (kind === "today18") {
-      d.setHours(18, 0, 0, 0);
-      if (d.getTime() < now.getTime()) d = new Date(now.getTime() + 60 * 60 * 1000);
-    }
-    if (kind === "tomorrow10") {
-      d = new Date(now);
-      d.setDate(now.getDate() + 1);
-      d.setHours(10, 0, 0, 0);
-    }
-
-    const pad = (x: number) => String(x).padStart(2, "0");
-    const v =
-      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
-      `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    setDatetimeLocal(v);
-  }
+    let price = Math.round(km * PER_KM[carClass]);
+    if (roundTrip) price *= 2;
+    return price;
+  }, [routeType, km, carClass, roundTrip]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    const n = name.trim();
-    const p = phone.trim();
-    const a = fromText.trim();
-    const b = toText.trim();
-
-    if (!n) return setError("Введите имя");
-    if (!p) return setError("Введите телефон");
-    if (!a) return setError("Введите «Откуда»");
-    if (!b) return setError("Введите «Куда»");
+    if (!canSubmit) {
+      setError("Заполните имя, телефон, откуда и куда.");
+      return;
+    }
 
     setLoading(true);
     try {
+      // ✅ СКРЫЛИ ВНУТРЕННИЕ ДЕТАЛИ: только итог (без ₽/км и без км)
+      const calcNote =
+        routeType === "intercity" && finalPrice
+          ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}: ${formatRub(finalPrice)}`
+          : "";
+
       const payload = {
-        name: n,
-        phone: p,
-        routeType,
+        name: name.trim(),
+        phone: phone.trim(),
+        fromText: fromText.trim(),
+        toText: toText.trim(),
+        datetime: datetimeLocal ? datetimeLocal : null,
         carClass,
-        from: a,
-        to: b,
-        datetime: datetimeLocal || null,
-        comment: comment.trim() || null,
-        roundTrip: routeType === "intercity" ? roundTrip : false,
-        km: km ?? null,
-        minutes: minutes ?? null,
-        price: finalPrice ?? null,
+        roundTrip,
+        comment: (comment.trim() ? comment.trim() : "") + calcNote || null,
       };
 
       const res = await fetch("/api/leads", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = (await res.json().catch(() => null)) as any;
-      if (!res.ok || !data?.ok) throw new Error(data?.error || "Не удалось отправить заявку");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка отправки");
 
-      setName("");
-      setPhone("");
-      setFromText("");
-      setToText("");
-      setComment("");
-      setRoundTrip(false);
-      setDatetimeLocal("");
+      router.push("/thanks");
     } catch (e: any) {
       setError(e?.message || "Ошибка отправки");
     } finally {
@@ -394,312 +449,282 @@ export default function LeadForm() {
   }
 
   return (
-    <section className="w-full">
-      <div className="mx-auto w-full max-w-5xl">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">
-            Закажите трансфер
-          </h2>
-          <p className="mt-2 text-base text-zinc-600">Быстрый расчёт цены и времени в пути</p>
-        </div>
+    <form onSubmit={onSubmit} className="grid gap-3">
+      {/* Тип поездки + итоговая стоимость */}
+      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-xs font-semibold text-zinc-700">Тип поездки</div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
-          <form
-            onSubmit={onSubmit}
-            className="rounded-3xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur sm:p-6"
-          >
-            <div className="flex flex-wrap gap-2">
-              <SegButton active={routeType === "airport"} onClick={() => setRouteType("airport")}>
-                ✈ Аэропорт
-              </SegButton>
+            {/* Базовая цена для города / аэропорта */}
+            {routeType !== "intercity" && (
+              <div className="mt-2 text-sm font-extrabold text-zinc-900">
+                {routeType === "city" && formatFrom(CITY_BASE_PRICE[carClass])}
+                {routeType === "airport" && formatFrom(airportPriceFromCity(CITY_BASE_PRICE[carClass]))}
+              </div>
+            )}
+
+            {/* ✅ ПОРЯДОК: Межгород → Аэропорт → Город */}
+            <div className="mt-2 flex flex-wrap gap-2">
               <SegButton active={routeType === "intercity"} onClick={() => setRouteType("intercity")}>
-                🚗 Межгород
+                Межгород
+              </SegButton>
+              <SegButton active={routeType === "airport"} onClick={() => setRouteType("airport")}>
+                Аэропорт
               </SegButton>
               <SegButton active={routeType === "city"} onClick={() => setRouteType("city")}>
-                🏙 Город
+                Город
               </SegButton>
             </div>
 
-            {/* Откуда / Куда + swap */}
-            <div className="mt-5 grid gap-3">
-              <div ref={fromBoxRef} className="relative">
-                <label htmlFor={ids.from} className="mb-1 block text-sm font-semibold text-zinc-900">
-                  Откуда
-                </label>
-                <TextInput
-                  id={ids.from}
-                  value={fromText}
-                  onChange={(e) => {
-                    setFromText(e.target.value);
-                    setFromOpen(true);
-                  }}
-                  onFocus={() => setFromOpen(true)}
-                  placeholder={routeType === "intercity" ? "Город" : "Город, адрес, аэропорт"}
-                />
-                {fromOpen && fromSuggestions.length > 0 && (
-                  <SuggestList
-                    items={fromSuggestions}
-                    onPick={(v) => {
-                      setFromText(v);
+            {routeType === "intercity" ? (
+              <div className="mt-3 rounded-xl border border-sky-200/70 bg-sky-50/60 px-3 py-2">
+                <div className="text-[11px] font-semibold text-sky-900">Итоговая стоимость (авторасчёт)</div>
+
+                {calcLoading ? (
+                  <div className="mt-1 text-[11px] text-zinc-700">Считаем маршрут…</div>
+                ) : calcError ? (
+                  <div className="mt-1 text-[11px] text-rose-700">{calcError}</div>
+                ) : finalPrice ? (
+                  <>
+                    <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(finalPrice)}</div>
+                    {roundTrip ? <div className="mt-0.5 text-[11px] text-zinc-600">Туда-обратно</div> : null}
+                  </>
+                ) : (
+                  <div className="mt-1 text-[11px] text-zinc-700">
+                    Введите “Откуда” и “Куда” — посчитаем автоматически.
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="grid h-10 w-10 flex-none place-items-center rounded-2xl bg-sky-50 ring-1 ring-sky-100">
+            <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Ваше имя *" hint="Как к вам обращаться" labelFor={ids.name}>
+          <input
+            id={ids.name}
+            className={ControlBase()}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Иван"
+            autoComplete="name"
+          />
+        </Field>
+
+        <Field label="Телефон *" labelFor={ids.phone}>
+          <input
+            id={ids.phone}
+            className={ControlBase()}
+            value={phone}
+            onChange={(e) => setPhone(normalizePhoneLive(e.target.value))}
+            placeholder="+7 999 123-45-67"
+            inputMode="tel"
+            autoComplete="tel"
+          />
+        </Field>
+
+        {/* ОТКУДА */}
+        <Field
+          label="Откуда *"
+          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Город / адрес (можно вводить руками)"}
+          className="sm:col-span-2"
+          labelFor={ids.from}
+        >
+          <div ref={fromBoxRef} className="relative">
+            <input
+              id={ids.from}
+              className={ControlBase()}
+              value={fromText}
+              onChange={(e) => {
+                setFromText(e.target.value);
+                setFromOpen(true);
+              }}
+              onFocus={() => setFromOpen(true)}
+              placeholder={routeType === "airport" ? "Например: Шереметьево (SVO) или Москва" : "Например: Москва"}
+              autoComplete="off"
+            />
+            {fromOpen && fromSuggestions.length > 0 ? (
+              <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
+                {fromSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
+                    onClick={() => {
+                      setFromText(s);
                       setFromOpen(false);
                     }}
-                  />
-                )}
-              </div>
-
-              <div className="relative">
-                <button
-                  type="button"
-                  aria-label="Поменять местами"
-                  className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm"
-                  onClick={() => {
-                    const a = fromText;
-                    const b = toText;
-                    setFromText(b);
-                    setToText(a);
-                  }}
-                >
-                  ⇄
-                </button>
-
-                <div ref={toBoxRef} className="relative">
-                  <label htmlFor={ids.to} className="mb-1 block text-sm font-semibold text-zinc-900">
-                    Куда
-                  </label>
-                  <TextInput
-                    id={ids.to}
-                    value={toText}
-                    onChange={(e) => {
-                      setToText(e.target.value);
-                      setToOpen(true);
-                    }}
-                    onFocus={() => setToOpen(true)}
-                    placeholder={routeType === "intercity" ? "Город" : "Город, адрес, аэропорт"}
-                  />
-                  {toOpen && toSuggestions.length > 0 && (
-                    <SuggestList
-                      items={toSuggestions}
-                      onPick={(v) => {
-                        setToText(v);
-                        setToOpen(false);
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="h-12 w-full rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-500 px-4 text-base font-semibold text-white shadow-sm hover:opacity-95"
-                onClick={() => {
-                  setFromOpen(false);
-                  setToOpen(false);
-                }}
-              >
-                Рассчитать маршрут ➜
-              </button>
-            </div>
-
-            {/* Результат: межгород */}
-            {routeType === "intercity" && (
-              <div className="mt-4 rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="text-lg font-extrabold text-zinc-900">
-                      {(shortPlace(fromText) || "Откуда") + " → " + (shortPlace(toText) || "Куда")}
-                    </div>
-                    <div className="mt-1 text-sm text-zinc-600">
-                      {calcLoading
-                        ? "Считаем…"
-                        : calcError
-                          ? calcError
-                          : km
-                            ? `~ ${km} км · ~ ${minutes ? formatDurationRu(minutes) : ""}`
-                            : "Введите «Откуда» и «Куда» — рассчитаем автоматически"}
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-2xl font-extrabold text-zinc-900">
-                      {calcLoading ? "…" : finalPrice ? formatRub(finalPrice) : "—"}
-                    </div>
-                    <div className="text-sm font-semibold text-zinc-700">
-                      {carClass === "standard" && "Стандарт"}
-                      {carClass === "comfort" && "Комфорт"}
-                      {carClass === "business" && "Бизнес"}
-                      {carClass === "minivan" && "Минивэн"}
-                    </div>
-                  </div>
-                </div>
-
-                {intercityPrices && (
-                  <div className="mt-4 grid gap-2 sm:grid-cols-4">
-                    {(
-                      [
-                        ["standard", "Стандарт"],
-                        ["comfort", "Комфорт"],
-                        ["business", "Бизнес"],
-                        ["minivan", "Минивэн"],
-                      ] as const
-                    ).map(([k, label]) => (
-                      <button
-                        key={k}
-                        type="button"
-                        onClick={() => setCarClass(k)}
-                        className={cn(
-                          "rounded-2xl border px-3 py-3 text-left shadow-sm",
-                          carClass === k
-                            ? "border-sky-200 bg-sky-50"
-                            : "border-zinc-200 bg-white hover:bg-zinc-50"
-                        )}
-                      >
-                        <div className="text-sm font-semibold text-zinc-900">{label}</div>
-                        <div className={cn("mt-1 text-xl font-extrabold", carClass === k ? "text-sky-700" : "text-zinc-900")}>
-                          {formatRub(intercityPrices[k])}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Дата/время */}
-            <div className="mt-5 grid gap-3">
-              <div className="text-base font-extrabold text-zinc-900">Дата и время</div>
-              <TextInput
-                id={ids.datetime}
-                type="datetime-local"
-                value={datetimeLocal}
-                onChange={(e) => setDatetimeLocal(e.target.value)}
-              />
-              <div className="flex flex-wrap gap-2">
-                <MiniButton type="button" onClick={() => applyQuickTime("plus1")}>Через 1 час</MiniButton>
-                <MiniButton type="button" onClick={() => applyQuickTime("today18")}>Сегодня 18:00</MiniButton>
-                <MiniButton type="button" onClick={() => applyQuickTime("tomorrow10")}>Завтра 10:00</MiniButton>
-              </div>
-            </div>
-
-            {/* Имя/телефон */}
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div>
-                <label htmlFor={ids.name} className="mb-1 block text-sm font-semibold text-zinc-900">
-                  Ваше имя <span className="text-red-500">*</span>
-                </label>
-                <TextInput id={ids.name} value={name} onChange={(e) => setName(e.target.value)} placeholder="Как к вам обращаться" />
-              </div>
-              <div>
-                <label htmlFor={ids.phone} className="mb-1 block text-sm font-semibold text-zinc-900">
-                  Телефон <span className="text-red-500">*</span>
-                </label>
-                <TextInput
-                  id={ids.phone}
-                  inputMode="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(normalizePhoneLive(e.target.value))}
-                  placeholder="+7 (___) ___-__-__"
-                />
-              </div>
-            </div>
-
-            {/* Комментарий */}
-            <div className="mt-4">
-              <label htmlFor={ids.comment} className="mb-1 block text-sm font-semibold text-zinc-900">
-                Комментарий
-              </label>
-              <textarea
-                id={ids.comment}
-                className={ControlBase("min-h-[90px] resize-none")}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Детское кресло, багаж, рейс…"
-              />
-            </div>
-
-            {/* Туда-обратно */}
-            {routeType === "intercity" && (
-              <label className="mt-4 flex items-center justify-end gap-2 text-sm font-semibold text-zinc-900">
-                <input
-                  id={ids.roundTrip}
-                  type="checkbox"
-                  className="h-4 w-4"
-                  checked={roundTrip}
-                  onChange={(e) => setRoundTrip(e.target.checked)}
-                />
-                Туда-обратно
-              </label>
-            )}
-
-            {/* Ошибка */}
-            {error && (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className={cn(
-                "mt-5 h-14 w-full rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-500 px-4 text-base font-semibold text-white shadow-sm",
-                loading ? "opacity-60" : "hover:opacity-95"
-              )}
-            >
-              {loading ? "Отправляем…" : "Оформить заказ"}
-            </button>
-
-            <div className="mt-3 text-center text-xs text-zinc-500">
-              Нажимая “Оформить заказ”, вы соглашаетесь на обработку персональных данных.
-            </div>
-          </form>
-
-          {/* Сайдбар (desktop) */}
-          <aside className="hidden lg:block">
-            <div className="rounded-3xl border border-zinc-200 bg-white/70 p-5 shadow-sm backdrop-blur">
-              <div className="text-lg font-extrabold text-zinc-900">Популярные маршруты</div>
-              <div className="mt-4 grid gap-2">
-                {[
-                  ["Москва", "Нижний Новгород"],
-                  ["Москва", "Казань"],
-                  ["Москва", "Тверь"],
-                  ["Москва", "Владимир"],
-                  ["СПБ", "Пулково"],
-                  ["СПБ", "Москва"],
-                ].map(([a, b]) => (
-                  <button
-                    key={`${a}-${b}`}
-                    type="button"
-                    className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
-                    onClick={() => {
-                      setRouteType("intercity");
-                      setFromText(a);
-                      setToText(b);
-                    }}
                   >
-                    <span>{a} → {b}</span>
-                    <span className="text-zinc-400">›</span>
+                    {s}
                   </button>
                 ))}
               </div>
+            ) : null}
+          </div>
+        </Field>
 
-              <div className="mt-6 grid gap-4 border-t border-zinc-200 pt-6 text-sm">
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">✓</span>
-                  <div className="font-semibold text-zinc-900">Фиксированная цена</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">👤</span>
-                  <div className="font-semibold text-zinc-900">Водители с опытом</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">⚡</span>
-                  <div className="font-semibold text-zinc-900">Быстрая подача</div>
-                </div>
+        {/* КУДА */}
+        <Field
+          label="Куда *"
+          hint={routeType === "airport" ? "Можно выбрать аэропорт" : "Город / адрес (можно вводить руками)"}
+          className="sm:col-span-2"
+          labelFor={ids.to}
+        >
+          <div ref={toBoxRef} className="relative">
+            <input
+              id={ids.to}
+              className={ControlBase()}
+              value={toText}
+              onChange={(e) => {
+                setToText(e.target.value);
+                setToOpen(true);
+              }}
+              onFocus={() => setToOpen(true)}
+              placeholder={
+                routeType === "airport"
+                  ? "Например: Домодедово (DME) или Санкт-Петербург"
+                  : "Например: Санкт-Петербург"
+              }
+              autoComplete="off"
+            />
+            {toOpen && toSuggestions.length > 0 ? (
+              <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
+                {toSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
+                    onClick={() => {
+                      setToText(s);
+                      setToOpen(false);
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
+            ) : null}
+          </div>
+        </Field>
+
+        {/* Дата/время */}
+        <Field label="Дата и время" hint="Можно выбрать быстро" className="sm:col-span-2" labelFor={ids.datetime}>
+          <div className="grid gap-2">
+            <input
+              id={ids.datetime}
+              className={ControlBase()}
+              type="datetime-local"
+              value={datetimeLocal}
+              onChange={(e) => setDatetimeLocal(e.target.value)}
+            />
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => applyQuickTime("plus1")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Через 1 час
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTime("plus2")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Через 2 часа
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTime("today18")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Сегодня 18:00
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickTime("tomorrow10")}
+                className="h-9 rounded-xl border border-zinc-200 bg-white/85 px-3 text-xs font-semibold text-zinc-700 hover:bg-white"
+              >
+                Завтра 10:00
+              </button>
             </div>
-          </aside>
-        </div>
+          </div>
+        </Field>
+
+        <Field label="Класс авто" labelFor={ids.carClass}>
+          <select
+            id={ids.carClass}
+            className={ControlBase()}
+            value={carClass}
+            onChange={(e) => setCarClass(e.target.value as CarClass)}
+          >
+            <option value="standard">Стандарт</option>
+            <option value="comfort">Комфорт</option>
+            <option value="business">Бизнес</option>
+            <option value="minivan">Минивэн</option>
+          </select>
+        </Field>
+
+        <Field label="Опции">
+          <label htmlFor={ids.roundTrip} className={cn(ControlBase("flex items-center gap-2"), "text-zinc-800")}>
+            <input
+              id={ids.roundTrip}
+              type="checkbox"
+              checked={roundTrip}
+              onChange={(e) => setRoundTrip(e.target.checked)}
+              className="h-4 w-4 accent-sky-600"
+            />
+            Туда-обратно
+          </label>
+        </Field>
+
+        <Field label="Комментарий" hint="Багаж, кресло, рейс" className="sm:col-span-2" labelFor={ids.comment}>
+          <textarea
+            id={ids.comment}
+            className={cn(
+              "min-h-[96px] w-full rounded-xl border border-zinc-200 bg-white/90 px-3 py-2 text-sm outline-none",
+              "shadow-[0_1px_0_rgba(16,24,40,0.04)]",
+              "focus:border-sky-300 focus:ring-2 focus:ring-sky-100"
+            )}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Например: детское кресло, 2 чемодана, рейс SU123"
+          />
+        </Field>
       </div>
-    </section>
+
+      {error ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
+      ) : null}
+
+      <button
+        disabled={loading || !canSubmit}
+        className={cn(
+          "inline-flex h-11 w-full items-center justify-center rounded-xl px-4 text-sm font-extrabold text-white shadow-sm transition",
+          "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95",
+          "disabled:cursor-not-allowed disabled:opacity-60"
+        )}
+      >
+        {loading ? "Отправляем…" : "Отправить заявку"}
+      </button>
+
+      <div className="text-[11px] leading-5 text-zinc-500">
+        Нажимая «Отправить заявку», вы соглашаетесь с{" "}
+        <a href="/privacy" className="text-zinc-600 underline decoration-zinc-300 hover:text-zinc-900">
+          политикой конфиденциальности
+        </a>{" "}
+        и{" "}
+        <a href="/personal-data" className="text-zinc-600 underline decoration-zinc-300 hover:text-zinc-900">
+          обработкой персональных данных
+        </a>
+        .
+      </div>
+    </form>
   );
 }

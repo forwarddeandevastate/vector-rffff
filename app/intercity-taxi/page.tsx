@@ -106,7 +106,7 @@ function RoutesBlock() {
           {POPULAR_ROUTES.map((r) => (
             <a
               key={`${r.from}__${r.to}`}
-              href={`/${r.from}/${r.to}`}
+              href={`/route/${r.from}/${r.to}`}
               className={cn(
                 "rounded-2xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-semibold",
                 "text-zinc-800 shadow-sm backdrop-blur hover:bg-white hover:border-sky-200/80"

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import LeadForm, { type CarClass, type RouteType } from "../lead-form";
+import LeadForm from "../lead-form";
 
 function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -88,9 +87,6 @@ export default function CityPageClient() {
   const PHONE_TEL = "+78314233929";
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  const [carClass, setCarClass] = useState<CarClass>("standard");
-  const [routeType, setRouteType] = useState<RouteType>("city");
-
   return (
     <div className="min-h-screen text-zinc-900">
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
@@ -157,12 +153,7 @@ export default function CityPageClient() {
               </div>
 
               <div className="p-5">
-                <LeadForm
-                  carClass={carClass}
-                  onCarClassChange={setCarClass}
-                  routeType={routeType}
-                  onRouteTypeChange={setRouteType}
-                />
+                <LeadForm />
               </div>
             </div>
           </div>
