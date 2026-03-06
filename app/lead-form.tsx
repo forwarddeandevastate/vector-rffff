@@ -246,6 +246,13 @@ type LeadFormProps = {
   onCarClassChange?: (v: CarClass) => void;
   routeType?: RouteType;
   onRouteTypeChange?: (v: RouteType) => void;
+
+  /**
+   * Опционально: предзаполнение полей (для посадочных страниц).
+   * Можно передать город/адрес для «Откуда» и/или «Куда».
+   */
+  initialFrom?: string;
+  initialTo?: string;
 };
 
 export default function LeadForm(props: LeadFormProps) {
@@ -280,8 +287,8 @@ export default function LeadForm(props: LeadFormProps) {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [fromText, setFromText] = useState("");
-  const [toText, setToText] = useState("");
+  const [fromText, setFromText] = useState(props.initialFrom ?? "");
+  const [toText, setToText] = useState(props.initialTo ?? "");
   const [datetimeLocal, setDatetimeLocal] = useState<string>("");
 
   const [roundTrip, setRoundTrip] = useState(false);
