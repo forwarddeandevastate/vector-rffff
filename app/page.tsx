@@ -322,8 +322,8 @@ export default function HomePage() {
       </header>
 
       <section className="relative">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-12 lg:items-start md:py-14">
-          <div className="order-2 lg:order-1 lg:col-span-6">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-12 md:py-14">
+          <div className="md:col-span-7">
             <div className="flex flex-wrap gap-2">
               <Badge>Проверенные водители</Badge>
               <Badge>Фиксация заявки</Badge>
@@ -448,46 +448,58 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div id="order" ref={orderRef} className="order-1 lg:order-2 lg:col-span-6 scroll-mt-24">
+          <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
-              <div className="border-b border-zinc-200 p-4 sm:p-5">
-                <div className="grid grid-cols-2 gap-2">
-                  <a
-                    href={`tel:${PHONE_TEL}`}
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
-                    )}
-                    title="Позвонить"
-                  >
-                    <IconCall className="h-4 w-4 text-sky-700" />
-                    Позвонить
-                  </a>
-                  <a
-                    href={TELEGRAM}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm hover:bg-white"
-                    )}
-                    title="Написать в Telegram"
-                  >
-                    <IconTelegram className="h-4 w-4 text-sky-700" />
-                    Telegram
-                  </a>
+              <div className="border-b border-zinc-200 px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
+                    <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
+                  </div>
+                  <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
+                    ~ 1 мин
+                  </div>
                 </div>
-
-                <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
               </div>
 
-              <div className="p-4 sm:p-5">
+              <div className="p-3">
                 <LeadForm
                   carClass={selectedClass}
                   onCarClassChange={(v) => pickClass(v, false)}
                   routeType={selectedRouteType}
                   onRouteTypeChange={setSelectedRouteType}
                 />
+              </div>
+
+              <div className="border-t border-zinc-200 bg-white/70 p-4">
+                <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
+                <div className="mt-3 grid gap-2">
+                  <a
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
+                    href={`tel:${PHONE_TEL}`}
+                  >
+                    <IconPhone className="h-4 w-4 text-sky-700" />
+                    {PHONE_DISPLAY}
+                  </a>
+
+                  <a
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
+                    href={TELEGRAM}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <IconTelegram className="h-4 w-4 text-sky-700" />
+                    Telegram
+                  </a>
+                </div>
+
+                <div className="mt-4 text-xs text-zinc-500">Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.</div>
               </div>
             </div>
           </div>

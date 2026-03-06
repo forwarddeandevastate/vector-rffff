@@ -220,7 +220,7 @@ export default function SeoCityClient(props: {
                     title="Написать в Telegram"
                   >
                     <IconTelegram className="h-4 w-4 text-sky-700" />
-                    Telegram
+                    TG
                   </a>
                 </div>
 
