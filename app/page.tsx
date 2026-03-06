@@ -150,9 +150,11 @@ function ClassCardButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "text-left rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur transition w-full",
+        "w-full rounded-2xl border bg-white/80 p-5 text-left shadow-sm backdrop-blur transition",
         "focus:outline-none focus:ring-2 focus:ring-sky-200/80",
-        active ? "border-sky-300 ring-2 ring-sky-200/70 shadow-md bg-white" : "border-zinc-200 hover:border-sky-200/70 hover:bg-white/90"
+        active
+          ? "border-sky-300 bg-white ring-2 ring-sky-200/70 shadow-md"
+          : "border-zinc-200 hover:border-sky-200/70 hover:bg-white/90"
       )}
       aria-pressed={active ? "true" : "false"}
     >
@@ -162,7 +164,12 @@ function ClassCardButton({
           <div className="mt-1 text-xs text-zinc-600">{priceHint}</div>
         </div>
 
-        <div className={cn("grid h-9 w-9 place-items-center rounded-xl ring-1", active ? "bg-sky-100 ring-sky-200" : "bg-sky-50 ring-sky-100")}>
+        <div
+          className={cn(
+            "grid h-9 w-9 place-items-center rounded-xl ring-1",
+            active ? "bg-sky-100 ring-sky-200" : "bg-sky-50 ring-sky-100"
+          )}
+        >
           <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600" />
         </div>
       </div>
@@ -187,7 +194,6 @@ export default function HomePage() {
   const TELEGRAM = "https://t.me/vector_rf52";
 
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");
-  // ✅ Межгород по умолчанию
   const [selectedRouteType, setSelectedRouteType] = useState<RouteType>("intercity");
 
   const orderRef = useRef<HTMLDivElement | null>(null);
@@ -301,7 +307,7 @@ export default function HomePage() {
               aria-label="Позвонить"
             >
               <IconCall className="h-4 w-4 text-sky-700" />
-              <span className="hidden md:inline text-zinc-800">{PHONE_DISPLAY}</span>
+              <span className="hidden text-zinc-800 md:inline">{PHONE_DISPLAY}</span>
             </a>
 
             <a
@@ -322,8 +328,66 @@ export default function HomePage() {
       </header>
 
       <section className="relative">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-12 md:py-14">
-          <div className="md:col-span-7">
+        <div className="mx-auto grid max-w-6xl gap-6 px-4 pb-10 pt-4 md:grid-cols-12 md:gap-8 md:py-14">
+          <div id="order" ref={orderRef} className="order-1 scroll-mt-24 md:order-2 md:col-span-5">
+            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
+              <div className="border-b border-zinc-200 px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
+                    <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
+                  </div>
+                  <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
+                    ~ 1 мин
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3">
+                <LeadForm
+                  carClass={selectedClass}
+                  onCarClassChange={(v) => pickClass(v, false)}
+                  routeType={selectedRouteType}
+                  onRouteTypeChange={setSelectedRouteType}
+                />
+              </div>
+
+              <div className="border-t border-zinc-200 bg-white/70 p-4">
+                <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
+                <div className="mt-3 grid gap-2">
+                  <a
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
+                    href={`tel:${PHONE_TEL}`}
+                  >
+                    <IconPhone className="h-4 w-4 text-sky-700" />
+                    {PHONE_DISPLAY}
+                  </a>
+
+                  <a
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
+                    )}
+                    href={TELEGRAM}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <IconTelegram className="h-4 w-4 text-sky-700" />
+                    Telegram
+                  </a>
+                </div>
+
+                <div className="mt-4 text-xs text-zinc-500">
+                  Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="order-2 md:order-1 md:col-span-7">
             <div className="flex flex-wrap gap-2">
               <Badge>Проверенные водители</Badge>
               <Badge>Фиксация заявки</Badge>
@@ -342,7 +406,6 @@ export default function HomePage() {
               Оставьте заявку за 1 минуту. Мы уточним детали, подтвердим стоимость и организуем подачу автомобиля.
             </p>
 
-            {/* ✅ Порядок: Межгород → Аэропорт → Город */}
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <button
                 type="button"
@@ -447,62 +510,6 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-
-          <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
-            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
-              <div className="border-b border-zinc-200 px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
-                    <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
-                  </div>
-                  <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
-                    ~ 1 мин
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-3">
-                <LeadForm
-                  carClass={selectedClass}
-                  onCarClassChange={(v) => pickClass(v, false)}
-                  routeType={selectedRouteType}
-                  onRouteTypeChange={setSelectedRouteType}
-                />
-              </div>
-
-              <div className="border-t border-zinc-200 bg-white/70 p-4">
-                <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
-                <div className="mt-3 grid gap-2">
-                  <a
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={`tel:${PHONE_TEL}`}
-                  >
-                    <IconPhone className="h-4 w-4 text-sky-700" />
-                    {PHONE_DISPLAY}
-                  </a>
-
-                  <a
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={TELEGRAM}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <IconTelegram className="h-4 w-4 text-sky-700" />
-                    Telegram
-                  </a>
-                </div>
-
-                <div className="mt-4 text-xs text-zinc-500">Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.</div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -512,7 +519,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Стандарт"
             priceHint="Оптимально для города"
-            features={["Базовый комфорт, аккуратная подача", "Подходит для 1–3 пассажиров", "Хороший выбор для коротких поездок"]}
+            features={[
+              "Базовый комфорт, аккуратная подача",
+              "Подходит для 1–3 пассажиров",
+              "Хороший выбор для коротких поездок",
+            ]}
             note="Точную стоимость подтверждаем до подачи."
             active={selectedClass === "standard"}
             onClick={() => pickClass("standard", true)}
@@ -520,7 +531,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Комфорт"
             priceHint="Чаще выбирают для аэропортов"
-            features={["Больше пространства и мягче ход", "Удобно с багажом", "Подходит для деловых и семейных поездок"]}
+            features={[
+              "Больше пространства и мягче ход",
+              "Удобно с багажом",
+              "Подходит для деловых и семейных поездок",
+            ]}
             note="Можно указать пожелания: детское кресло, остановки."
             active={selectedClass === "comfort"}
             onClick={() => pickClass("comfort", true)}
@@ -528,7 +543,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Бизнес"
             priceHint="Максимально спокойно и представительно"
-            features={["Повышенный комфорт и тишина в салоне", "Подходит для встреч и важных поездок", "Акцент на сервис и пунктуальность"]}
+            features={[
+              "Повышенный комфорт и тишина в салоне",
+              "Подходит для встреч и важных поездок",
+              "Акцент на сервис и пунктуальность",
+            ]}
             note="Уточняем детали заранее и фиксируем заявку."
             active={selectedClass === "business"}
             onClick={() => pickClass("business", true)}
@@ -536,7 +555,11 @@ export default function HomePage() {
           <ClassCardButton
             title="Минивэн"
             priceHint="Когда нужно больше мест"
-            features={["Для семьи/компании и большого багажа", "Подходит для 4–7 пассажиров", "Удобно на межгород и в аэропорт"]}
+            features={[
+              "Для семьи/компании и большого багажа",
+              "Подходит для 4–7 пассажиров",
+              "Удобно на межгород и в аэропорт",
+            ]}
             note="Сообщите количество пассажиров и багаж — подберём вариант."
             active={selectedClass === "minivan"}
             onClick={() => pickClass("minivan", true)}
@@ -548,12 +571,21 @@ export default function HomePage() {
         <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="md:flex md:items-start md:justify-between md:gap-8">
             <div className="md:max-w-2xl">
-              <SectionTitle title="Отзывы клиентов" desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше." />
+              <SectionTitle
+                title="Отзывы клиентов"
+                desc="Посмотрите реальные отзывы и оставьте свой — это помогает нам становиться лучше."
+              />
 
               <div className="grid gap-3 md:grid-cols-3">
-                <Card title="Реальные отзывы" text="Публикуем отзывы после модерации, чтобы сохранять качество и честность." />
+                <Card
+                  title="Реальные отзывы"
+                  text="Публикуем отзывы после модерации, чтобы сохранять качество и честность."
+                />
                 <Card title="Оставить отзыв" text="Имя, город и текст — достаточно. Отправка занимает меньше минуты." />
-                <Card title="Открытая обратная связь" text="Ваше мнение важно: учитываем пожелания и улучшаем сервис." />
+                <Card
+                  title="Открытая обратная связь"
+                  text="Ваше мнение важно: учитываем пожелания и улучшаем сервис."
+                />
               </div>
             </div>
 
@@ -563,7 +595,7 @@ export default function HomePage() {
                 <a
                   href="/reviews"
                   className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm w-full",
+                    "inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
                     "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
                   )}
                 >
@@ -574,7 +606,7 @@ export default function HomePage() {
                   type="button"
                   onClick={scrollToOrder}
                   className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
+                    "inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
                     "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
                   )}
                 >
@@ -584,7 +616,7 @@ export default function HomePage() {
                 <a
                   href="/faq"
                   className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold w-full",
+                    "inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
                     "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
                   )}
                 >
