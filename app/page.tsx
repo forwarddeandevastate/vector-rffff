@@ -322,8 +322,8 @@ export default function HomePage() {
       </header>
 
       <section className="relative">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-12 lg:items-start md:py-14">
-          <div className="lg:col-span-6">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-12 md:py-14">
+          <div className="md:col-span-7">
             <div className="flex flex-wrap gap-2">
               <Badge>Проверенные водители</Badge>
               <Badge>Фиксация заявки</Badge>
@@ -448,7 +448,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div id="order" ref={orderRef} className="lg:col-span-6 scroll-mt-24">
+          <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
             <LeadForm
               carClass={selectedClass}
               onCarClassChange={(v) => pickClass(v, false)}
