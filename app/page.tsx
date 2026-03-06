@@ -450,7 +450,7 @@ export default function HomePage() {
 
           <div id="order" ref={orderRef} className="md:col-span-5 scroll-mt-24">
             <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
-              <div className="border-b border-zinc-200 p-5">
+              <div className="border-b border-zinc-200 px-4 py-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
@@ -462,7 +462,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="p-5">
+              <div className="px-3 py-4">
                 <LeadForm
                   carClass={selectedClass}
                   onCarClassChange={(v) => pickClass(v, false)}
@@ -471,7 +471,7 @@ export default function HomePage() {
                 />
               </div>
 
-              <div className="border-t border-zinc-200 bg-white/70 p-5">
+              <div className="border-t border-zinc-200 bg-white/70 px-4 py-4">
                 <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
                 <div className="mt-3 grid gap-2">
                   <a

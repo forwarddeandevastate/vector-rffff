@@ -222,7 +222,7 @@ function TypeTab({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-10 items-center justify-center gap-1 rounded-2xl px-2 text-[12px] font-extrabold transition sm:text-[13px]",
+        "flex h-9 items-center justify-center gap-1 rounded-2xl px-2 text-[10px] font-extrabold transition sm:h-10 sm:text-[12px]",
         active ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_10px_22px_rgba(37,99,235,0.22)]" : "text-zinc-800"
       )}
     >
@@ -248,11 +248,11 @@ function CarClassCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-[14px] border px-2.5 py-2 text-left transition",
+        "rounded-[14px] border px-2 py-1.5 text-left transition",
         active ? "border-blue-200 bg-blue-50 shadow-[0_6px_14px_rgba(37,99,235,0.08)]" : "border-zinc-200 bg-white"
       )}
     >
-      <div className={cn("text-[11px] font-bold", active ? "text-blue-700" : "text-zinc-900")}>{title}</div>
+      <div className={cn("text-[10px] font-bold", active ? "text-blue-700" : "text-zinc-900")}>{title}</div>
       <div className={cn("mt-1 text-[11px] font-extrabold", active ? "text-blue-700" : "text-zinc-800")}>{price}</div>
     </button>
   );
@@ -436,22 +436,22 @@ export default function LeadForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-2.5">
-      <div className="rounded-[24px] bg-white p-4 shadow-[0_12px_36px_rgba(15,23,42,0.06)] ring-1 ring-black/5">
-        <div className="grid gap-3">
-          <div className="grid grid-cols-3 gap-2 rounded-[20px] bg-zinc-50 p-2">
+    <form onSubmit={onSubmit} className="grid gap-2">
+      <div className="rounded-[22px] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.05)] ring-1 ring-black/5">
+        <div className="grid gap-2">
+          <div className="grid grid-cols-3 gap-2 rounded-[18px] bg-zinc-50 p-1.5">
             <TypeTab active={routeType === "airport"} label="Аэропорт" icon={<IconPlane />} onClick={() => onRouteTypeChange("airport")} />
             <TypeTab active={routeType === "intercity"} label="Межгород" icon={<IconCar />} onClick={() => onRouteTypeChange("intercity")} />
             <TypeTab active={routeType === "city"} label="Город" icon={<IconCity />} onClick={() => onRouteTypeChange("city")} />
           </div>
 
-          <div className="grid gap-2.5">
+          <div className="grid gap-2">
             <div>
-              <label className="mb-1 block text-[13px] font-extrabold text-zinc-900">Откуда</label>
+              <label className="mb-1 block text-[12px] font-extrabold text-zinc-900">Откуда</label>
               <div className="relative">
                 <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-zinc-500"><IconPin /></div>
                 <GooglePlacesInput
-                  className="h-10 w-full rounded-[16px] border border-zinc-200 bg-white pl-10 pr-3 text-[14px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                  className="h-9 w-full rounded-[14px] border border-zinc-200 bg-white pl-9 pr-3 text-[13px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                   value={fromText}
                   onValueChange={(v) => {
                     setFromText(v);
@@ -473,18 +473,18 @@ export default function LeadForm({
                 <button
                   type="button"
                   onClick={swapPlaces}
-                  className="grid h-9 w-9 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-[0_6px_16px_rgba(15,23,42,0.08)] transition hover:text-blue-600"
+                  className="grid h-8 w-8 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-[0_4px_12px_rgba(15,23,42,0.08)] transition hover:text-blue-600"
                 >
                   <IconSwap />
                 </button>
               </div>
 
               <div>
-                <label className="mb-1 block text-[13px] font-extrabold text-zinc-900">Куда</label>
+                <label className="mb-1 block text-[12px] font-extrabold text-zinc-900">Куда</label>
                 <div className="relative">
                   <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-zinc-500"><IconPin /></div>
                   <GooglePlacesInput
-                    className="h-10 w-full rounded-[16px] border border-zinc-200 bg-white pl-10 pr-3 text-[14px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                    className="h-9 w-full rounded-[14px] border border-zinc-200 bg-white pl-9 pr-3 text-[13px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                     value={toText}
                     onValueChange={(v) => {
                       setToText(v);
@@ -506,18 +506,18 @@ export default function LeadForm({
               type="button"
               onClick={calculateRoute}
               disabled={calcLoading}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-blue-600 to-sky-500 px-4 text-[14px] font-extrabold text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)] transition hover:opacity-95 disabled:opacity-70"
+              className="flex h-9 w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-blue-600 to-sky-500 px-4 text-[13px] font-extrabold text-white shadow-[0_8px_18px_rgba(37,99,235,0.20)] transition hover:opacity-95 disabled:opacity-70"
             >
               <span>{calcLoading ? "Считаем..." : "Рассчитать маршрут"}</span>
               <IconPlane />
             </button>
           </div>
 
-          <div className="rounded-[20px] border border-zinc-200 bg-white p-3 shadow-[0_6px_18px_rgba(15,23,42,0.04)]">
+          <div className="rounded-[18px] border border-zinc-200 bg-white p-2.5 shadow-[0_4px_14px_rgba(15,23,42,0.04)]">
             <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
               <div>
-                <div className="text-[15px] font-black leading-tight text-zinc-900">{tripTitle}</div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-zinc-600">
+                <div className="text-[14px] font-black leading-tight text-zinc-900 sm:text-[15px]">{tripTitle}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-zinc-600">
                   {calcLoading ? <span>Считаем маршрут…</span> : null}
                   {!calcLoading && calcError ? <span className="text-rose-600">{calcError}</span> : null}
                   {!calcLoading && !calcError && km ? <span className="font-semibold text-orange-500">~ {Math.round(km)} км</span> : null}
@@ -529,11 +529,11 @@ export default function LeadForm({
               </div>
 
               <div className="text-left sm:text-right">
-                <div className="text-[12px] font-semibold uppercase tracking-wide text-zinc-400">цена</div>
-                <div className="text-[16px] font-black text-zinc-950">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">цена</div>
+                <div className="text-[15px] font-black text-zinc-950 sm:text-[16px]">
                   {finalPrice != null ? formatRub(finalPrice) : routeType === "city" ? formatFrom(CITY_BASE_PRICE[carClass]) : "—"}
                 </div>
-                <div className="mt-1 flex items-center gap-1.5 text-[12px] text-zinc-600 sm:justify-end">
+                <div className="mt-1 flex items-center gap-1 text-[11px] text-zinc-600 sm:justify-end">
                   <IconCar />
                   <span>
                     {carClass === "standard" ? "Стандарт" : carClass === "comfort" ? "Комфорт" : carClass === "business" ? "Бизнес" : "Минивен"}
@@ -542,7 +542,7 @@ export default function LeadForm({
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-4 gap-2">
+            <div className="mt-2.5 grid grid-cols-4 gap-1.5">
               <CarClassCard active={carClass === "standard"} title="Стандарт" price={pricesByClass.standard != null ? formatRub(pricesByClass.standard) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.standard) : "—"} onClick={() => onCarClassChange("standard")} />
               <CarClassCard active={carClass === "comfort"} title="Комфорт" price={pricesByClass.comfort != null ? formatRub(pricesByClass.comfort) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.comfort) : "—"} onClick={() => onCarClassChange("comfort")} />
               <CarClassCard active={carClass === "business"} title="Бизнес" price={pricesByClass.business != null ? formatRub(pricesByClass.business) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.business) : "—"} onClick={() => onCarClassChange("business")} />
@@ -551,7 +551,7 @@ export default function LeadForm({
           </div>
 
           <div>
-            <label className="mb-1 block text-[13px] font-extrabold text-zinc-900">Дата и время</label>
+            <label className="mb-1 block text-[12px] font-extrabold text-zinc-900">Дата и время</label>
             <div className="relative">
               <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"><IconCalendar /></div>
               <input
@@ -561,16 +561,16 @@ export default function LeadForm({
                 onChange={(e) => setDatetimeLocal(e.target.value)}
               />
             </div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <button type="button" onClick={() => applyQuickTime("plus1")} className="h-9 rounded-full border border-zinc-200 bg-white px-3 text-[12px] font-bold text-zinc-700">Через 1 час</button>
-              <button type="button" onClick={() => applyQuickTime("today18")} className="h-9 rounded-full border border-zinc-200 bg-white px-3 text-[12px] font-bold text-zinc-700">Сегодня 18:00</button>
-              <button type="button" onClick={() => applyQuickTime("tomorrow10")} className="h-9 rounded-full border border-zinc-200 bg-white px-3 text-[12px] font-bold text-zinc-700">Завтра 10:00</button>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <button type="button" onClick={() => applyQuickTime("plus1")} className="h-8 rounded-full border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-700">Через 1 час</button>
+              <button type="button" onClick={() => applyQuickTime("today18")} className="h-8 rounded-full border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-700">Сегодня 18:00</button>
+              <button type="button" onClick={() => applyQuickTime("tomorrow10")} className="h-8 rounded-full border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-700">Завтра 10:00</button>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="mb-1 block text-[13px] font-extrabold text-zinc-900">Ваше имя</label>
+              <label className="mb-1 block text-[12px] font-extrabold text-zinc-900">Ваше имя</label>
               <input
                 className="h-10 w-full rounded-[16px] border border-zinc-200 bg-white px-3 text-[14px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                 value={name}
@@ -580,7 +580,7 @@ export default function LeadForm({
               />
             </div>
             <div>
-              <label className="mb-1 block text-[13px] font-extrabold text-zinc-900">Телефон</label>
+              <label className="mb-1 block text-[12px] font-extrabold text-zinc-900">Телефон</label>
               <input
                 className="h-10 w-full rounded-[16px] border border-zinc-200 bg-white px-3 text-[14px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                 value={phone}
@@ -593,24 +593,24 @@ export default function LeadForm({
           </div>
 
           <div>
-            <label className="mb-1 block text-[13px] font-extrabold text-zinc-900">Комментарий</label>
+            <label className="mb-1 block text-[12px] font-extrabold text-zinc-900">Комментарий</label>
             <textarea
-              className="min-h-[68px] w-full rounded-[16px] border border-zinc-200 bg-white px-3 py-2.5 text-[14px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+              className="min-h-[56px] w-full rounded-[16px] border border-zinc-200 bg-white px-3 py-2.5 text-[14px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Детское кресло, багаж, рейс..."
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-[14px] font-bold text-zinc-800">
-              <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} className="h-5 w-5 rounded-md border-zinc-300 accent-blue-600" />
+          <div className="flex items-center gap-2">
+            <label className="inline-flex items-center gap-2 text-[13px] font-bold text-zinc-800">
+              <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} className="h-4.5 w-4.5 rounded-md border-zinc-300 accent-blue-600" />
               Туда-обратно
             </label>
 
             <button
               disabled={loading || !canSubmit}
-              className="ml-auto flex h-10 items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-[14px] font-extrabold text-white shadow-[0_10px_24px_rgba(37,99,235,0.20)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+              className="ml-auto flex h-9 items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-blue-600 to-sky-500 px-4 text-[13px] font-extrabold text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <span>{loading ? "Отправляем…" : "Оформить заказ"}</span>
               <IconArrowRight />
@@ -619,7 +619,7 @@ export default function LeadForm({
 
           {error ? <div className="rounded-[16px] border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div> : null}
 
-          <div className="text-[10px] leading-4 text-zinc-500">
+          <div className="text-[9px] leading-4 text-zinc-500">
             Нажимая «Оформить заказ», вы соглашаетесь с <a href="/privacy" className="underline decoration-zinc-300">политикой конфиденциальности</a> и <a href="/personal-data" className="underline decoration-zinc-300">обработкой персональных данных</a>.
           </div>
         </div>
