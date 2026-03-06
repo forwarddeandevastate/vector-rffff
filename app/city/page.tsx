@@ -190,7 +190,7 @@ export default function Page() {
     itemListElement: routesForCatalog.slice(0, 200).map((r, idx) => ({
       "@type": "ListItem",
       position: idx + 1,
-      url: `${SITE_URL}/route/${r.from}/${r.to}`,
+      url: `${SITE_URL}/${r.from}/${r.to}`,
       name: `${cityName(r.from)} — ${cityName(r.to)}`,
     })),
   };
@@ -253,7 +253,7 @@ export default function Page() {
 
             <div className="mt-4 flex flex-wrap gap-2">
               {quick.map((r) => {
-                const href = `/route/${r.from}/${r.to}`;
+                const href = `/${r.from}/${r.to}`;
                 return (
                   <PillLink key={`${r.from}__${r.to}`} href={href}>
                     {cityName(r.from)} — {cityName(r.to)}
@@ -290,7 +290,7 @@ export default function Page() {
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   {links.map((r) => {
-                    const href = `/route/${r.from}/${r.to}`;
+                    const href = `/${r.from}/${r.to}`;
                     return (
                       <PillLink key={`${r.from}__${r.to}`} href={href}>
                         {cityName(r.from)} — {cityName(r.to)}

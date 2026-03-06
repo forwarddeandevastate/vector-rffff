@@ -31,6 +31,9 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
+  // Каноникал по умолчанию (для главной). Для внутренних страниц он переопределяется на уровне page.
+  alternates: { canonical: SITE_URL },
+
   title: {
     default: "Вектор РФ — трансферы и поездки по России",
     template: "%s | Вектор РФ",
@@ -54,6 +57,7 @@ export const metadata: Metadata = {
 
   openGraph: {
     type: "website",
+    url: SITE_URL,
     title: "Вектор РФ — трансферы и поездки по России",
     description:
       "Трансферы по городу, межгород, аэропорты. Комфортные поездки по России. Онлайн-заявка 24/7.",

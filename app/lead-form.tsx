@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import GooglePlacesInput from "@/app/ui/google-places-input";
 
 export type CarClass = "standard" | "comfort" | "business" | "minivan";
 export type RouteType = "city" | "airport" | "intercity";
@@ -29,7 +29,7 @@ function Field({
 }: {
   label: string;
   hint?: string;
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
   labelFor?: string;
 }) {
@@ -89,11 +89,134 @@ function formatRub(n: number) {
 
 // тариф ₽/км по классу
 const PER_KM: Record<CarClass, number> = {
-  standard: 30,
-  comfort: 37,
+  standard: 31,
+  comfort: 46,
   minivan: 55,
-  business: 65,
+  business: 80,
 };
+
+// Город: посадка и небольшой коэффициент к тарифам (чтобы город был чуть дороже межгорода)
+const CITY_LANDING_FEE = 500;
+const CITY_PER_KM_ADD = 5;
+
+// Аэропорт: для Москвы/СПб фиксированная наценка, для остальных — как раньше (700/800)
+const AIRPORT_SURCHARGE_MSK_SPB = 1000;
+
+
+// Минимальная стоимость для межгорода/аэропорта
+const MIN_INTERCITY_PRICE = 1500;
+
+// Наценки для аэропорта (к межгородному тарифу)
+const AIRPORT_PICKUP_SURCHARGE = 800; // забрать из аэропорта
+const AIRPORT_DROPOFF_SURCHARGE = 700; // отвезти в аэропорт
+
+function looksLikeAirport(s: string) {
+  const v = normalize(s);
+  if (!v) return false;
+  if (v.includes("аэроп")) return true;
+  // Частые названия аэропортов (в адресах Google часто нет слова "аэропорт")
+  const airportTokens = [
+    "шереметьево",
+    "домодедово",
+    "внуково",
+    "пулково",
+    "храброво",
+    "кольцово",
+    "толмач",
+    "курумоч",
+    "пашков",
+    "адлер",
+    "сочи",
+    "казань",
+    "аэропорт",
+  ];
+  if (airportTokens.some((t) => v.includes(t))) return true;
+  // IATA в скобках
+  if (/\b(svo|dme|vko|led|aer|svx|ovb|kuf|kzn|krr|kgd)\b/i.test(s)) return true;
+  // популярные подсказки
+  return AIRPORT_HINTS.some((x) => {
+    const nx = normalize(x);
+    // точное совпадение или вхождение части названия ("Пулково" внутри адреса)
+    if (nx === v) return true;
+    const baseName = nx.replace(/\s*\([^)]*\)\s*/g, "").trim();
+    return baseName && v.includes(baseName);
+  });
+}
+
+function isMskOrSpb(s: string) {
+  const v = normalize(s);
+  if (!v) return false;
+  // Москва
+  if (v.includes("москва") || v.includes("moscow")) return true;
+  // Санкт‑Петербург / СПб
+  if (v.includes("санкт") || v.includes("петербург") || v.includes("спб") || v.includes("saint petersburg") || v.includes("st petersburg")) return true;
+  return false;
+}
+
+function sameCity(a: string, b: string) {
+  const x = normalize(a);
+  const y = normalize(b);
+  if (!x || !y) return false;
+
+  // Пытаемся определить город по вхождению названия в адрес
+  const CITIES = [
+    "москва",
+    "санкт-петербург",
+    "санкт петербург",
+    "спб",
+    "казань",
+    "нижний новгород",
+    "екатеринбург",
+    "самара",
+    "ростов-на-дону",
+    "краснодар",
+    "воронеж",
+    "уфа",
+    "челябинск",
+    "пермь",
+    "волгоград",
+    "саратов",
+    "тюмень",
+    "ярославль",
+    "тула",
+    "рязань",
+    "тверь",
+    "иваново",
+    "калуга",
+    "кострома",
+    "белгород",
+    "курск",
+    "брянск",
+    "липецк",
+    "орел",
+    "чебоксары",
+    "йошкар-ола",
+    "смоленск",
+  ];
+
+  const pick = (s: string) => CITIES.find((c) => s.includes(c)) || null;
+
+  const ca = pick(x);
+  const cb = pick(y);
+
+  if (ca && cb) {
+    // "санкт-петербург" и "санкт петербург" считаем одним городом
+    const norm = (c: string) => c.replace("-", " ").trim();
+    return norm(ca) === norm(cb) || (norm(ca).includes("санкт") && norm(cb).includes("санкт"));
+  }
+
+  // fallback: если явно одинаковые строки (или очень похожи)
+  return x === y;
+}
+
+function formatDurationRU(totalSeconds: number) {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.max(0, Math.round((s - h * 3600) / 60));
+  if (h <= 0) return `${m} мин`;
+  if (m <= 0) return `${h} ч`;
+  return `${h} ч ${m} мин`;
+}
 
 // ====== БАЗОВЫЕ ЦЕНЫ ДЛЯ ФОРМЫ (НЕ ФИНАЛ) ======
 const CITY_BASE_PRICE: Record<CarClass, number> = {
@@ -237,38 +360,22 @@ function normalizePhoneLive(input: string) {
   return v;
 }
 
-type LeadFormProps = {
-  /**
-   * Опционально: можно управлять формой снаружи.
-   * Если не передано — форма будет полностью автономной.
-   */
-  carClass?: CarClass;
-  onCarClassChange?: (v: CarClass) => void;
-  routeType?: RouteType;
-  onRouteTypeChange?: (v: RouteType) => void;
-
-  /**
-   * Опционально: предзаполнение полей (для посадочных страниц).
-   * Можно передать город/адрес для «Откуда» и/или «Куда».
-   */
+export default function LeadForm({
+  carClass,
+  onCarClassChange,
+  routeType,
+  onRouteTypeChange,
+  initialFrom,
+  initialTo,
+}: {
+  carClass: CarClass;
+  onCarClassChange: (v: CarClass) => void;
+  routeType: RouteType;
+  onRouteTypeChange: (v: RouteType) => void;
   initialFrom?: string;
   initialTo?: string;
-};
-
-export default function LeadForm(props: LeadFormProps) {
+}) {
   const router = useRouter();
-
-  const isCarControlled = props.carClass !== undefined && typeof props.onCarClassChange === "function";
-  const isRouteControlled = props.routeType !== undefined && typeof props.onRouteTypeChange === "function";
-
-  const [carClassState, setCarClassState] = useState<CarClass>(props.carClass ?? "standard");
-  const [routeTypeState, setRouteTypeState] = useState<RouteType>(props.routeType ?? "intercity");
-
-  const carClass = isCarControlled ? (props.carClass as CarClass) : carClassState;
-  const setCarClass = isCarControlled ? (props.onCarClassChange as (v: CarClass) => void) : setCarClassState;
-
-  const routeType = isRouteControlled ? (props.routeType as RouteType) : routeTypeState;
-  const setRouteType = isRouteControlled ? (props.onRouteTypeChange as (v: RouteType) => void) : setRouteTypeState;
 
   // ✅ ids для связки label -> input/select (исправляет Lighthouse)
   const ids = useMemo(
@@ -287,8 +394,10 @@ export default function LeadForm(props: LeadFormProps) {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [fromText, setFromText] = useState(props.initialFrom ?? "");
-  const [toText, setToText] = useState(props.initialTo ?? "");
+  const [fromText, setFromText] = useState(initialFrom ?? "");
+  const [toText, setToText] = useState(initialTo ?? "");
+  const [fromPlaceId, setFromPlaceId] = useState<string | null>(null);
+  const [toPlaceId, setToPlaceId] = useState<string | null>(null);
   const [datetimeLocal, setDatetimeLocal] = useState<string>("");
 
   const [roundTrip, setRoundTrip] = useState(false);
@@ -299,6 +408,7 @@ export default function LeadForm(props: LeadFormProps) {
 
   // авто-расчёт
   const [km, setKm] = useState<number | null>(null);
+  const [travelSeconds, setTravelSeconds] = useState<number | null>(null);
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
 
@@ -320,15 +430,29 @@ export default function LeadForm(props: LeadFormProps) {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  // ✅ если выбрана "Город", но ввели разные точки "Откуда/Куда" — переключаем на "Межгород"
+  // ✅ авто-переключение типа поездки по введённым точкам
   useEffect(() => {
-    if (routeType !== "city") return;
     const a = normalize(fromText);
     const b = normalize(toText);
     if (!a || !b) return;
-    if (a === b) return;
 
-    setRouteType("intercity");
+    const fromIsAirport = looksLikeAirport(fromText);
+    const toIsAirport = looksLikeAirport(toText);
+
+    // 1) если где-то аэропорт — это всегда "Аэропорт"
+    if (fromIsAirport || toIsAirport) {
+      if (routeType !== "airport") onRouteTypeChange("airport");
+      return;
+    }
+
+    // 2) если точки в одном городе — "Город"
+    if (sameCity(fromText, toText)) {
+      if (routeType !== "city") onRouteTypeChange("city");
+      return;
+    }
+
+    // 3) иначе — межгород
+    if (routeType !== "intercity") onRouteTypeChange("intercity");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromText, toText]);
 
@@ -352,7 +476,7 @@ export default function LeadForm(props: LeadFormProps) {
     setDatetimeLocal(toDatetimeLocal(d));
   }
 
-  // Авто-расчёт км только для межгорода, с debounce
+  // Авто-расчёт км/времени для межгорода и аэропорта, с debounce
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -360,18 +484,25 @@ export default function LeadForm(props: LeadFormProps) {
     async function run() {
       setCalcError(null);
       setKm(null);
+      setTravelSeconds(null);
 
-      if (routeType !== "intercity") return;
+      if (routeType !== "intercity" && routeType !== "airport" && routeType !== "city") return;
       if (!fromText.trim() || !toText.trim()) return;
 
       setCalcLoading(true);
 
       try {
-        const url = `/api/distance?from=${encodeURIComponent(fromText.trim())}&to=${encodeURIComponent(
-          toText.trim()
-        )}`;
-
-        const res = await fetch(url, { signal: controller.signal });
+        const res = await fetch("/api/distance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            from: fromText.trim(),
+            to: toText.trim(),
+            fromPlaceId,
+            toPlaceId,
+          }),
+        });
         const data = await res.json().catch(() => ({}));
 
         if (cancelled) return;
@@ -383,11 +514,13 @@ export default function LeadForm(props: LeadFormProps) {
         }
 
         setKm(Number(data.km) || null);
+        setTravelSeconds(Number(data.seconds) || null);
       } catch (e: any) {
         if (cancelled) return;
         if (e?.name === "AbortError") return;
         setCalcError("Не удалось рассчитать расстояние");
         setKm(null);
+        setTravelSeconds(null);
       } finally {
         if (!cancelled) setCalcLoading(false);
       }
@@ -400,15 +533,53 @@ export default function LeadForm(props: LeadFormProps) {
       controller.abort();
       clearTimeout(t);
     };
-  }, [routeType, fromText, toText]);
+  }, [routeType, fromText, toText, fromPlaceId, toPlaceId]);
 
   const finalPrice = useMemo(() => {
-    if (routeType !== "intercity") return null;
+    // Цена считаем для межгорода / аэропорта / города (если удалось получить км)
+    if (routeType !== "intercity" && routeType !== "airport" && routeType !== "city") return null;
     if (!km) return null;
-    let price = Math.round(km * PER_KM[carClass]);
-    if (roundTrip) price *= 2;
-    return price;
-  }, [routeType, km, carClass, roundTrip]);
+
+    // Город: посадка 500 + тариф как межгород, но +5 ₽/км
+    if (routeType === "city") {
+      const perKm = PER_KM[carClass] + CITY_PER_KM_ADD;
+      const base = Math.round(km * perKm);
+      const total = CITY_LANDING_FEE + base;
+      return total;
+    }
+
+    // Межгород / Аэропорт: базовая часть по тарифу
+    let base = Math.round(km * PER_KM[carClass]);
+    if (roundTrip) base *= 2;
+
+    // Аэропорт: Москва/СПб фикс 1000, остальные — 700/800 по направлению
+    let surcharge = 0;
+    if (routeType === "airport") {
+      const fromIsAirport = looksLikeAirport(fromText);
+      const toIsAirport = looksLikeAirport(toText);
+
+      const inMskSpb = isMskOrSpb(fromText) || isMskOrSpb(toText);
+
+      if (inMskSpb) {
+        surcharge = AIRPORT_SURCHARGE_MSK_SPB;
+      } else {
+        if (fromIsAirport && !toIsAirport) surcharge = AIRPORT_PICKUP_SURCHARGE; // из аэропорта
+        else if (!fromIsAirport && toIsAirport) surcharge = AIRPORT_DROPOFF_SURCHARGE; // в аэропорт
+        else surcharge = AIRPORT_DROPOFF_SURCHARGE;
+      }
+
+      if (roundTrip) surcharge *= 2;
+    }
+
+    const total = base + surcharge;
+    return Math.max(MIN_INTERCITY_PRICE, total);
+  }, [routeType, km, carClass, roundTrip, fromText, toText]);
+
+  const travelTimeText = useMemo(() => {
+    if (travelSeconds == null || !Number.isFinite(travelSeconds)) return null;
+    if (travelSeconds <= 0) return null;
+    return formatDurationRU(travelSeconds);
+  }, [travelSeconds]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -423,8 +594,10 @@ export default function LeadForm(props: LeadFormProps) {
     try {
       // ✅ СКРЫЛИ ВНУТРЕННИЕ ДЕТАЛИ: только итог (без ₽/км и без км)
       const calcNote =
-        routeType === "intercity" && finalPrice
-          ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}: ${formatRub(finalPrice)}`
+        (routeType === "intercity" || routeType === "airport") && finalPrice
+          ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}${travelTimeText ? ` (~${travelTimeText})` : ""}: ${formatRub(
+              finalPrice
+            )}`
           : "";
 
       const payload = {
@@ -463,28 +636,25 @@ export default function LeadForm(props: LeadFormProps) {
           <div className="min-w-0">
             <div className="text-xs font-semibold text-zinc-700">Тип поездки</div>
 
-            {/* Базовая цена для города / аэропорта */}
-            {routeType !== "intercity" && (
-              <div className="mt-2 text-sm font-extrabold text-zinc-900">
-                {routeType === "city" && formatFrom(CITY_BASE_PRICE[carClass])}
-                {routeType === "airport" && formatFrom(airportPriceFromCity(CITY_BASE_PRICE[carClass]))}
-              </div>
+            {/* Базовая цена только для города */}
+            {routeType === "city" && (
+              <div className="mt-2 text-sm font-extrabold text-zinc-900">{formatFrom(CITY_BASE_PRICE[carClass])}</div>
             )}
 
             {/* ✅ ПОРЯДОК: Межгород → Аэропорт → Город */}
             <div className="mt-2 flex flex-wrap gap-2">
-              <SegButton active={routeType === "intercity"} onClick={() => setRouteType("intercity")}>
+              <SegButton active={routeType === "intercity"} onClick={() => onRouteTypeChange("intercity")}>
                 Межгород
               </SegButton>
-              <SegButton active={routeType === "airport"} onClick={() => setRouteType("airport")}>
+              <SegButton active={routeType === "airport"} onClick={() => onRouteTypeChange("airport")}>
                 Аэропорт
               </SegButton>
-              <SegButton active={routeType === "city"} onClick={() => setRouteType("city")}>
+              <SegButton active={routeType === "city"} onClick={() => onRouteTypeChange("city")}>
                 Город
               </SegButton>
             </div>
 
-            {routeType === "intercity" ? (
+            {routeType === "intercity" || routeType === "airport" || routeType === "city" ? (
               <div className="mt-3 rounded-xl border border-sky-200/70 bg-sky-50/60 px-3 py-2">
                 <div className="text-[11px] font-semibold text-sky-900">Итоговая стоимость (авторасчёт)</div>
 
@@ -495,6 +665,9 @@ export default function LeadForm(props: LeadFormProps) {
                 ) : finalPrice ? (
                   <>
                     <div className="mt-0.5 text-sm font-extrabold text-zinc-900">{formatRub(finalPrice)}</div>
+                    {travelTimeText ? (
+                      <div className="mt-0.5 text-[11px] text-zinc-600">Время в пути: ~{travelTimeText}</div>
+                    ) : null}
                     {roundTrip ? <div className="mt-0.5 text-[11px] text-zinc-600">Туда-обратно</div> : null}
                   </>
                 ) : (
@@ -544,17 +717,21 @@ export default function LeadForm(props: LeadFormProps) {
           labelFor={ids.from}
         >
           <div ref={fromBoxRef} className="relative">
-            <input
+            <GooglePlacesInput
               id={ids.from}
               className={ControlBase()}
               value={fromText}
-              onChange={(e) => {
-                setFromText(e.target.value);
-                setFromOpen(true);
+              onValueChange={(v) => {
+                setFromText(v);
+                setFromPlaceId(null);
+                setFromOpen(false);
               }}
-              onFocus={() => setFromOpen(true)}
+              onPlacePick={({ placeId, address }) => {
+                setFromText(address);
+                setFromPlaceId(placeId);
+                setFromOpen(false);
+              }}
               placeholder={routeType === "airport" ? "Например: Шереметьево (SVO) или Москва" : "Например: Москва"}
-              autoComplete="off"
             />
             {fromOpen && fromSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -565,6 +742,7 @@ export default function LeadForm(props: LeadFormProps) {
                     className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
                     onClick={() => {
                       setFromText(s);
+                      setFromPlaceId(null);
                       setFromOpen(false);
                     }}
                   >
@@ -584,21 +762,25 @@ export default function LeadForm(props: LeadFormProps) {
           labelFor={ids.to}
         >
           <div ref={toBoxRef} className="relative">
-            <input
+            <GooglePlacesInput
               id={ids.to}
               className={ControlBase()}
               value={toText}
-              onChange={(e) => {
-                setToText(e.target.value);
-                setToOpen(true);
+              onValueChange={(v) => {
+                setToText(v);
+                setToPlaceId(null);
+                setToOpen(false);
               }}
-              onFocus={() => setToOpen(true)}
+              onPlacePick={({ placeId, address }) => {
+                setToText(address);
+                setToPlaceId(placeId);
+                setToOpen(false);
+              }}
               placeholder={
                 routeType === "airport"
                   ? "Например: Домодедово (DME) или Санкт-Петербург"
                   : "Например: Санкт-Петербург"
               }
-              autoComplete="off"
             />
             {toOpen && toSuggestions.length > 0 ? (
               <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
@@ -609,6 +791,7 @@ export default function LeadForm(props: LeadFormProps) {
                     className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-sky-50"
                     onClick={() => {
                       setToText(s);
+                      setToPlaceId(null);
                       setToOpen(false);
                     }}
                   >
@@ -669,7 +852,7 @@ export default function LeadForm(props: LeadFormProps) {
             id={ids.carClass}
             className={ControlBase()}
             value={carClass}
-            onChange={(e) => setCarClass(e.target.value as CarClass)}
+            onChange={(e) => onCarClassChange(e.target.value as CarClass)}
           >
             <option value="standard">Стандарт</option>
             <option value="comfort">Комфорт</option>
