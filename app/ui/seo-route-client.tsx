@@ -88,7 +88,7 @@ export default function SeoRouteClient(props: {
   cityBackHref: string;
   cityBackLabel: string;
   content: string;
-  keywordText: string[];
+  keywordText?: string[];
   faq: FAQItem[];
   moreFromCity: Array<{ toSlug: string; toName: string }>;
 }) {
@@ -105,6 +105,15 @@ export default function SeoRouteClient(props: {
     `такси межгород ${props.fromName} — ${props.toName}`,
     `трансфер ${props.fromName} — ${props.toName}`,
   ];
+
+  const keywordText =
+    props.keywordText && props.keywordText.length > 0
+      ? props.keywordText
+      : [
+          `Такси ${props.fromName} — ${props.toName} можно заказать заранее на удобное время. Это удобный формат поездки без пересадок, ожиданий и лишних остановок в пути.`,
+          `Маршрут ${props.fromName} — ${props.toName} подходит для поездок по делам, семейных выездов, трансфера с багажом и поездок в аэропорт с промежуточной точкой. Стоимость поездки согласуем заранее.`,
+          `Если вам нужно междугороднее такси ${props.fromName} — ${props.toName}, оставьте заявку на сайте. Подберём класс авто, уточним детали маршрута и подтвердим подачу заранее.`,
+        ];
 
   return (
     <div className="min-h-screen text-zinc-900">
@@ -228,7 +237,7 @@ export default function SeoRouteClient(props: {
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Текст по ключевым запросам</div>
             <div className="mt-4 space-y-4">
-              {props.keywordText.map((text, index) => (
+              {keywordText.map((text, index) => (
                 <p key={index} className="text-sm leading-6 text-zinc-700">
                   {text}
                 </p>
