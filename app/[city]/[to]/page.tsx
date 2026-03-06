@@ -123,7 +123,7 @@ export default function Page({ params }: { params: { city: string; to: string } 
     provider: {
       "@type": "LocalBusiness",
       name: "Вектор РФ",
-      telephone: "+78314233929",
+      telephone: "+78002225650",
       areaServed: "Россия",
       url: `https://vector-rf.ru/${fromCity.slug}/${toSlug}`,
     },

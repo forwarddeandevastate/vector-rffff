@@ -11,7 +11,7 @@ export const revalidate = 0;
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 const CANONICAL = `${SITE_URL}/reviews`;
-const PHONE_E164 = "+78314233929";
+const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
   title: "Отзывы клиентов — Вектор РФ",
@@ -167,7 +167,7 @@ type ReviewForClient = {
 };
 
 export default async function ReviewsPage() {
-  const PHONE_DISPLAY = "+7 (831) 423-39-29";
+  const PHONE_DISPLAY = "8 (800) 222-56-50";
   const PHONE_TEL = PHONE_E164;
   const TELEGRAM = "https://t.me/vector_rf52";
 

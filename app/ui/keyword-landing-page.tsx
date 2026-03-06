@@ -169,7 +169,7 @@ export default function KeywordLandingPage({ config }: { config: KeywordLandingC
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      telephone: "+7 831 423-39-29",
+      telephone: "8 800 222-56-50",
     },
   };
 

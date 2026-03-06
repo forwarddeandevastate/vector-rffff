@@ -5,7 +5,7 @@ import ServicePage from "../ui/service-page";
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 const CANONICAL = `${SITE_URL}/corporate-taxi`;
-const PHONE_E164 = "+78314233929";
+const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
   title: "Корпоративное такси и перевозки для компаний | Вектор РФ",

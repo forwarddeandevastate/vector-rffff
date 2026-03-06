@@ -5,8 +5,8 @@ import Script from "next/script";
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
-const PHONE_DISPLAY = "+7 (831) 423-39-29";
-const PHONE_TEL = "+78314233929";
+const PHONE_DISPLAY = "8 (800) 222-56-50";
+const PHONE_TEL = "+78002225650";
 const TELEGRAM = "https://t.me/vector_rf52";
 
 function cn(...xs: Array<string | false | null | undefined>) {

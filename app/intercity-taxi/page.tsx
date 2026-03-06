@@ -6,7 +6,7 @@ import ServicePage from "../ui/service-page";
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 const CANONICAL = `${SITE_URL}/intercity-taxi`;
-const PHONE_E164 = "+78314233929";
+const PHONE_E164 = "+78002225650";
 
 type LinkItem = { from: string; to: string; label: string };
 

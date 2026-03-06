@@ -197,8 +197,8 @@ function ClassCardButton({
 }
 
 export default function HomePage() {
-  const PHONE_DISPLAY = "+7 (831) 423-39-29";
-  const PHONE_TEL = "+78314233929";
+  const PHONE_DISPLAY = "8 (800) 222-56-50";
+  const PHONE_TEL = "+78002225650";
   const TELEGRAM = "https://t.me/vector_rf52";
 
   const [selectedClass, setSelectedClass] = useState<CarClass>("standard");

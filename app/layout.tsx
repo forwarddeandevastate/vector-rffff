@@ -21,7 +21,7 @@ const YM_ID = 106629239;
 const YANDEX_VERIFICATION = "";
 
 // Контакты
-const PHONE_E164 = "+78314233929";
+const PHONE_E164 = "+78002225650";
 
 export const viewport: Viewport = {
   width: "device-width",
