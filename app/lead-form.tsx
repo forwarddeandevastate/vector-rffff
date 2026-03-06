@@ -296,7 +296,7 @@ function TypeTab({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-11 items-center justify-center gap-1 rounded-2xl px-2 text-[12px] font-extrabold transition sm:h-12 sm:gap-2 sm:px-4 sm:text-[15px]",
+        "flex h-11 items-center justify-center gap-1 rounded-2xl px-2 text-[12px] font-extrabold transition sm:h-12 sm:gap-2 sm:px-4 sm:text-[15px] lg:h-14 lg:text-[18px]",
         active
           ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]"
           : "bg-transparent text-zinc-800"
@@ -587,10 +587,10 @@ export default function LeadForm({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[860px]">
+    <div className="mx-auto w-full max-w-[980px]">
       <form
         onSubmit={onSubmit}
-        className="rounded-[24px] bg-white p-4 shadow-[0_16px_45px_rgba(15,23,42,0.06)] ring-1 ring-black/5 sm:rounded-[28px] sm:p-5 lg:p-6"
+        className="rounded-[28px] bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] ring-1 ring-black/5 sm:p-6 lg:p-7"
       >
         <div className="grid gap-4 sm:gap-5">
           <div className="grid grid-cols-3 gap-2 rounded-[20px] bg-zinc-50 p-2">
@@ -752,7 +752,7 @@ export default function LeadForm({
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
               <CarClassCard
                 active={carClass === "standard"}
                 title="Стандарт"
