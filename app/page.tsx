@@ -462,7 +462,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="px-3 py-4">
+              <div className="p-3">
                 <LeadForm
                   carClass={selectedClass}
                   onCarClassChange={(v) => pickClass(v, false)}
@@ -471,7 +471,7 @@ export default function HomePage() {
                 />
               </div>
 
-              <div className="border-t border-zinc-200 bg-white/70 px-4 py-4">
+              <div className="border-t border-zinc-200 bg-white/70 p-4">
                 <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
                 <div className="mt-3 grid gap-2">
                   <a
