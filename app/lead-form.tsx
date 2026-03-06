@@ -158,25 +158,25 @@ function pickSuggestions(value: string, routeType: RouteType) {
 }
 
 function IconPlane() {
-  return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 19l20-7-20-7 5 7-5 7Z" /><path d="M7 12h15" /></svg>;
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 19l20-7-20-7 5 7-5 7Z" /><path d="M7 12h15" /></svg>;
 }
 function IconCar() {
-  return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 16l1.4-5A2 2 0 0 1 8.3 9h7.4a2 2 0 0 1 1.9 2L19 16" /><path d="M3 16h18" /><circle cx="7" cy="17" r="1.7" /><circle cx="17" cy="17" r="1.7" /></svg>;
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 16l1.4-5A2 2 0 0 1 8.3 9h7.4a2 2 0 0 1 1.9 2L19 16" /><path d="M3 16h18" /><circle cx="7" cy="17" r="1.7" /><circle cx="17" cy="17" r="1.7" /></svg>;
 }
 function IconCity() {
-  return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18" /><path d="M5 21V9l6-3v15" /><path d="M11 21V4l8 3v14" /></svg>;
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18" /><path d="M5 21V9l6-3v15" /><path d="M11 21V4l8 3v14" /></svg>;
 }
 function IconPin() {
-  return <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>;
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>;
 }
 function IconSwap() {
-  return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7h11" /><path d="m14 4 4 3-4 3" /><path d="M17 17H6" /><path d="m10 14-4 3 4 3" /></svg>;
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 7h11" /><path d="m14 4 4 3-4 3" /><path d="M17 17H6" /><path d="m10 14-4 3 4 3" /></svg>;
 }
 function IconCalendar() {
-  return <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>;
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>;
 }
 function IconArrowRight() {
-  return <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m13 5 7 7-7 7" /></svg>;
+  return <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m13 5 7 7-7 7" /></svg>;
 }
 
 function TypeTab({ active, label, icon, onClick }: { active: boolean; label: string; icon: ReactNode; onClick: () => void }) {
@@ -185,8 +185,8 @@ function TypeTab({ active, label, icon, onClick }: { active: boolean; label: str
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-11 items-center justify-center gap-1 rounded-[16px] px-2 text-[12px] font-extrabold transition sm:gap-1.5 sm:px-3 sm:text-[13px]",
-        active ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_10px_22px_rgba(37,99,235,0.22)]" : "bg-transparent text-zinc-800"
+        "flex h-14 items-center justify-center gap-2 rounded-2xl px-4 text-[15px] font-extrabold transition",
+        active ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]" : "text-zinc-800 hover:bg-white/70"
       )}
     >
       {icon}
@@ -201,12 +201,12 @@ function PriceCard({ active, title, price, onClick }: { active: boolean; title: 
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-2xl border px-3.5 py-3 text-left transition",
-        active ? "border-blue-200 bg-blue-50 shadow-[0_8px_18px_rgba(37,99,235,0.08)]" : "border-zinc-200 bg-white hover:bg-zinc-50"
+        "rounded-2xl border px-4 py-4 text-left transition",
+        active ? "border-blue-200 bg-blue-50 shadow-[0_10px_22px_rgba(37,99,235,0.10)]" : "border-zinc-200 bg-white hover:bg-zinc-50"
       )}
     >
-      <div className={cn("text-[13px] font-bold", active ? "text-blue-700" : "text-zinc-900")}>{title}</div>
-      <div className={cn("mt-1 text-[12px] font-extrabold", active ? "text-blue-700" : "text-zinc-900")}>{price}</div>
+      <div className={cn("text-[15px] font-bold", active ? "text-blue-700" : "text-zinc-900")}>{title}</div>
+      <div className={cn("mt-1 text-[13px] font-extrabold", active ? "text-blue-700" : "text-zinc-900")}>{price}</div>
     </button>
   );
 }
@@ -339,14 +339,13 @@ export default function LeadForm({
   }, [travelSeconds]);
   const canSubmit = Boolean(name.trim() && phone.trim() && fromText.trim() && toText.trim());
 
-  const tripTitle =
-    fromText.trim() && toText.trim()
-      ? `${fromText.trim()} → ${toText.trim()}`
-      : routeType === "airport"
+  const tripTitle = fromText.trim() && toText.trim()
+    ? `${fromText.trim()} → ${toText.trim()}`
+    : routeType === "airport"
       ? "Аэропорт → Город"
       : routeType === "city"
-      ? "Поездка по городу"
-      : "Межгородний маршрут";
+        ? "Поездка по городу"
+        : "Межгородний маршрут";
 
   function swapPlaces() {
     setFromText(toText);
@@ -379,11 +378,9 @@ export default function LeadForm({
     }
     setLoading(true);
     try {
-      const calcNote =
-        finalPrice != null
-          ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}${travelTimeText ? ` (~${travelTimeText})` : ""}: ${formatRub(finalPrice)}`
-          : "";
-
+      const calcNote = finalPrice != null
+        ? `\n\n[Авторасчёт]${roundTrip ? " туда-обратно" : ""}${travelTimeText ? ` (~${travelTimeText})` : ""}: ${formatRub(finalPrice)}`
+        : "";
       const payload = {
         name: name.trim(),
         phone: phone.trim(),
@@ -394,13 +391,11 @@ export default function LeadForm({
         roundTrip,
         comment: (comment.trim() || "") + calcNote || null,
       };
-
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка отправки");
       router.push("/thanks");
@@ -412,149 +407,124 @@ export default function LeadForm({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[430px] md:ml-auto">
-      <form
-        onSubmit={onSubmit}
-        className="rounded-[28px] border border-zinc-200/80 bg-white/88 p-4 shadow-[0_16px_42px_rgba(15,23,42,0.07)] backdrop-blur sm:p-5"
-      >
+    <form
+      onSubmit={onSubmit}
+      className="rounded-[30px] border border-zinc-200/80 bg-white/92 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6"
+    >
+      <div className="grid gap-6">
+        <div className="grid grid-cols-3 gap-2 rounded-[24px] bg-zinc-50 p-2">
+          <TypeTab active={routeType === "airport"} label="Аэропорт" icon={<IconPlane />} onClick={() => onRouteTypeChange("airport")} />
+          <TypeTab active={routeType === "intercity"} label="Межгород" icon={<IconCar />} onClick={() => onRouteTypeChange("intercity")} />
+          <TypeTab active={routeType === "city"} label="Город" icon={<IconCity />} onClick={() => onRouteTypeChange("city")} />
+        </div>
+
         <div className="grid gap-4">
-          <div className="grid grid-cols-3 gap-1.5 rounded-[20px] bg-zinc-50 p-1.5">
-            <TypeTab active={routeType === "airport"} label="Аэропорт" icon={<IconPlane />} onClick={() => onRouteTypeChange("airport")} />
-            <TypeTab active={routeType === "intercity"} label="Межгород" icon={<IconCar />} onClick={() => onRouteTypeChange("intercity")} />
-            <TypeTab active={routeType === "city"} label="Город" icon={<IconCity />} onClick={() => onRouteTypeChange("city")} />
+          <div ref={fromBoxRef} className="relative">
+            <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Откуда</label>
+            <div className="relative">
+              <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-zinc-500"><IconPin /></div>
+              <GooglePlacesInput
+                className="h-14 w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 text-[17px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                value={fromText}
+                onValueChange={(v) => { setFromText(v); setFromPlaceId(null); setFromOpen(true); }}
+                onPlacePick={({ placeId, address }) => { setFromText(address); setFromPlaceId(placeId); setFromOpen(false); }}
+                placeholder="Город, адрес, аэропорт"
+              />
+            </div>
+            {fromOpen && fromSuggestions.length > 0 ? <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl">{fromSuggestions.map((item) => <button key={item} type="button" className="block w-full px-4 py-3 text-left text-sm text-zinc-800 hover:bg-blue-50" onClick={() => { setFromText(item); setFromPlaceId(null); setFromOpen(false); }}>{item}</button>)}</div> : null}
           </div>
 
-          <div className="grid gap-3.5">
-            <div ref={fromBoxRef} className="relative">
-              <label className="mb-1.5 block text-[13px] font-extrabold text-zinc-900">Откуда</label>
+          <div className="relative pt-3">
+            <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2">
+              <button type="button" onClick={swapPlaces} className="grid h-14 w-14 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-[0_8px_18px_rgba(15,23,42,0.08)] transition hover:text-blue-600"><IconSwap /></button>
+            </div>
+            <div ref={toBoxRef} className="relative">
+              <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Куда</label>
               <div className="relative">
-                <div className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-zinc-500"><IconPin /></div>
+                <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-zinc-500"><IconPin /></div>
                 <GooglePlacesInput
-                  className="h-12 w-full rounded-[18px] border border-zinc-200 bg-white pl-10 pr-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
-                  value={fromText}
-                  onValueChange={(v) => { setFromText(v); setFromPlaceId(null); setFromOpen(true); }}
-                  onPlacePick={({ placeId, address }) => { setFromText(address); setFromPlaceId(placeId); setFromOpen(false); }}
+                  className="h-14 w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 text-[17px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                  value={toText}
+                  onValueChange={(v) => { setToText(v); setToPlaceId(null); setToOpen(true); }}
+                  onPlacePick={({ placeId, address }) => { setToText(address); setToPlaceId(placeId); setToOpen(false); }}
                   placeholder="Город, адрес, аэропорт"
                 />
               </div>
-              {fromOpen && fromSuggestions.length > 0 ? (
-                <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-xl">
-                  {fromSuggestions.map((item) => (
-                    <button key={item} type="button" className="block w-full px-4 py-3 text-left text-sm text-zinc-800 hover:bg-blue-50" onClick={() => { setFromText(item); setFromPlaceId(null); setFromOpen(false); }}>
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="relative pt-2">
-              <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2">
-                <button type="button" onClick={swapPlaces} className="grid h-12 w-12 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-[0_8px_18px_rgba(15,23,42,0.08)] transition hover:text-blue-600">
-                  <IconSwap />
-                </button>
-              </div>
-              <div ref={toBoxRef} className="relative">
-                <label className="mb-1.5 block text-[13px] font-extrabold text-zinc-900">Куда</label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-zinc-500"><IconPin /></div>
-                  <GooglePlacesInput
-                    className="h-12 w-full rounded-[18px] border border-zinc-200 bg-white pl-10 pr-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
-                    value={toText}
-                    onValueChange={(v) => { setToText(v); setToPlaceId(null); setToOpen(true); }}
-                    onPlacePick={({ placeId, address }) => { setToText(address); setToPlaceId(placeId); setToOpen(false); }}
-                    placeholder="Город, адрес, аэропорт"
-                  />
-                </div>
-                {toOpen && toSuggestions.length > 0 ? (
-                  <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-xl">
-                    {toSuggestions.map((item) => (
-                      <button key={item} type="button" className="block w-full px-4 py-3 text-left text-sm text-zinc-800 hover:bg-blue-50" onClick={() => { setToText(item); setToPlaceId(null); setToOpen(false); }}>
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <button type="button" className="flex h-12 w-full items-center justify-center gap-2.5 rounded-[18px] bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-[15px] font-extrabold text-white shadow-[0_12px_26px_rgba(37,99,235,0.22)]">
-              <span>Рассчитать маршрут</span>
-              <IconPlane />
-            </button>
-          </div>
-
-          <div className="rounded-[22px] border border-zinc-200 bg-zinc-50/70 p-3.5 shadow-[0_8px_20px_rgba(15,23,42,0.03)]">
-            <div className="grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-              <div>
-                <div className="text-[16px] font-black leading-tight text-zinc-900">{tripTitle}</div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[13px] text-zinc-600">
-                  {calcLoading ? <span>Считаем маршрут…</span> : calcError ? <span className="text-rose-600">{calcError}</span> : <>{km ? <span className="font-semibold text-orange-500">~ {Math.round(km)} км</span> : null}{km && travelTimeText ? <span>•</span> : null}{travelTimeText ? <span>~ {travelTimeText}</span> : null}{!km && routeType === "city" ? <span>{formatFrom(CITY_BASE_PRICE[carClass])}</span> : null}</>}
-                </div>
-              </div>
-              <div className="text-left sm:text-right">
-                <div className="text-[13px] font-semibold text-zinc-500">цена</div>
-                <div className="text-[20px] font-black text-zinc-950">{finalPrice != null ? formatRub(finalPrice) : routeType === "city" ? formatFrom(CITY_BASE_PRICE[carClass]) : "—"}</div>
-                <div className="mt-1 flex items-center gap-1.5 text-[13px] text-zinc-600 sm:justify-end"><IconCar /><span>{carClass === "standard" ? "Стандарт" : carClass === "comfort" ? "Комфорт" : carClass === "business" ? "Бизнес" : "Минивен"}</span></div>
-              </div>
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <PriceCard active={carClass === "standard"} title="Стандарт" price={pricesByClass.standard != null ? formatRub(pricesByClass.standard) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.standard) : "—"} onClick={() => onCarClassChange("standard")} />
-              <PriceCard active={carClass === "comfort"} title="Комфорт" price={pricesByClass.comfort != null ? formatRub(pricesByClass.comfort) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.comfort) : "—"} onClick={() => onCarClassChange("comfort")} />
-              <PriceCard active={carClass === "business"} title="Бизнес" price={pricesByClass.business != null ? formatRub(pricesByClass.business) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.business) : "—"} onClick={() => onCarClassChange("business")} />
-              <PriceCard active={carClass === "minivan"} title="Минивен" price={pricesByClass.minivan != null ? formatRub(pricesByClass.minivan) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.minivan) : "—"} onClick={() => onCarClassChange("minivan")} />
+              {toOpen && toSuggestions.length > 0 ? <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl">{toSuggestions.map((item) => <button key={item} type="button" className="block w-full px-4 py-3 text-left text-sm text-zinc-800 hover:bg-blue-50" onClick={() => { setToText(item); setToPlaceId(null); setToOpen(false); }}>{item}</button>)}</div> : null}
             </div>
           </div>
 
-          <div>
-            <label className="mb-1.5 block text-[13px] font-extrabold text-zinc-900">Дата и время</label>
-            <div className="relative">
-              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"><IconCalendar /></div>
-              <input className="h-12 w-full rounded-[18px] border border-zinc-200 bg-white pl-10 pr-4 text-[15px] text-zinc-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50" type="datetime-local" value={datetimeLocal} onChange={(e) => setDatetimeLocal(e.target.value)} />
-            </div>
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              <button type="button" onClick={() => applyQuickTime("plus1")} className="h-9 rounded-full border border-zinc-200 bg-white px-3.5 text-[13px] font-bold text-zinc-700">Через 1 час</button>
-              <button type="button" onClick={() => applyQuickTime("today18")} className="h-9 rounded-full border border-zinc-200 bg-white px-3.5 text-[13px] font-bold text-zinc-700">Сегодня 18:00</button>
-              <button type="button" onClick={() => applyQuickTime("tomorrow10")} className="h-9 rounded-full border border-zinc-200 bg-white px-3.5 text-[13px] font-bold text-zinc-700">Завтра 10:00</button>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1.5 block text-[13px] font-extrabold text-zinc-900">Ваше имя</label>
-              <input className="h-12 w-full rounded-[18px] border border-zinc-200 bg-white px-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50" value={name} onChange={(e) => setName(e.target.value)} placeholder="Как к вам обращаться" autoComplete="name" />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-[13px] font-extrabold text-zinc-900">Телефон</label>
-              <input className="h-12 w-full rounded-[18px] border border-zinc-200 bg-white px-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50" value={phone} onChange={(e) => setPhone(normalizePhoneLive(e.target.value))} placeholder="+7 (___) ___-__-__" inputMode="tel" autoComplete="tel" />
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-[13px] font-extrabold text-zinc-900">Комментарий</label>
-            <textarea className="min-h-[92px] w-full rounded-[18px] border border-zinc-200 bg-white px-4 py-3 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Детское кресло, багаж, рейс..." />
-          </div>
-
-          <div className="flex items-center justify-start sm:justify-end">
-            <label className="inline-flex cursor-pointer items-center gap-3 text-[16px] font-bold text-zinc-800">
-              <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} className="h-5 w-5 rounded-md border-zinc-300 accent-blue-600" />
-              Туда-обратно
-            </label>
-          </div>
-
-          {error ? <div className="rounded-[18px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">{error}</div> : null}
-
-          <button disabled={loading || !canSubmit} className="flex h-12 w-full items-center justify-center gap-2.5 rounded-[18px] bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-[15px] font-extrabold text-white shadow-[0_12px_26px_rgba(37,99,235,0.22)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60">
-            <span>{loading ? "Отправляем…" : "Оформить заказ"}</span>
-            <IconArrowRight />
+          <button type="button" className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-[18px] font-extrabold text-white shadow-[0_14px_28px_rgba(37,99,235,0.22)]">
+            <span>Рассчитать маршрут</span>
+            <IconPlane />
           </button>
+        </div>
 
-          <div className="text-[11px] leading-5 text-zinc-500">
-            Нажимая «Оформить заказ», вы соглашаетесь с <a href="/privacy" className="underline decoration-zinc-300">политикой конфиденциальности</a> и <a href="/personal-data" className="underline decoration-zinc-300">обработкой персональных данных</a>.
+        <div className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <div>
+              <div className="text-[18px] font-black text-zinc-900 sm:text-[20px]">{tripTitle}</div>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-[15px] text-zinc-600">
+                {calcLoading ? <span>Считаем маршрут…</span> : calcError ? <span className="text-rose-600">{calcError}</span> : <>{km ? <span className="font-semibold text-orange-500">~ {Math.round(km)} км</span> : null}{km && travelTimeText ? <span>•</span> : null}{travelTimeText ? <span>~ {travelTimeText}</span> : null}{!km && routeType === "city" ? <span>{formatFrom(CITY_BASE_PRICE[carClass])}</span> : null}</>}
+              </div>
+            </div>
+            <div className="text-left sm:text-right">
+              <div className="text-[16px] font-semibold text-zinc-500">цена</div>
+              <div className="text-[24px] font-black text-zinc-950 sm:text-[26px]">{finalPrice != null ? formatRub(finalPrice) : routeType === "city" ? formatFrom(CITY_BASE_PRICE[carClass]) : "—"}</div>
+              <div className="mt-1 flex items-center gap-2 text-sm text-zinc-600 sm:justify-end"><IconCar /><span>{carClass === "standard" ? "Стандарт" : carClass === "comfort" ? "Комфорт" : carClass === "business" ? "Бизнес" : "Минивен"}</span></div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <PriceCard active={carClass === "standard"} title="Стандарт" price={pricesByClass.standard != null ? formatRub(pricesByClass.standard) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.standard) : "—"} onClick={() => onCarClassChange("standard")} />
+            <PriceCard active={carClass === "comfort"} title="Комфорт" price={pricesByClass.comfort != null ? formatRub(pricesByClass.comfort) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.comfort) : "—"} onClick={() => onCarClassChange("comfort")} />
+            <PriceCard active={carClass === "business"} title="Бизнес" price={pricesByClass.business != null ? formatRub(pricesByClass.business) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.business) : "—"} onClick={() => onCarClassChange("business")} />
+            <PriceCard active={carClass === "minivan"} title="Минивен" price={pricesByClass.minivan != null ? formatRub(pricesByClass.minivan) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.minivan) : "—"} onClick={() => onCarClassChange("minivan")} />
           </div>
         </div>
-      </form>
-    </div>
+
+        <div>
+          <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Дата и время</label>
+          <div className="relative">
+            <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"><IconCalendar /></div>
+            <input className="h-14 w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 text-[16px] text-zinc-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50" type="datetime-local" value={datetimeLocal} onChange={(e) => setDatetimeLocal(e.target.value)} />
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            <button type="button" onClick={() => applyQuickTime("plus1")} className="h-11 rounded-2xl border border-zinc-200 bg-white px-4 text-[14px] font-bold text-zinc-700">Через 1 час</button>
+            <button type="button" onClick={() => applyQuickTime("today18")} className="h-11 rounded-2xl border border-zinc-200 bg-white px-4 text-[14px] font-bold text-zinc-700">Сегодня 18:00</button>
+            <button type="button" onClick={() => applyQuickTime("tomorrow10")} className="h-11 rounded-2xl border border-zinc-200 bg-white px-4 text-[14px] font-bold text-zinc-700">Завтра 10:00</button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Ваше имя</label>
+            <input className="h-14 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-[16px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50" value={name} onChange={(e) => setName(e.target.value)} placeholder="Как к вам обращаться" autoComplete="name" />
+          </div>
+          <div>
+            <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Телефон</label>
+            <input className="h-14 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-[16px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50" value={phone} onChange={(e) => setPhone(normalizePhoneLive(e.target.value))} placeholder="+7 (___) ___-__-__" inputMode="tel" autoComplete="tel" />
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Комментарий</label>
+          <textarea className="min-h-[110px] w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[16px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Детское кресло, багаж, рейс..." />
+        </div>
+
+        <div className="flex items-center justify-start sm:justify-end">
+          <label className="inline-flex cursor-pointer items-center gap-3 text-[18px] font-bold text-zinc-800">
+            <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} className="h-6 w-6 rounded-md border-zinc-300 accent-blue-600" />
+            Туда-обратно
+          </label>
+        </div>
+
+        {error ? <div className="rounded-[18px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">{error}</div> : null}
+
+        <button disabled={loading || !canSubmit} className="flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-[20px] font-extrabold text-white shadow-[0_14px_28px_rgba(37,99,235,0.22)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60">
+          <span>{loading ? "Отправляем…" : "Оформить заказ"}</span><IconArrowRight />
+        </button>
+      </div>
+    </form>
   );
 }
