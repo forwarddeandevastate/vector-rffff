@@ -608,46 +608,53 @@ export default function LeadForm({
   }, [routeType, fromText, toText, fromPlaceId, toPlaceId]);
 
   const pricesByClass = useMemo(() => {
-    const calcFor = (klass: CarClass) => {
-      if (routeType === "city") return CITY_BASE_PRICE[klass];
-      if (!km) return null;
+  const calcFor = (klass: CarClass) => {
+    if (routeType === "city") {
+      return CITY_BASE_PRICE[klass];
+    }
 
-      if (routeType === "city") {
-        const perKm = PER_KM[klass] + CITY_PER_KM_ADD;
-        const base = Math.round(km * perKm);
-        return CITY_LANDING_FEE + base;
-      }
+    if (!km) return null;
 
-      let base = Math.round(km * PER_KM[klass]);
-      if (roundTrip) base *= 2;
+    let base = Math.round(km * PER_KM[klass]);
 
-      let surcharge = 0;
-      if (routeType === "airport") {
-        const fromIsAirport = looksLikeAirport(fromText);
-        const toIsAirport = looksLikeAirport(toText);
-        const inMskSpb = isMskOrSpb(fromText) || isMskOrSpb(toText);
+    if (roundTrip) {
+      base *= 2;
+    }
 
-        if (inMskSpb) {
-          surcharge = AIRPORT_SURCHARGE_MSK_SPB;
+    let surcharge = 0;
+
+    if (routeType === "airport") {
+      const fromIsAirport = looksLikeAirport(fromText);
+      const toIsAirport = looksLikeAirport(toText);
+      const inMskSpb = isMskOrSpb(fromText) || isMskOrSpb(toText);
+
+      if (inMskSpb) {
+        surcharge = AIRPORT_SURCHARGE_MSK_SPB;
+      } else {
+        if (fromIsAirport && !toIsAirport) {
+          surcharge = AIRPORT_PICKUP_SURCHARGE;
+        } else if (!fromIsAirport && toIsAirport) {
+          surcharge = AIRPORT_DROPOFF_SURCHARGE;
         } else {
-          if (fromIsAirport && !toIsAirport) surcharge = AIRPORT_PICKUP_SURCHARGE;
-          else if (!fromIsAirport && toIsAirport) surcharge = AIRPORT_DROPOFF_SURCHARGE;
-          else surcharge = AIRPORT_DROPOFF_SURCHARGE;
+          surcharge = AIRPORT_DROPOFF_SURCHARGE;
         }
-
-        if (roundTrip) surcharge *= 2;
       }
 
-      return Math.max(MIN_INTERCITY_PRICE, base + surcharge);
-    };
+      if (roundTrip) {
+        surcharge *= 2;
+      }
+    }
 
-    return {
-      standard: calcFor("standard"),
-      comfort: calcFor("comfort"),
-      business: calcFor("business"),
-      minivan: calcFor("minivan"),
-    };
-  }, [routeType, km, roundTrip, fromText, toText]);
+    return Math.max(MIN_INTERCITY_PRICE, base + surcharge);
+  };
+
+  return {
+    standard: calcFor("standard"),
+    comfort: calcFor("comfort"),
+    business: calcFor("business"),
+    minivan: calcFor("minivan"),
+  };
+}, [routeType, km, roundTrip, fromText, toText]);
 
   const finalPrice = pricesByClass[carClass];
 
