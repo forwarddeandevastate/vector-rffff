@@ -98,7 +98,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     })),
     ...CITY_LANDINGS.flatMap((city) =>
-      city.popularTo.slice(0, 10).map((to) => ({
+      city.popularTo.map((to) => ({
         url: absoluteUrl(`/${city.slug}/${to}`),
         lastModified,
         changeFrequency: "weekly" as const,

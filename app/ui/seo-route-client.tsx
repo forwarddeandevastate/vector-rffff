@@ -201,7 +201,17 @@ export default function SeoRouteClient(props: {
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Описание маршрута</div>
-            <p className="mt-3 text-sm leading-6 text-zinc-700">{props.content}</p>
+            <div className="mt-3 space-y-4">
+              {props.content
+                .split(/\n\n+/)
+                .map((part) => part.trim())
+                .filter(Boolean)
+                .map((part, index) => (
+                  <p key={index} className="text-sm leading-6 text-zinc-700">
+                    {part}
+                  </p>
+                ))}
+            </div>
           </section>
 
           <section className="grid gap-4 lg:grid-cols-3">

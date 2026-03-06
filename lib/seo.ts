@@ -54,44 +54,53 @@ export function buildRouteMetadata({
   fromName,
   toSlug,
   toName,
+  title,
+  description,
+  keywords,
 }: {
   fromSlug: string;
   fromName: string;
   toSlug: string;
   toName: string;
+  title?: string;
+  description?: string;
+  keywords?: string[];
 }): Metadata {
   const path = `/${fromSlug}/${toSlug}`;
-  const title = `Такси ${fromName} — ${toName} | Межгород и трансфер 24/7`;
-  const description = `Заказать такси ${fromName} — ${toName}: междугороднее такси, трансфер между городами, комфорт, бизнес и минивэн. Стоимость согласуем заранее, заявка 24/7.`;
-  const keywords = [
-    `такси ${fromName} ${toName}`,
-    `${fromName} ${toName} такси`,
-    `междугороднее такси ${fromName} ${toName}`,
-    `такси межгород ${fromName} ${toName}`,
-    `трансфер ${fromName} ${toName}`,
-    `межгород ${fromName} ${toName}`,
-  ];
+  const finalTitle = title ?? `Такси ${fromName} — ${toName} | Межгород и трансфер 24/7`;
+  const finalDescription =
+    description ??
+    `Заказать такси ${fromName} — ${toName}: междугороднее такси, трансфер между городами, комфорт, бизнес и минивэн. Стоимость согласуем заранее, заявка 24/7.`;
+  const finalKeywords =
+    keywords ?? [
+      `такси ${fromName} ${toName}`,
+      `${fromName} ${toName} такси`,
+      `междугороднее такси ${fromName} ${toName}`,
+      `такси межгород ${fromName} ${toName}`,
+      `трансфер ${fromName} ${toName}`,
+      `межгород ${fromName} ${toName}`,
+    ];
   const ogAlt = `Вектор РФ — маршрут ${fromName} — ${toName}`;
 
   return {
-    title,
-    description,
-    keywords,
+    title: finalTitle,
+    description: finalDescription,
+    keywords: finalKeywords,
     alternates: { canonical: path },
     robots: { index: true, follow: true },
     openGraph: {
       type: "website",
       url: absoluteUrl(path),
-      title: `${title} — ${SITE_NAME}`,
-      description,
+      title: `${finalTitle} — ${SITE_NAME}`,
+      description: finalDescription,
       siteName: SITE_NAME,
       locale: "ru_RU",
       images: buildOgImage(ogAlt),
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} — ${SITE_NAME}`,
-      description,
+      title: `${finalTitle} — ${SITE_NAME}`,
+      description: finalDescription,
       images: [DEFAULT_OG_IMAGE],
     },
   };
