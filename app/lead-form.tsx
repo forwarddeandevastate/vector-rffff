@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import GooglePlacesInput from "@/app/ui/google-places-input";
 
@@ -11,6 +11,10 @@ function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
+function normalize(s: string) {
+  return s.trim().toLowerCase();
+}
+
 function formatRub(n: number) {
   return `${Math.round(n).toLocaleString("ru-RU")} ₽`;
 }
@@ -19,8 +23,50 @@ function formatFrom(n: number) {
   return `от ${Math.round(n).toLocaleString("ru-RU")} ₽`;
 }
 
-function normalize(s: string) {
-  return s.trim().toLowerCase();
+function formatDurationRU(totalSeconds: number) {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.round((s % 3600) / 60);
+
+  if (h <= 0) return `${m} мин`;
+  if (m <= 0) return `${h} ч`;
+  return `${h} ч ${m} мин`;
+}
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function toDatetimeLocal(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = pad2(d.getMonth() + 1);
+  const dd = pad2(d.getDate());
+  const hh = pad2(d.getHours());
+  const mi = pad2(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+
+function addMinutes(base: Date, minutes: number) {
+  const d = new Date(base);
+  d.setMinutes(d.getMinutes() + minutes);
+  return d;
+}
+
+function setTimeSameDay(base: Date, hh: number, mm: number) {
+  const d = new Date(base);
+  d.setHours(hh, mm, 0, 0);
+  return d;
+}
+
+function normalizePhoneLive(input: string) {
+  let v = input;
+
+  if (v.startsWith("+8")) v = "+7" + v.slice(2);
+  else if (v.startsWith("8")) v = "+7" + v.slice(1);
+  else if (v.startsWith("7")) v = "+7" + v.slice(1);
+  else if (v.startsWith("9")) v = "+7" + v;
+
+  return v;
 }
 
 const PER_KM: Record<CarClass, number> = {
@@ -79,15 +125,6 @@ const POPULAR_CITIES = [
   "Чебоксары",
   "Йошкар-Ола",
   "Смоленск",
-];
-
-const POPULAR_ROUTES = [
-  { from: "Москва", to: "Нижний Новгород", icon: "🇷🇺" },
-  { from: "Москва", to: "Казань", icon: "🇧🇾" },
-  { from: "Москва", to: "Тверь", icon: "🟠" },
-  { from: "Москва", to: "Владимир", icon: "🟡" },
-  { from: "СПБ", to: "Пулково", icon: "✈️" },
-  { from: "СПБ", to: "Москва", icon: "🇷🇺" },
 ];
 
 function looksLikeAirport(s: string) {
@@ -160,75 +197,24 @@ function sameCity(a: string, b: string) {
   const cb = pick(y);
 
   if (ca && cb) {
-    const na = ca.replace("-", " ");
-    const nb = cb.replace("-", " ");
-    return na === nb;
+    return ca.replace("-", " ") === cb.replace("-", " ");
   }
 
   return x === y;
 }
 
-function formatDurationRU(totalSeconds: number) {
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s / 3600);
-  const m = Math.round((s % 3600) / 60);
-
-  if (h <= 0) return `${m} мин`;
-  if (m <= 0) return `${h} ч`;
-  return `${h} ч ${m} мин`;
-}
-
 function pickSuggestions(value: string, routeType: RouteType) {
   const q = normalize(value);
-
-  const source =
-    routeType === "airport"
-      ? [...AIRPORT_HINTS, ...POPULAR_CITIES]
-      : POPULAR_CITIES;
+  const source = routeType === "airport" ? [...AIRPORT_HINTS, ...POPULAR_CITIES] : POPULAR_CITIES;
 
   if (!q) return source.slice(0, 8);
 
-  return source
-    .filter((item) => normalize(item).includes(q))
-    .slice(0, 8);
-}
-
-function pad2(n: number) {
-  return String(n).padStart(2, "0");
-}
-
-function toDatetimeLocal(d: Date) {
-  const yyyy = d.getFullYear();
-  const mm = pad2(d.getMonth() + 1);
-  const dd = pad2(d.getDate());
-  const hh = pad2(d.getHours());
-  const mi = pad2(d.getMinutes());
-  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-}
-
-function addMinutes(base: Date, minutes: number) {
-  const d = new Date(base);
-  d.setMinutes(d.getMinutes() + minutes);
-  return d;
-}
-
-function setTimeSameDay(base: Date, hh: number, mm: number) {
-  const d = new Date(base);
-  d.setHours(hh, mm, 0, 0);
-  return d;
-}
-
-function normalizePhoneLive(input: string) {
-  let v = input;
-  if (v.startsWith("+8")) v = "+7" + v.slice(2);
-  else if (v.startsWith("8")) v = "+7" + v.slice(1);
-  else if (v.startsWith("7")) v = "+7" + v.slice(1);
-  return v;
+  return source.filter((item) => normalize(item).includes(q)).slice(0, 8);
 }
 
 function IconPlane() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M2 19l20-7-20-7 5 7-5 7Z" />
       <path d="M7 12h15" />
     </svg>
@@ -237,7 +223,7 @@ function IconPlane() {
 
 function IconCar() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M5 16l1.4-5A2 2 0 0 1 8.3 9h7.4a2 2 0 0 1 1.9 2L19 16" />
       <path d="M3 16h18" />
       <circle cx="7" cy="17" r="1.7" />
@@ -248,7 +234,7 @@ function IconCar() {
 
 function IconCity() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M3 21h18" />
       <path d="M5 21V9l6-3v15" />
       <path d="M11 21V4l8 3v14" />
@@ -258,7 +244,7 @@ function IconCity() {
 
 function IconPin() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" />
       <circle cx="12" cy="10" r="2.5" />
     </svg>
@@ -267,7 +253,7 @@ function IconPin() {
 
 function IconSwap() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M7 7h11" />
       <path d="m14 4 4 3-4 3" />
       <path d="M17 17H6" />
@@ -278,7 +264,7 @@ function IconSwap() {
 
 function IconCalendar() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="5" width="18" height="16" rx="2" />
       <path d="M16 3v4M8 3v4M3 10h18" />
     </svg>
@@ -287,36 +273,9 @@ function IconCalendar() {
 
 function IconArrowRight() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M5 12h14" />
       <path d="m13 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-function IconShield() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3Z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}
-
-function IconUserCheck() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M6 20a6 6 0 0 1 12 0" />
-      <path d="m17 10 1.5 1.5L21 9" />
-    </svg>
-  );
-}
-
-function IconFast() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" />
     </svg>
   );
 }
@@ -337,9 +296,9 @@ function TypeTab({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-12 items-center justify-center gap-1.5 rounded-[18px] px-2 text-[13px] font-extrabold transition sm:h-14 sm:gap-2 sm:px-4 sm:text-base",
+        "flex h-11 items-center justify-center gap-1 rounded-2xl px-2 text-[12px] font-extrabold transition sm:h-12 sm:gap-2 sm:px-4 sm:text-[15px]",
         active
-          ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_12px_24px_rgba(37,99,235,0.22)]"
+          ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]"
           : "bg-transparent text-zinc-800"
       )}
     >
@@ -365,23 +324,15 @@ function CarClassCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-2xl border p-3 text-left transition",
+        "rounded-[18px] border p-3 text-left transition",
         active
-          ? "border-blue-200 bg-blue-50 shadow-[0_10px_24px_rgba(37,99,235,0.10)]"
+          ? "border-blue-200 bg-blue-50 shadow-[0_8px_20px_rgba(37,99,235,0.08)]"
           : "border-zinc-200 bg-white hover:bg-zinc-50"
       )}
     >
-      <div className={cn("text-sm font-bold", active ? "text-blue-700" : "text-zinc-900")}>{title}</div>
-      <div className={cn("mt-1 text-[13px] font-extrabold", active ? "text-blue-700" : "text-zinc-900")}>{price}</div>
+      <div className={cn("text-[13px] font-bold sm:text-[14px]", active ? "text-blue-700" : "text-zinc-900")}>{title}</div>
+      <div className={cn("mt-1 text-[12px] font-extrabold sm:text-[13px]", active ? "text-blue-700" : "text-zinc-900")}>{price}</div>
     </button>
-  );
-}
-
-function SidebarCard({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-[28px] bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)] ring-1 ring-black/5">
-      {children}
-    </div>
   );
 }
 
@@ -552,6 +503,8 @@ export default function LeadForm({
     return formatDurationRU(travelSeconds);
   }, [travelSeconds]);
 
+  const canSubmit = Boolean(name.trim() && phone.trim() && fromText.trim() && toText.trim());
+
   const tripTitle =
     fromText.trim() && toText.trim()
       ? `${fromText.trim()} → ${toText.trim()}`
@@ -560,8 +513,6 @@ export default function LeadForm({
       : routeType === "city"
       ? "Поездка по городу"
       : "Межгородний маршрут";
-
-  const canSubmit = Boolean(name.trim() && phone.trim() && fromText.trim() && toText.trim());
 
   function swapPlaces() {
     setFromText(toText);
@@ -636,10 +587,13 @@ export default function LeadForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_260px]">
-      <div className="rounded-[28px] bg-white p-4 shadow-[0_16px_50px_rgba(15,23,42,0.07)] ring-1 ring-black/5 sm:p-6">
-        <div className="grid gap-5">
-          <div className="grid grid-cols-3 gap-2 rounded-[24px] bg-zinc-50 p-2">
+    <div className="mx-auto w-full max-w-[860px]">
+      <form
+        onSubmit={onSubmit}
+        className="rounded-[24px] bg-white p-4 shadow-[0_16px_45px_rgba(15,23,42,0.06)] ring-1 ring-black/5 sm:rounded-[28px] sm:p-5 lg:p-6"
+      >
+        <div className="grid gap-4 sm:gap-5">
+          <div className="grid grid-cols-3 gap-2 rounded-[20px] bg-zinc-50 p-2">
             <TypeTab active={routeType === "airport"} label="Аэропорт" icon={<IconPlane />} onClick={() => onRouteTypeChange("airport")} />
             <TypeTab active={routeType === "intercity"} label="Межгород" icon={<IconCar />} onClick={() => onRouteTypeChange("intercity")} />
             <TypeTab active={routeType === "city"} label="Город" icon={<IconCity />} onClick={() => onRouteTypeChange("city")} />
@@ -647,13 +601,13 @@ export default function LeadForm({
 
           <div className="grid gap-4">
             <div ref={fromBoxRef} className="relative">
-              <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Откуда</label>
+              <label className="mb-2 block text-[14px] font-extrabold text-zinc-900 sm:text-[15px]">Откуда</label>
               <div className="relative">
                 <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-zinc-500">
                   <IconPin />
                 </div>
                 <GooglePlacesInput
-                  className="h-14 w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:h-16 sm:text-lg"
+                  className="h-13 w-full rounded-[18px] border border-zinc-200 bg-white pl-11 pr-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:h-14 sm:text-[16px]"
                   value={fromText}
                   onValueChange={(v) => {
                     setFromText(v);
@@ -670,7 +624,7 @@ export default function LeadForm({
               </div>
 
               {fromOpen && fromSuggestions.length > 0 ? (
-                <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl">
+                <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-xl">
                   {fromSuggestions.map((item) => (
                     <button
                       key={item}
@@ -689,25 +643,25 @@ export default function LeadForm({
               ) : null}
             </div>
 
-            <div className="relative pt-3">
+            <div className="relative pt-2">
               <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2">
                 <button
                   type="button"
                   onClick={swapPlaces}
-                  className="grid h-14 w-14 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-[0_8px_20px_rgba(15,23,42,0.10)] transition hover:text-blue-600"
+                  className="grid h-12 w-12 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-[0_8px_20px_rgba(15,23,42,0.10)] transition hover:text-blue-600 sm:h-14 sm:w-14"
                 >
                   <IconSwap />
                 </button>
               </div>
 
               <div ref={toBoxRef} className="relative">
-                <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Куда</label>
+                <label className="mb-2 block text-[14px] font-extrabold text-zinc-900 sm:text-[15px]">Куда</label>
                 <div className="relative">
                   <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-zinc-500">
                     <IconPin />
                   </div>
                   <GooglePlacesInput
-                    className="h-14 w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:h-16 sm:text-lg"
+                    className="h-13 w-full rounded-[18px] border border-zinc-200 bg-white pl-11 pr-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:h-14 sm:text-[16px]"
                     value={toText}
                     onValueChange={(v) => {
                       setToText(v);
@@ -724,7 +678,7 @@ export default function LeadForm({
                 </div>
 
                 {toOpen && toSuggestions.length > 0 ? (
-                  <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl">
+                  <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-xl">
                     {toSuggestions.map((item) => (
                       <button
                         key={item}
@@ -746,19 +700,19 @@ export default function LeadForm({
 
             <button
               type="button"
-              className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-lg font-extrabold text-white shadow-[0_14px_32px_rgba(37,99,235,0.24)] sm:h-16 sm:text-[20px]"
+              className="flex h-13 w-full items-center justify-center gap-3 rounded-[18px] bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-[16px] font-extrabold text-white shadow-[0_12px_28px_rgba(37,99,235,0.22)] sm:h-14 sm:text-[18px]"
             >
               <span>Рассчитать маршрут</span>
               <IconPlane />
             </button>
           </div>
 
-          <div className="rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-5">
+          <div className="rounded-[22px] border border-zinc-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-5">
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
               <div>
-                <div className="text-[18px] font-black text-zinc-900 sm:text-[20px]">{tripTitle}</div>
+                <div className="text-[17px] font-black leading-tight text-zinc-900 sm:text-[18px]">{tripTitle}</div>
 
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-[15px] text-zinc-600">
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-[14px] text-zinc-600 sm:text-[15px]">
                   {calcLoading ? (
                     <span>Считаем маршрут…</span>
                   ) : calcError ? (
@@ -775,15 +729,15 @@ export default function LeadForm({
               </div>
 
               <div className="text-left md:text-right">
-                <div className="text-[15px] font-semibold text-zinc-500">цена</div>
-                <div className="text-[26px] font-black text-zinc-950">
+                <div className="text-[14px] font-semibold text-zinc-500">цена</div>
+                <div className="text-[22px] font-black text-zinc-950 sm:text-[24px]">
                   {finalPrice != null
                     ? formatRub(finalPrice)
                     : routeType === "city"
                     ? formatFrom(CITY_BASE_PRICE[carClass])
                     : "—"}
                 </div>
-                <div className="mt-1 flex items-center gap-2 text-sm text-zinc-600 md:justify-end">
+                <div className="mt-1 flex items-center gap-2 text-[13px] text-zinc-600 md:justify-end sm:text-sm">
                   <IconCar />
                   <span>
                     {carClass === "standard"
@@ -798,42 +752,66 @@ export default function LeadForm({
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
               <CarClassCard
                 active={carClass === "standard"}
                 title="Стандарт"
-                price={pricesByClass.standard != null ? formatRub(pricesByClass.standard) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.standard) : "—"}
+                price={
+                  pricesByClass.standard != null
+                    ? formatRub(pricesByClass.standard)
+                    : routeType === "city"
+                    ? formatFrom(CITY_BASE_PRICE.standard)
+                    : "—"
+                }
                 onClick={() => onCarClassChange("standard")}
               />
               <CarClassCard
                 active={carClass === "comfort"}
                 title="Комфорт"
-                price={pricesByClass.comfort != null ? formatRub(pricesByClass.comfort) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.comfort) : "—"}
+                price={
+                  pricesByClass.comfort != null
+                    ? formatRub(pricesByClass.comfort)
+                    : routeType === "city"
+                    ? formatFrom(CITY_BASE_PRICE.comfort)
+                    : "—"
+                }
                 onClick={() => onCarClassChange("comfort")}
               />
               <CarClassCard
                 active={carClass === "business"}
                 title="Бизнес"
-                price={pricesByClass.business != null ? formatRub(pricesByClass.business) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.business) : "—"}
+                price={
+                  pricesByClass.business != null
+                    ? formatRub(pricesByClass.business)
+                    : routeType === "city"
+                    ? formatFrom(CITY_BASE_PRICE.business)
+                    : "—"
+                }
                 onClick={() => onCarClassChange("business")}
               />
               <CarClassCard
                 active={carClass === "minivan"}
                 title="Минивен"
-                price={pricesByClass.minivan != null ? formatRub(pricesByClass.minivan) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.minivan) : "—"}
+                price={
+                  pricesByClass.minivan != null
+                    ? formatRub(pricesByClass.minivan)
+                    : routeType === "city"
+                    ? formatFrom(CITY_BASE_PRICE.minivan)
+                    : "—"
+                }
                 onClick={() => onCarClassChange("minivan")}
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Дата и время</label>
+            <label className="mb-2 block text-[14px] font-extrabold text-zinc-900 sm:text-[15px]">Дата и время</label>
             <div className="relative">
               <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
                 <IconCalendar />
               </div>
               <input
-                className="h-14 w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 text-base text-zinc-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                className="h-13 w-full rounded-[18px] border border-zinc-200 bg-white pl-11 pr-4 text-[15px] text-zinc-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:h-14 sm:text-[16px]"
                 type="datetime-local"
                 value={datetimeLocal}
                 onChange={(e) => setDatetimeLocal(e.target.value)}
@@ -841,13 +819,25 @@ export default function LeadForm({
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => applyQuickTime("plus1")} className="h-11 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-bold text-zinc-700">
+              <button
+                type="button"
+                onClick={() => applyQuickTime("plus1")}
+                className="h-10 rounded-[16px] border border-zinc-200 bg-white px-4 text-[14px] font-bold text-zinc-700"
+              >
                 Через 1 час
               </button>
-              <button type="button" onClick={() => applyQuickTime("today18")} className="h-11 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-bold text-zinc-700">
+              <button
+                type="button"
+                onClick={() => applyQuickTime("today18")}
+                className="h-10 rounded-[16px] border border-zinc-200 bg-white px-4 text-[14px] font-bold text-zinc-700"
+              >
                 Сегодня 18:00
               </button>
-              <button type="button" onClick={() => applyQuickTime("tomorrow10")} className="h-11 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-bold text-zinc-700">
+              <button
+                type="button"
+                onClick={() => applyQuickTime("tomorrow10")}
+                className="h-10 rounded-[16px] border border-zinc-200 bg-white px-4 text-[14px] font-bold text-zinc-700"
+              >
                 Завтра 10:00
               </button>
             </div>
@@ -855,9 +845,9 @@ export default function LeadForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Ваше имя</label>
+              <label className="mb-2 block text-[14px] font-extrabold text-zinc-900 sm:text-[15px]">Ваше имя</label>
               <input
-                className="h-14 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                className="h-13 w-full rounded-[18px] border border-zinc-200 bg-white px-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:h-14 sm:text-[16px]"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Как к вам обращаться"
@@ -866,9 +856,9 @@ export default function LeadForm({
             </div>
 
             <div>
-              <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Телефон</label>
+              <label className="mb-2 block text-[14px] font-extrabold text-zinc-900 sm:text-[15px]">Телефон</label>
               <input
-                className="h-14 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                className="h-13 w-full rounded-[18px] border border-zinc-200 bg-white px-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:h-14 sm:text-[16px]"
                 value={phone}
                 onChange={(e) => setPhone(normalizePhoneLive(e.target.value))}
                 placeholder="+7 (___) ___-__-__"
@@ -879,9 +869,9 @@ export default function LeadForm({
           </div>
 
           <div>
-            <label className="mb-2 block text-[15px] font-extrabold text-zinc-900">Комментарий</label>
+            <label className="mb-2 block text-[14px] font-extrabold text-zinc-900 sm:text-[15px]">Комментарий</label>
             <textarea
-              className="min-h-[96px] w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+              className="min-h-[92px] w-full rounded-[18px] border border-zinc-200 bg-white px-4 py-3 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 sm:text-[16px]"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Детское кресло, багаж, рейс..."
@@ -889,7 +879,7 @@ export default function LeadForm({
           </div>
 
           <div className="flex items-center justify-start sm:justify-end">
-            <label className="inline-flex cursor-pointer items-center gap-3 text-lg font-bold text-zinc-800 sm:text-xl">
+            <label className="inline-flex cursor-pointer items-center gap-3 text-[16px] font-bold text-zinc-800 sm:text-[18px]">
               <input
                 type="checkbox"
                 checked={roundTrip}
@@ -901,12 +891,12 @@ export default function LeadForm({
           </div>
 
           {error ? (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">{error}</div>
+            <div className="rounded-[18px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">{error}</div>
           ) : null}
 
           <button
             disabled={loading || !canSubmit}
-            className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-lg font-extrabold text-white shadow-[0_14px_32px_rgba(37,99,235,0.24)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 sm:h-16 sm:text-[20px]"
+            className="flex h-13 w-full items-center justify-center gap-3 rounded-[18px] bg-gradient-to-r from-blue-600 to-sky-500 px-5 text-[16px] font-extrabold text-white shadow-[0_12px_28px_rgba(37,99,235,0.22)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:text-[18px]"
           >
             <span>{loading ? "Отправляем…" : "Оформить заказ"}</span>
             <IconArrowRight />
@@ -924,57 +914,7 @@ export default function LeadForm({
             .
           </div>
         </div>
-      </div>
-
-      <aside className="grid gap-5 xl:sticky xl:top-6 xl:self-start">
-        <SidebarCard>
-          <div className="text-[20px] font-black text-zinc-900">Популярные маршруты</div>
-          <div className="mt-4 grid gap-3">
-            {POPULAR_ROUTES.map((route) => (
-              <button
-                key={`${route.from}-${route.to}`}
-                type="button"
-                onClick={() => {
-                  setFromText(route.from);
-                  setToText(route.to);
-                  setFromPlaceId(null);
-                  setToPlaceId(null);
-                  setFromOpen(false);
-                  setToOpen(false);
-                }}
-                className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-left transition hover:bg-blue-50"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-xl">{route.icon}</div>
-                  <div className="text-[18px] font-bold leading-7 text-zinc-800">
-                    <div>{route.from}</div>
-                    <div>→ {route.to}</div>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </SidebarCard>
-
-        <SidebarCard>
-          <div className="grid gap-8 text-center">
-            <div className="grid justify-items-center gap-3 text-blue-600">
-              <IconShield />
-              <div className="text-[18px] font-black leading-7 text-zinc-900">Фиксированная цена</div>
-            </div>
-
-            <div className="grid justify-items-center gap-3 text-blue-600">
-              <IconUserCheck />
-              <div className="text-[18px] font-black leading-7 text-zinc-900">Водители с опытом</div>
-            </div>
-
-            <div className="grid justify-items-center gap-3 text-blue-600">
-              <IconFast />
-              <div className="text-[18px] font-black leading-7 text-zinc-900">Быстрая подача</div>
-            </div>
-          </div>
-        </SidebarCard>
-      </aside>
-    </form>
+      </form>
+    </div>
   );
 }
