@@ -286,6 +286,7 @@ export default function LeadForm({
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasCalculated, setHasCalculated] = useState(false);
   const [km, setKm] = useState<number | null>(null);
   const [travelSeconds, setTravelSeconds] = useState<number | null>(null);
   const [calcLoading, setCalcLoading] = useState(false);
