@@ -58,38 +58,38 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/taxi-v-aeroport": 0.92,
 };
 
-// Держим общее число URL ниже лимита 50 000 для одного sitemap.xml.
-// Это надёжнее для Next/Vercel, чем многосекционный sitemap, и чаще грузится без сбоев.
-const SEO_ROUTE_URL_LIMIT = 49_800;
-
-export const revalidate = 86_400;
+// Один стабильный sitemap.xml. Держим запас ниже лимита 50 000 URL.
+const MAX_SITEMAP_URLS = 49900;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   const seen = new Set<string>();
 
-  const entries: MetadataRoute.Sitemap = [
-    ...STATIC_PATHS.map((path) => ({
-      url: absoluteUrl(path),
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: STATIC_PRIORITIES[path] ?? 0.5,
-    })),
-    ...CITY_LANDINGS.map((city) => ({
-      url: absoluteUrl(`/${city.slug}`),
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    })),
-    ...buildSeoRouteUrls("", SEO_ROUTE_URL_LIMIT).map((path) => ({
-      url: absoluteUrl(path),
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: path.split("/").length > 3 ? 0.63 : 0.68,
-    })),
-  ];
+  const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
+    url: absoluteUrl(path),
+    lastModified,
+    changeFrequency: "weekly",
+    priority: STATIC_PRIORITIES[path] ?? 0.5,
+  }));
 
-  return entries.filter((entry) => {
+  const cityEntries: MetadataRoute.Sitemap = CITY_LANDINGS.map((city) => ({
+    url: absoluteUrl(`/${city.slug}`),
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
+  const reserved = staticEntries.length + cityEntries.length;
+  const routeLimit = Math.max(0, MAX_SITEMAP_URLS - reserved);
+
+  const routeEntries: MetadataRoute.Sitemap = buildSeoRouteUrls("", routeLimit).map((path) => ({
+    url: absoluteUrl(path),
+    lastModified,
+    changeFrequency: "weekly",
+    priority: path.split("/").length > 3 ? 0.63 : 0.68,
+  }));
+
+  return [...staticEntries, ...cityEntries, ...routeEntries].filter((entry) => {
     if (seen.has(entry.url)) return false;
     seen.add(entry.url);
     return true;
