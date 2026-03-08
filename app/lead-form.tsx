@@ -157,7 +157,7 @@ function estimateNewTerritoryKm(from: string, to: string, totalKm: number) {
     return { specialKm: Math.min(totalKm, blended), fromMatch, toMatch, mode: "mixed" as const };
   }
 
-  const oneSide = fromMatch ?? toMatch;
+  const oneSide = fromMatch ?? toMatch ?? { borderKm: 0 };
   return {
     specialKm: Math.min(totalKm, oneSide.borderKm),
     fromMatch,
