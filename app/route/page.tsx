@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
-// Старый хаб /route -> сейчас используем городские страницы /{city}
+// Старый хаб /route держим только как permanent redirect на /city.
 export default function Page() {
-  redirect("/city");
+  permanentRedirect("/city");
 }

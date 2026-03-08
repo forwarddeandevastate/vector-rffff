@@ -1,8 +1,9 @@
 import { CITY_LANDINGS } from "@/lib/city-landings";
+import type { RouteVariantKey } from "@/lib/route-variants";
 
 export type SeoRoute = { from: string; to: string };
 
-const PRIORITY_SOURCE_SLUGS = [
+export const PRIORITY_SOURCE_SLUGS = [
   "moskva",
   "sankt-peterburg",
   "nizhniy-novgorod",
@@ -25,7 +26,7 @@ const PRIORITY_SOURCE_SLUGS = [
   "perm",
 ] as const;
 
-const PRIORITY_PAIR_SLUGS: Array<[string, string]> = [
+export const PRIORITY_PAIR_SLUGS: Array<[string, string]> = [
   ["moskva", "sankt-peterburg"],
   ["moskva", "nizhniy-novgorod"],
   ["moskva", "kazan"],
@@ -48,8 +49,6 @@ const PRIORITY_PAIR_SLUGS: Array<[string, string]> = [
   ["ufa", "chelyabinsk"],
 ] as const;
 
-// Оставляем только коммерчески осмысленные и реально существующие кластеры.
-// Убираем /route/* из sitemap: это legacy-путь с редиректом, а не индексируемый кластер.
 export const SEO_ROUTE_VARIANT_PREFIXES = [
   null,
   "transfer",
@@ -63,9 +62,47 @@ export type SeoRouteVariantPrefix = (typeof SEO_ROUTE_VARIANT_PREFIXES)[number];
 
 const VALID_CITY_SLUGS = CITY_LANDINGS.map((city) => city.slug);
 const VALID_CITY_SET = new Set(VALID_CITY_SLUGS);
+const PRIORITY_SOURCE_SET = new Set<string>(PRIORITY_SOURCE_SLUGS.filter((slug) => VALID_CITY_SET.has(slug)));
+const PRIORITY_PAIR_SET = new Set<string>(
+  PRIORITY_PAIR_SLUGS.filter(([from, to]) => VALID_CITY_SET.has(from) && VALID_CITY_SET.has(to)).map(
+    ([from, to]) => `${from}__${to}`
+  )
+);
 
 function isValidSlug(slug: string) {
   return VALID_CITY_SET.has(slug);
+}
+
+function isPriorityPair(from: string, to: string) {
+  return PRIORITY_PAIR_SET.has(`${from}__${to}`);
+}
+
+function touchesPriorityHub(from: string, to: string) {
+  return PRIORITY_SOURCE_SET.has(from) || PRIORITY_SOURCE_SET.has(to);
+}
+
+export function isRouteVariantIndexable(variantKey: RouteVariantKey, from: string, to: string) {
+  if (!isValidSlug(from) || !isValidSlug(to) || from === to) return false;
+
+  if (variantKey === "route") return false;
+  if (variantKey === "main" || variantKey === "transfer") return true;
+
+  const priorityPair = isPriorityPair(from, to);
+  const priorityHub = touchesPriorityHub(from, to);
+
+  if (variantKey === "taxi-mezhgorod" || variantKey === "mezhdugorodnee-taksi") {
+    return priorityPair || priorityHub;
+  }
+
+  if (variantKey === "taksi-iz") {
+    return priorityPair || PRIORITY_SOURCE_SET.has(from);
+  }
+
+  if (variantKey === "taksi-v") {
+    return priorityPair || PRIORITY_SOURCE_SET.has(to);
+  }
+
+  return false;
 }
 
 export function buildSeoRoutes(limit = 50000): SeoRoute[] {
@@ -104,22 +141,34 @@ export function buildSeoRoutes(limit = 50000): SeoRoute[] {
 }
 
 export function buildSeoRouteUrls(basePath = "", limit = 50000): string[] {
-  const routesPerVariant = Math.ceil(limit / SEO_ROUTE_VARIANT_PREFIXES.length);
-  const routes = buildSeoRoutes(routesPerVariant);
+  const routes = buildSeoRoutes(limit);
   const urls: string[] = [];
   const seen = new Set<string>();
 
-  for (const prefix of SEO_ROUTE_VARIANT_PREFIXES) {
-    for (const route of routes) {
-      const path = prefix
-        ? `${basePath}/${prefix}/${route.from}/${route.to}`
-        : `${basePath}/${route.from}/${route.to}`;
+  const pushUrl = (path: string) => {
+    const normalized = path || "/";
+    if (seen.has(normalized)) return false;
+    seen.add(normalized);
+    urls.push(normalized);
+    return urls.length < limit;
+  };
 
-      const normalized = path || "/";
-      if (seen.has(normalized)) continue;
-      seen.add(normalized);
-      urls.push(normalized);
-      if (urls.length >= limit) return urls;
+  const buildPath = (prefix: SeoRouteVariantPrefix, from: string, to: string) =>
+    prefix ? `${basePath}/${prefix}/${from}/${to}` : `${basePath}/${from}/${to}`;
+
+  // Сначала всегда добавляем основной кластер и transfer по всем маршрутам.
+  // Это даёт самое чистое покрытие под «такси» и «трансфер» без избыточных дублей.
+  for (const variant of [null, "transfer"] as const) {
+    for (const route of routes) {
+      if (!pushUrl(buildPath(variant, route.from, route.to))) return urls;
+    }
+  }
+
+  // Дополнительные SEO-кластеры индексируем только по коммерчески приоритетным маршрутам.
+  for (const variant of ["taxi-mezhgorod", "mezhdugorodnee-taksi", "taksi-iz", "taksi-v"] as const) {
+    for (const route of routes) {
+      if (!isRouteVariantIndexable(variant, route.from, route.to)) continue;
+      if (!pushUrl(buildPath(variant, route.from, route.to))) return urls;
     }
   }
 

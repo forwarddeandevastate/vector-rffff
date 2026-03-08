@@ -7,6 +7,7 @@ import { CITY_BY_SLUG, CITY_LANDINGS, isValidRouteSlugs, prettyCityNameFromSlug 
 import { buildBreadcrumbJsonLd, buildFaqJsonLd, buildRouteMetadata } from "@/lib/seo";
 import { buildRouteSeoData } from "@/lib/route-seo";
 import { ROUTE_VARIANTS, buildVariantHeading, buildVariantPath, type RouteVariantKey } from "@/lib/route-variants";
+import { isRouteVariantIndexable } from "@/lib/seo-routes";
 
 function normalizeSlug(input: string) {
   const raw = (input ?? "").trim();
@@ -55,7 +56,7 @@ export function buildRoutePageMetadata(variantKey: RouteVariantKey) {
       description: seoData.metadataDescription,
       keywords: seoData.metadataKeywords,
       canonicalPath: buildVariantPath(variantKey, fromCity.slug, toCity.slug),
-      indexable: true,
+      indexable: isRouteVariantIndexable(variantKey, fromCity.slug, toCity.slug),
     });
   };
 }
