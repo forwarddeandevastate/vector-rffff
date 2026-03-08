@@ -58,18 +58,15 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/taxi-v-aeroport": 0.92,
 };
 
-const ROUTE_CHUNK_SIZE = 5000;
-const SEO_ROUTE_URL_LIMIT = 50000;
+// Держим общее число URL ниже лимита 50 000 для одного sitemap.xml.
+// Это надёжнее для Next/Vercel, чем многосекционный sitemap, и чаще грузится без сбоев.
+const SEO_ROUTE_URL_LIMIT = 49_800;
 
-function buildAllEntries(): MetadataRoute.Sitemap {
+export const revalidate = 86_400;
+
+export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   const seen = new Set<string>();
-  const routeEntries = buildSeoRouteUrls("", SEO_ROUTE_URL_LIMIT).map((path) => ({
-    url: absoluteUrl(path),
-    lastModified,
-    changeFrequency: "weekly" as const,
-    priority: path.split("/").length > 3 ? 0.63 : 0.68,
-  }));
 
   const entries: MetadataRoute.Sitemap = [
     ...STATIC_PATHS.map((path) => ({
@@ -84,7 +81,12 @@ function buildAllEntries(): MetadataRoute.Sitemap {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...routeEntries,
+    ...buildSeoRouteUrls("", SEO_ROUTE_URL_LIMIT).map((path) => ({
+      url: absoluteUrl(path),
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: path.split("/").length > 3 ? 0.63 : 0.68,
+    })),
   ];
 
   return entries.filter((entry) => {
@@ -92,17 +94,4 @@ function buildAllEntries(): MetadataRoute.Sitemap {
     seen.add(entry.url);
     return true;
   });
-}
-
-export async function generateSitemaps() {
-  const total = buildAllEntries().length;
-  const chunks = Math.max(1, Math.ceil(total / ROUTE_CHUNK_SIZE));
-  return Array.from({ length: chunks }, (_, id) => ({ id }));
-}
-
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-  const entries = buildAllEntries();
-  const start = id * ROUTE_CHUNK_SIZE;
-  const end = start + ROUTE_CHUNK_SIZE;
-  return entries.slice(start, end);
 }
