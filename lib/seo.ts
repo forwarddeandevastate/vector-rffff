@@ -57,6 +57,8 @@ export function buildRouteMetadata({
   title,
   description,
   keywords,
+  canonicalPath,
+  indexable,
 }: {
   fromSlug: string;
   fromName: string;
@@ -65,8 +67,10 @@ export function buildRouteMetadata({
   title?: string;
   description?: string;
   keywords?: string[];
+  canonicalPath?: string;
+  indexable?: boolean;
 }): Metadata {
-  const path = `/${fromSlug}/${toSlug}`;
+  const path = canonicalPath ?? `/${fromSlug}/${toSlug}`;
   const finalTitle = title ?? `Такси ${fromName} — ${toName} | Межгород и трансфер 24/7`;
   const finalDescription =
     description ??
@@ -87,7 +91,7 @@ export function buildRouteMetadata({
     description: finalDescription,
     keywords: finalKeywords,
     alternates: { canonical: path },
-    robots: { index: true, follow: true },
+    robots: { index: indexable ?? true, follow: true },
     openGraph: {
       type: "website",
       url: absoluteUrl(path),

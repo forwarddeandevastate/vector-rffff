@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { buildSeoRoutes, type SeoRoute } from "@/lib/seo-routes";
+
+import { CITY_LANDINGS, prettyCityNameFromSlug } from "@/lib/city-landings";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
-// ✅ ВАЖНО: считаем один раз на уровне модуля (не на каждый запрос/рендер)
-const SEO_ROUTES = buildSeoRoutes(2000);
+const ROUTES = CITY_LANDINGS.flatMap((city) =>
+  city.popularTo.map((to) => ({ from: city.slug, to }))
+);
 
 export const metadata: Metadata = {
-  title: "Каталог маршрутов по России — города и направления | Вектор РФ",
+  title: "Каталог маршрутов по России — города и направления",
   description:
     "Каталог популярных направлений и городов: междугородние поездки по России. Выберите маршрут и оставьте заявку онлайн — 24/7. Стоимость согласуем заранее.",
   alternates: { canonical: `${SITE_URL}/city` },
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: `${SITE_URL}/city`,
-    title: "Каталог маршрутов по России — города и направления | Вектор РФ",
+    title: "Каталог маршрутов по России — города и направления",
     description:
       "Каталог популярных направлений: выбирайте маршрут и оставляйте заявку. Комфорт, бизнес, минивэн. 24/7.",
     siteName: SITE_NAME,
@@ -27,127 +29,20 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Каталог направлений | Вектор РФ",
+    title: "Каталог направлений",
     description: "Популярные маршруты и города по России. Заявка онлайн 24/7.",
     images: ["/og.jpg"],
   },
 };
 
-// fallback: "rostov-na-donu" -> "Rostov Na Donu"
-function safePretty(slug: string) {
-  const s = (slug ?? "").trim();
-  if (!s) return "Город";
-  const decoded = (() => {
-    try {
-      return decodeURIComponent(s);
-    } catch {
-      return s;
-    }
-  })();
-
-  return decoded
-    .split("-")
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-// Мини-маппинг для самых частых — остальные через safePretty
-const CITY_MAP: Record<string, string> = {
-  moskva: "Москва",
-  "sankt-peterburg": "Санкт-Петербург",
-  "nizhniy-novgorod": "Нижний Новгород",
-  kazan: "Казань",
-  samara: "Самара",
-  saratov: "Саратов",
-  volgograd: "Волгоград",
-  voronezh: "Воронеж",
-  krasnodar: "Краснодар",
-  "rostov-na-donu": "Ростов-на-Дону",
-  sochi: "Сочи",
-  tula: "Тула",
-  ryazan: "Рязань",
-  smolensk: "Смоленск",
-  tver: "Тверь",
-  yaroslavl: "Ярославль",
-  kaliningrad: "Калининград",
-  "velikiy-novgorod": "Великий Новгород",
-  pskov: "Псков",
-  astrakhan: "Астрахань",
-
-  // МО
-  balashikha: "Балашиха",
-  khimki: "Химки",
-  podolsk: "Подольск",
-  mytishchi: "Мытищи",
-  korolev: "Королёв",
-  lyubertsy: "Люберцы",
-  domodedovo: "Домодедово",
-
-  // новые территории
-  donetsk: "Донецк",
-  lugansk: "Луганск",
-  mariupol: "Мариуполь",
-  melitopol: "Мелитополь",
-  kherson: "Херсон",
-};
-
-function cityName(slug: string) {
-  const s = (slug ?? "").trim();
-  if (!s) return "Город";
-  return CITY_MAP[s] ?? safePretty(s);
-}
-
-function uniq<T>(arr: T[]) {
-  return Array.from(new Set(arr));
-}
-
 function take<T>(arr: T[], n: number) {
   return arr.length > n ? arr.slice(0, n) : arr;
 }
 
-function buildSections(routes: SeoRoute[]) {
-  const byFrom = new Map<string, SeoRoute[]>();
-  for (const r of routes) {
-    const list = byFrom.get(r.from) ?? [];
-    list.push(r);
-    byFrom.set(r.from, list);
-  }
-
-  const priorityFrom: string[] = [
-    "moskva",
-    "sankt-peterburg",
-    "nizhniy-novgorod",
-    "kazan",
-    "samara",
-    "saratov",
-    "voronezh",
-    "volgograd",
-    "rostov-na-donu",
-    "krasnodar",
-    "sochi",
-    "kaliningrad",
-    "tula",
-    "ryazan",
-    "smolensk",
-    "tver",
-    "yaroslavl",
-    "donetsk",
-    "lugansk",
-    "mariupol",
-    "melitopol",
-    "kherson",
-  ];
-
-  const allFrom = uniq(Array.from(byFrom.keys()));
-  const orderedFrom = [
-    ...priorityFrom.filter((x) => byFrom.has(x)),
-    ...allFrom.filter((x) => !priorityFrom.includes(x)).sort(),
-  ];
-
-  return orderedFrom.map((from) => ({
-    from,
-    routes: byFrom.get(from) ?? [],
+function buildSections() {
+  return CITY_LANDINGS.map((city) => ({
+    from: city.slug,
+    routes: city.popularTo.map((to) => ({ from: city.slug, to })),
   }));
 }
 
@@ -163,12 +58,8 @@ function PillLink({ href, children }: { href: string; children: React.ReactNode 
 }
 
 export default function Page() {
-  const routes = SEO_ROUTES;
-
-  // не делаем 2000 ссылок на одной странице
-  const routesForCatalog = routes.slice(0, 1000);
-
-  const sections = buildSections(routesForCatalog);
+  const routesForCatalog = ROUTES.slice(0, 1500);
+  const sections = buildSections();
   const quick = take(routesForCatalog, 36);
 
   const breadcrumbJsonLd = {
@@ -180,7 +71,6 @@ export default function Page() {
     ],
   };
 
-  // ✅ Каталог ссылок как ItemList (помогает Яндексу понять “страница-справочник”)
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -191,26 +81,15 @@ export default function Page() {
       "@type": "ListItem",
       position: idx + 1,
       url: `${SITE_URL}/${r.from}/${r.to}`,
-      name: `${cityName(r.from)} — ${cityName(r.to)}`,
+      name: `${prettyCityNameFromSlug(r.from)} — ${prettyCityNameFromSlug(r.to)}`,
     })),
   };
 
   return (
     <main className="min-h-screen text-zinc-900">
-      <Script
-        id="ld-city-breadcrumbs"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
-      <Script
-        id="ld-city-itemlist"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
-      />
+      <Script id="ld-city-breadcrumbs" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Script id="ld-city-itemlist" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }} />
 
-      {/* фон как на главной */}
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.25),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.14),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.12),transparent_55%)]" />
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
@@ -220,9 +99,7 @@ export default function Page() {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-xs font-semibold text-zinc-600">Каталог маршрутов</div>
-              <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
-                Города и направления по России
-              </h1>
+              <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Города и направления по России</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
                 Выберите направление и оставьте заявку. Мы согласуем стоимость до подачи автомобиля.
                 Классы: Стандарт / Комфорт / Бизнес / Минивэн. Работаем 24/7.
@@ -230,92 +107,43 @@ export default function Page() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Link
-                href="/intercity-taxi"
-                className="rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
-              >
-                Межгород (услуга)
-              </Link>
-              <Link
-                href="/#order"
-                className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
-              >
-                Оставить заявку
-              </Link>
+              <Link href="/intercity-taxi" className="rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95">Межгород (услуга)</Link>
+              <Link href="/#order" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold text-zinc-800 shadow-sm hover:bg-zinc-50">Оставить заявку</Link>
             </div>
           </div>
 
-          <div className="mt-6">
-            <div className="text-sm font-extrabold text-zinc-900">Популярные направления</div>
-            <p className="mt-1 text-sm text-zinc-600">
-              Быстрые ссылки на частые маршруты. Открывайте страницу и оставляйте заявку.
-            </p>
+          <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-4 md:p-5">
+            <div className="text-sm font-semibold text-zinc-800">Популярные направления</div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {quick.map((r) => (
+                <PillLink key={`${r.from}-${r.to}`} href={`/${r.from}/${r.to}`}>
+                  {prettyCityNameFromSlug(r.from)} — {prettyCityNameFromSlug(r.to)}
+                </PillLink>
+              ))}
+            </div>
+          </div>
+        </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {quick.map((r) => {
-                const href = `/${r.from}/${r.to}`;
-                return (
-                  <PillLink key={`${r.from}__${r.to}`} href={href}>
-                    {cityName(r.from)} — {cityName(r.to)}
+        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {sections.map((section) => (
+            <section key={section.from} className="rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-sm backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Из города</div>
+                  <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-zinc-900">{prettyCityNameFromSlug(section.from)}</h2>
+                </div>
+                <Link href={`/${section.from}`} className="text-sm font-semibold text-sky-700 hover:text-sky-800">Страница города</Link>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {section.routes.map((route) => (
+                  <PillLink key={`${route.from}-${route.to}`} href={`/${route.from}/${route.to}`}>
+                    {prettyCityNameFromSlug(route.to)}
                   </PillLink>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-4">
-          {sections.map((sec) => {
-            const links = take(sec.routes, 60);
-
-            return (
-              <section
-                key={sec.from}
-                className="rounded-3xl border border-zinc-200 bg-white/75 p-6 shadow-sm backdrop-blur md:p-8"
-              >
-                <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                  <div>
-                    <h2 className="text-xl font-extrabold tracking-tight">
-                      Направления из: {cityName(sec.from)}
-                    </h2>
-                    <div className="mt-1 text-sm text-zinc-600">
-                      Популярные маршруты (часть). Полный список — в sitemap и по внутренним ссылкам.
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-zinc-500">
-                    Показано: {links.length} из {sec.routes.length}
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {links.map((r) => {
-                    const href = `/${r.from}/${r.to}`;
-                    return (
-                      <PillLink key={`${r.from}__${r.to}`} href={href}>
-                        {cityName(r.from)} — {cityName(r.to)}
-                      </PillLink>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
-        </div>
-
-        <div className="mt-8 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="text-lg font-extrabold tracking-tight">Не нашли направление?</div>
-          <p className="mt-2 text-sm text-zinc-600">
-            Оставьте заявку — уточним маршрут, время и заранее согласуем стоимость.
-          </p>
-          <div className="mt-4">
-            <Link
-              href="/#order"
-              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-5 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
-            >
-              Оставить заявку
-            </Link>
-          </div>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       </div>
     </main>

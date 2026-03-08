@@ -75,97 +75,6 @@ const CITY_BASE_PRICE: Record<CarClass, number> = {
   minivan: 3500,
 };
 
-const NEW_TERRITORY_PER_KM: Record<CarClass, number> = {
-  standard: 80,
-  comfort: 80,
-  business: 80,
-  minivan: 100,
-};
-
-type NewTerritoryKey = "dnr" | "lnr" | "zaporozhye" | "kherson";
-
-type TerritoryMatch = {
-  key: NewTerritoryKey;
-  label: string;
-  borderKm: number;
-};
-
-const NEW_TERRITORY_ALIASES: Array<{ key: NewTerritoryKey; label: string; borderKm: number; patterns: string[] }> = [
-  {
-    key: "dnr",
-    label: "ДНР",
-    borderKm: 180,
-    patterns: [
-      "донецк","донецкая народная республика","днр","макеевка","горловка","мариуполь","енакиево","харцызск","шахтерск","шахтёрск","снежное","дебальцево",
-    ],
-  },
-  {
-    key: "lnr",
-    label: "ЛНР",
-    borderKm: 170,
-    patterns: [
-      "луганск","луганская народная республика","лнр","алчевск","стаханов","краснодон","ровеньки","свердловск","антрацит",
-    ],
-  },
-  {
-    key: "zaporozhye",
-    label: "Запорожская область",
-    borderKm: 220,
-    patterns: [
-      "запорожская область","мелитополь","бердянск","энергодар","токмак",
-    ],
-  },
-  {
-    key: "kherson",
-    label: "Херсонская область",
-    borderKm: 210,
-    patterns: [
-      "херсонская область","херсон","геническ","новая каховка","скадовск",
-    ],
-  },
-];
-
-function getNewTerritoryMatch(value: string): TerritoryMatch | null {
-  const v = normalize(value);
-  if (!v) return null;
-  for (const territory of NEW_TERRITORY_ALIASES) {
-    if (territory.patterns.some((pattern) => v.includes(pattern))) {
-      return {
-        key: territory.key,
-        label: territory.label,
-        borderKm: territory.borderKm,
-      };
-    }
-  }
-  return null;
-}
-
-function estimateNewTerritoryKm(from: string, to: string, totalKm: number) {
-  const fromMatch = getNewTerritoryMatch(from);
-  const toMatch = getNewTerritoryMatch(to);
-
-  if (!fromMatch && !toMatch) {
-    return { specialKm: 0, fromMatch: null, toMatch: null, mode: "normal" as const };
-  }
-
-  if (fromMatch && toMatch) {
-    if (fromMatch.key === toMatch.key) {
-      return { specialKm: totalKm, fromMatch, toMatch, mode: "full" as const };
-    }
-
-    const blended = Math.max(Math.round(totalKm * 0.7), Math.min(totalKm, fromMatch.borderKm + toMatch.borderKm));
-    return { specialKm: Math.min(totalKm, blended), fromMatch, toMatch, mode: "mixed" as const };
-  }
-
-  const oneSide = fromMatch ?? toMatch ?? { borderKm: 0 };
-  return {
-    specialKm: Math.min(totalKm, oneSide.borderKm),
-    fromMatch,
-    toMatch,
-    mode: "partial" as const,
-  };
-}
-
 function looksLikeAirport(s: string) {
   const v = normalize(s);
   if (!v) return false;
@@ -380,63 +289,29 @@ export default function LeadForm({
   const [hasCalculated, setHasCalculated] = useState(false);
   const [km, setKm] = useState<number | null>(null);
   const [travelSeconds, setTravelSeconds] = useState<number | null>(null);
-  const [specialTariffHint, setSpecialTariffHint] = useState<string | null>(null);
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
 
   const canSubmit = Boolean(name.trim() && phone.trim() && fromText.trim() && toText.trim());
 
   const pricesByClass = useMemo(() => {
-    const segment = km ? estimateNewTerritoryKm(fromText, toText, km) : null;
-
     const calcFor = (klass: CarClass) => {
       if (routeType === "city") return CITY_BASE_PRICE[klass];
       if (!km) return null;
-
-      let total = 0;
-      if (segment && segment.specialKm > 0) {
-        const regularKm = Math.max(0, km - segment.specialKm);
-        total = Math.round(segment.specialKm * NEW_TERRITORY_PER_KM[klass] + regularKm * PER_KM[klass]);
-      } else {
-        total = Math.round(km * PER_KM[klass]);
-      }
-
+      let total = Math.round(km * PER_KM[klass]);
       if (routeType === "airport") total = Math.round(total * 1.1);
       if (roundTrip) total *= 2;
       return total;
     };
-
     return {
       standard: calcFor("standard"),
       comfort: calcFor("comfort"),
       business: calcFor("business"),
       minivan: calcFor("minivan"),
     };
-  }, [routeType, km, roundTrip, fromText, toText]);
+  }, [routeType, km, roundTrip]);
 
   const finalPrice = pricesByClass[carClass];
-
-  useEffect(() => {
-    if (!km) {
-      setSpecialTariffHint(null);
-      return;
-    }
-
-    const segment = estimateNewTerritoryKm(fromText, toText, km);
-    if (!segment.specialKm) {
-      setSpecialTariffHint(null);
-      return;
-    }
-
-    const territoryLabel = segment.fromMatch?.label ?? segment.toMatch?.label ?? "новые территории";
-    if (segment.mode === "full") {
-      setSpecialTariffHint(`Спецтариф ${territoryLabel}: весь маршрут считается по 80/100 ₽ за км.`);
-      return;
-    }
-
-    setSpecialTariffHint(`Спецтариф ${territoryLabel}: ${Math.round(segment.specialKm)} км считаются по 80/100 ₽ за км, дальше — обычный тариф.`);
-  }, [km, fromText, toText]);
-
   const travelTimeText = useMemo(() => {
     if (travelSeconds == null || !Number.isFinite(travelSeconds) || travelSeconds <= 0) return null;
     return formatDurationRU(travelSeconds);
@@ -480,7 +355,6 @@ export default function LeadForm({
       setCalcError("Введите точки маршрута");
       setKm(null);
       setTravelSeconds(null);
-      setSpecialTariffHint(null);
       return;
     }
 
@@ -511,7 +385,6 @@ export default function LeadForm({
     } catch (e: unknown) {
       setKm(null);
       setTravelSeconds(null);
-      setSpecialTariffHint(null);
       setCalcError(e instanceof Error ? e.message : "Не удалось рассчитать расстояние");
     } finally {
       setCalcLoading(false);
@@ -527,7 +400,6 @@ export default function LeadForm({
       setCalcError(null);
       setKm(null);
       setTravelSeconds(null);
-      setSpecialTariffHint(null);
       setCalcLoading(false);
       return;
     }
@@ -573,7 +445,6 @@ export default function LeadForm({
         if (e instanceof Error && e.name === "AbortError") return;
         setKm(null);
         setTravelSeconds(null);
-        setSpecialTariffHint(null);
         setCalcError(e instanceof Error ? e.message : "Не удалось рассчитать расстояние");
       } finally {
         if (!cancelled) setCalcLoading(false);
@@ -715,7 +586,6 @@ export default function LeadForm({
                   {!calcLoading && !calcError && !km && routeType === "city" ? <span>{formatFrom(CITY_BASE_PRICE[carClass])}</span> : null}
                   {!calcLoading && !calcError && !km && routeType !== "city" ? <span>Маршрут считается автоматически</span> : null}
                 </div>
-                {specialTariffHint ? <div className="mt-2 text-[12px] font-semibold text-orange-600">{specialTariffHint}</div> : null}
               </div>
 
               <div className="text-left sm:text-right">

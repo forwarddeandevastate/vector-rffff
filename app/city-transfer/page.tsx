@@ -6,7 +6,7 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Трансфер по городу — заказать поездку | Вектор РФ",
+  title: "Трансфер по городу — заказать поездку",
   description:
     "Городской трансфер: быстрая подача, фиксируем заявку и согласуем стоимость заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
   alternates: { canonical: `${SITE_URL}/city-transfer` },
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: `${SITE_URL}/city-transfer`,
-    title: "Трансфер по городу | Вектор РФ",
+    title: "Трансфер по городу",
     description:
       "Городской трансфер: быстро, комфортно, согласуем стоимость заранее. Заказ онлайн 24/7.",
     siteName: SITE_NAME,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Трансфер по городу | Вектор РФ",
+    title: "Трансфер по городу",
     description: "Городской трансфер. Онлайн-заявка 24/7.",
     images: ["/og.jpg"],
   },

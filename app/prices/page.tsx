@@ -14,14 +14,14 @@ function cn(...xs: Array<string | false | null | undefined>) {
 }
 
 export const metadata: Metadata = {
-  title: "Цены на междугородние поездки — Вектор РФ",
+  title: "Цены на междугородние поездки",
   description:
     "Актуальные цены на междугородние поездки и трансферы из Нижнего Новгорода. Москва, Санкт-Петербург, Казань, Уфа, Краснодар и другие направления.",
   alternates: { canonical: `${SITE_URL}/prices` },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/prices`,
-    title: "Цены на междугородние поездки — Вектор РФ",
+    title: "Цены на междугородние поездки",
     description:
       "Таблица цен на трансферы и междугородние поездки из Нижнего Новгорода. Стоимость фиксируется до подачи автомобиля.",
     siteName: SITE_NAME,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Цены на междугородние поездки — Вектор РФ",
+    title: "Цены на междугородние поездки",
     description: "Цены на трансферы из Нижнего Новгорода. Стоимость подтверждаем заранее.",
     images: ["/og.jpg"],
   },

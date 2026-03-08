@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { CITY_LANDINGS } from "@/lib/city-landings";
 import { absoluteUrl } from "@/lib/seo";
+import { buildSeoRouteUrls } from "@/lib/seo-routes";
 
 const STATIC_PATHS = [
   "/",
@@ -23,16 +24,18 @@ const STATIC_PATHS = [
   "/personal-data",
   "/agreement",
   "/taxi-mezhgorod",
+  "/taksi-mezhgorod",
   "/mezhdugorodnee-taksi",
   "/transfer-v-aeroport",
   "/transfer-iz-aeroporta",
+  "/taxi-v-aeroport",
 ] as const;
 
 const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> = {
   "/": 1,
   "/services": 0.95,
   "/intercity-taxi": 0.95,
-  "/airport-transfer": 0.9,
+  "/airport-transfer": 0.92,
   "/city": 0.9,
   "/city-transfer": 0.85,
   "/minivan-transfer": 0.8,
@@ -47,48 +50,32 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/privacy": 0.35,
   "/personal-data": 0.35,
   "/agreement": 0.35,
-  "/taxi-mezhgorod": 0.92,
-  "/mezhdugorodnee-taksi": 0.92,
-  "/transfer-v-aeroport": 0.9,
+  "/taxi-mezhgorod": 0.93,
+  "/taksi-mezhgorod": 0.92,
+  "/mezhdugorodnee-taksi": 0.93,
+  "/transfer-v-aeroport": 0.92,
   "/transfer-iz-aeroporta": 0.9,
+  "/taxi-v-aeroport": 0.92,
 };
 
-const STATIC_CHANGE_FREQUENCY: Partial<
-  Record<(typeof STATIC_PATHS)[number], MetadataRoute.Sitemap[number]["changeFrequency"]>
-> = {
-  "/": "weekly",
-  "/services": "weekly",
-  "/intercity-taxi": "weekly",
-  "/airport-transfer": "weekly",
-  "/city": "weekly",
-  "/city-transfer": "weekly",
-  "/minivan-transfer": "weekly",
-  "/corporate-taxi": "weekly",
-  "/corporate": "monthly",
-  "/about": "monthly",
-  "/contacts": "monthly",
-  "/reviews": "weekly",
-  "/faq": "monthly",
-  "/prices": "monthly",
-  "/requisites": "yearly",
-  "/privacy": "yearly",
-  "/personal-data": "yearly",
-  "/agreement": "yearly",
-  "/taxi-mezhgorod": "weekly",
-  "/mezhdugorodnee-taksi": "weekly",
-  "/transfer-v-aeroport": "weekly",
-  "/transfer-iz-aeroporta": "weekly",
-};
+const ROUTE_CHUNK_SIZE = 5000;
+const SEO_ROUTE_URL_LIMIT = 50000;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+function buildAllEntries(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   const seen = new Set<string>();
+  const routeEntries = buildSeoRouteUrls("", SEO_ROUTE_URL_LIMIT).map((path) => ({
+    url: absoluteUrl(path),
+    lastModified,
+    changeFrequency: "weekly" as const,
+    priority: path.split("/").length > 3 ? 0.63 : 0.68,
+  }));
 
   const entries: MetadataRoute.Sitemap = [
     ...STATIC_PATHS.map((path) => ({
       url: absoluteUrl(path),
       lastModified,
-      changeFrequency: STATIC_CHANGE_FREQUENCY[path] ?? "monthly",
+      changeFrequency: "weekly" as const,
       priority: STATIC_PRIORITIES[path] ?? 0.5,
     })),
     ...CITY_LANDINGS.map((city) => ({
@@ -97,14 +84,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...CITY_LANDINGS.flatMap((city) =>
-      city.popularTo.map((to) => ({
-        url: absoluteUrl(`/${city.slug}/${to}`),
-        lastModified,
-        changeFrequency: "weekly" as const,
-        priority: 0.65,
-      }))
-    ),
+    ...routeEntries,
   ];
 
   return entries.filter((entry) => {
@@ -112,4 +92,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     seen.add(entry.url);
     return true;
   });
+}
+
+export async function generateSitemaps() {
+  const total = buildAllEntries().length;
+  const chunks = Math.max(1, Math.ceil(total / ROUTE_CHUNK_SIZE));
+  return Array.from({ length: chunks }, (_, id) => ({ id }));
+}
+
+export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+  const entries = buildAllEntries();
+  const start = id * ROUTE_CHUNK_SIZE;
+  const end = start + ROUTE_CHUNK_SIZE;
+  return entries.slice(start, end);
 }

@@ -85,12 +85,16 @@ export default function SeoRouteClient(props: {
   toSlug: string;
   fromName: string;
   toName: string;
+  heading: string;
+  subtitle: string;
+  routeFacts: string[];
   cityBackHref: string;
   cityBackLabel: string;
   content: string;
   keywordText?: string[];
   faq: FAQItem[];
   moreFromCity: Array<{ toSlug: string; toName: string }>;
+  siblingVariants?: Array<{ key: string; href: string; label: string }>;
 }) {
   const PHONE_TEL = "+78002225650";
   const PHONE_DISPLAY = "8 (800) 222-56-50";
@@ -171,12 +175,8 @@ export default function SeoRouteClient(props: {
 
         <div className="mt-8 grid gap-8">
           <section>
-            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
-              Такси {props.fromName} — {props.toName}
-            </h1>
-            <p className="mt-2 text-sm text-zinc-600">
-              Прямая поездка без пересадок. Стоимость согласуем заранее. Работаем 24/7.
-            </p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">{props.heading}</h1>
+            <p className="mt-2 text-sm text-zinc-600">{props.subtitle}</p>
 
             <div className="mt-4 flex flex-wrap gap-2">
               <SmallBadge>Подтверждение цены до поездки</SmallBadge>
@@ -189,6 +189,14 @@ export default function SeoRouteClient(props: {
                 <SmallBadge key={item}>{item}</SmallBadge>
               ))}
             </div>
+          </section>
+
+          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {props.routeFacts.map((fact) => (
+              <div key={fact} className="rounded-3xl border border-sky-100 bg-sky-50/70 p-4 shadow-sm">
+                <div className="text-sm font-semibold text-zinc-800">{fact}</div>
+              </div>
+            ))}
           </section>
 
           <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -251,6 +259,26 @@ export default function SeoRouteClient(props: {
               ))}
             </div>
           </section>
+
+          {props.siblingVariants && props.siblingVariants.length > 0 ? (
+            <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+              <div className="text-sm font-extrabold text-zinc-900">Другие варианты этой страницы</div>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">
+                Для маршрута {props.fromName} — {props.toName} доступны отдельные SEO-страницы под разные коммерческие формулировки: такси, трансфер и междугородние запросы.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {props.siblingVariants.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Ещё маршруты из {props.fromName}</div>

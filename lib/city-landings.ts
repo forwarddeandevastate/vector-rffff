@@ -167,6 +167,14 @@ const RAW_CITIES: RawCity[] = [
   { slug: "balakovo", name: "Балаково", fromGenitive: "Балаково", region: "volga" },
   { slug: "nizhnekamsk", name: "Нижнекамск", fromGenitive: "Нижнекамска", region: "volga" },
   { slug: "angarsk", name: "Ангарск", fromGenitive: "Ангарска", region: "siberia" },
+  { slug: "donetsk", name: "Донецк", fromGenitive: "Донецка", region: "south" },
+  { slug: "makeyevka", name: "Макеевка", fromGenitive: "Макеевки", region: "south" },
+  { slug: "gorlovka", name: "Горловка", fromGenitive: "Горловки", region: "south" },
+  { slug: "mariupol", name: "Мариуполь", fromGenitive: "Мариуполя", region: "south" },
+  { slug: "lugansk", name: "Луганск", fromGenitive: "Луганска", region: "south" },
+  { slug: "melitopol", name: "Мелитополь", fromGenitive: "Мелитополя", region: "south" },
+  { slug: "berdyansk", name: "Бердянск", fromGenitive: "Бердянска", region: "south" },
+  { slug: "kherson", name: "Херсон", fromGenitive: "Херсона", region: "south" },
 ];
 
 function uniqueSlugs(items: string[], selfSlug: string, known: Set<string>) {
@@ -200,7 +208,7 @@ function buildPopularTo(city: RawCity, cities: RawCity[]) {
     known
   );
 
-  return candidates.slice(0, 18);
+  return candidates.slice(0, 24);
 }
 
 export const CITY_LANDINGS: CityLanding[] = RAW_CITIES.map((city) => ({
@@ -229,4 +237,17 @@ export function prettyCityNameFromSlug(slug: string) {
       .map((word) => word.slice(0, 1).toUpperCase() + word.slice(1))
       .join(" ")
   );
+}
+
+
+export function getAllRouteTargets(fromSlug: string) {
+  return CITY_LANDINGS.filter((city) => city.slug !== fromSlug).map((city) => city.slug);
+}
+
+export function isValidCitySlug(slug: string) {
+  return CITY_BY_SLUG.has(slug);
+}
+
+export function isValidRouteSlugs(fromSlug: string, toSlug: string) {
+  return fromSlug !== toSlug && CITY_BY_SLUG.has(fromSlug) && CITY_BY_SLUG.has(toSlug);
 }
