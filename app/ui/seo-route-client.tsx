@@ -91,7 +91,6 @@ export default function SeoRouteClient(props: {
   keywordText?: string[];
   faq: FAQItem[];
   moreFromCity: Array<{ toSlug: string; toName: string }>;
-  routeFacts?: { distance: number; travelHours: number; roadFormat: string };
 }) {
   const PHONE_TEL = "+78002225650";
   const PHONE_DISPLAY = "8 (800) 222-56-50";
@@ -198,24 +197,6 @@ export default function SeoRouteClient(props: {
                 <div className="text-sm leading-6 text-zinc-700">{fact}</div>
               </div>
             ))}
-          </section>
-
-          <section className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-3xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Маршрут</div>
-              <div className="mt-2 text-lg font-extrabold text-zinc-900">{props.fromName} — {props.toName}</div>
-              <p className="mt-2 text-sm leading-6 text-zinc-700">{props.routeFacts?.roadFormat ?? "Прямая поездка между городами без пересадок."}</p>
-            </div>
-            <div className="rounded-3xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Ориентировочно</div>
-              <div className="mt-2 text-lg font-extrabold text-zinc-900">{props.routeFacts?.distance ?? "—"} км</div>
-              <p className="mt-2 text-sm leading-6 text-zinc-700">Дистанция по маршруту считается ориентировочно и помогает уникализировать посадочную страницу под направление.</p>
-            </div>
-            <div className="rounded-3xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">В пути</div>
-              <div className="mt-2 text-lg font-extrabold text-zinc-900">~ {props.routeFacts?.travelHours ?? "—"} ч</div>
-              <p className="mt-2 text-sm leading-6 text-zinc-700">Время зависит от выезда, дороги и погодных условий, точные детали согласуем заранее.</p>
-            </div>
           </section>
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">

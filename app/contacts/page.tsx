@@ -15,14 +15,14 @@ function cn(...xs: Array<string | false | null | undefined>) {
 }
 
 export const metadata: Metadata = {
-  title: "Контакты",
+  title: "Контакты | Вектор РФ",
   description:
     "Контакты сервиса «Вектор РФ»: телефон, Telegram, режим работы 24/7. Оставьте заявку на трансфер по городу, в аэропорт или на межгород.",
   alternates: { canonical: `${SITE_URL}/contacts` },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/contacts`,
-    title: "Контакты",
+    title: "Контакты — Вектор РФ",
     description: "Телефон, Telegram и режим работы. Трансферы и поездки по России. 24/7.",
     siteName: SITE_NAME,
     locale: "ru_RU",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Контакты",
+    title: "Контакты — Вектор РФ",
     description: "Телефон, Telegram и режим работы. Трансферы 24/7.",
     images: ["/og.jpg"],
   },

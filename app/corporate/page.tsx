@@ -10,7 +10,7 @@ function cn(...xs: Array<string | false | null | undefined>) {
 }
 
 export const metadata: Metadata = {
-  title: "Корпоративным клиентам",
+  title: "Корпоративным клиентам — Вектор РФ",
   description:
     "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность. Работаем 24/7.",
   alternates: { canonical: CANONICAL },
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: CANONICAL,
-    title: "Корпоративным клиентам",
+    title: "Корпоративным клиентам — Вектор РФ",
     description:
       "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность.",
     siteName: SITE_NAME,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Корпоративным клиентам",
+    title: "Корпоративным клиентам — Вектор РФ",
     description:
       "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность.",
     images: ["/og.jpg"],

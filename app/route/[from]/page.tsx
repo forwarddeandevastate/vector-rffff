@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 
 // Старый URL /route/{from} -> /{from}
-export default async function Page({ params }: { params: Promise<{ from: string }> }) {
-  const resolvedParams = await params;
-  const from = encodeURIComponent((resolvedParams.from ?? "").trim());
+export default function Page({ params }: { params: { from: string } }) {
+  const from = encodeURIComponent((params.from ?? "").trim());
   redirect(`/${from}`);
 }

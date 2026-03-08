@@ -8,7 +8,7 @@ const CANONICAL = `${SITE_URL}/minivan-transfer`;
 const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
-  title: "Минивэн и групповой трансфер — 4–7 мест",
+  title: "Минивэн и групповой трансфер — 4–7 мест | Вектор РФ",
   description:
     "Минивэн и групповой трансфер: для семьи/компании и большого багажа. В аэропорт, по городу и на межгород. Согласуем стоимость заранее. Онлайн-заявка 24/7.",
   alternates: { canonical: CANONICAL },
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: CANONICAL,
-    title: "Минивэн / групповой трансфер",
+    title: "Минивэн / групповой трансфер — Вектор РФ",
     description:
       "Групповые поездки и трансферы на минивэне: больше мест и багажа. Согласуем стоимость до подачи. 24/7.",
     siteName: SITE_NAME,
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Минивэн / групповой трансфер",
+    title: "Минивэн / групповой трансфер — Вектор РФ",
     description: "Групповые поездки и трансферы на минивэне: больше мест и багажа. 24/7.",
     images: ["/og.jpg"],
   },

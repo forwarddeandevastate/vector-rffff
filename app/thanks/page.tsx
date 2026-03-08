@@ -10,7 +10,7 @@ const TELEGRAM = "https://t.me/vector_rf52";
 const TELEGRAM_USERNAME = "vector_rf52";
 
 export const metadata: Metadata = {
-  title: "Заявка отправлена",
+  title: "Заявка отправлена — Вектор РФ",
   description: "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
   alternates: { canonical: CANONICAL },
 
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: CANONICAL,
-    title: "Заявка отправлена",
+    title: "Заявка отправлена — Вектор РФ",
     description: "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
     siteName: "Вектор РФ",
     locale: "ru_RU",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Заявка отправлена",
+    title: "Заявка отправлена — Вектор РФ",
     description: "Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.",
     images: ["/og.jpg"],
   },

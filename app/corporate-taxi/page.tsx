@@ -8,7 +8,7 @@ const CANONICAL = `${SITE_URL}/corporate-taxi`;
 const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
-  title: "Корпоративное такси и перевозки для компаний",
+  title: "Корпоративное такси и перевозки для компаний | Вектор РФ",
   description:
     "Корпоративные перевозки и трансферы для компаний: договор, безнал, отчётность. Регулярные поездки для сотрудников и гостей. Встреча в аэропорту. 24/7.",
   alternates: { canonical: CANONICAL },
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: CANONICAL,
-    title: "Корпоративное такси",
+    title: "Корпоративное такси — Вектор РФ",
     description:
       "Перевозки для компаний: договор, безнал, отчётность. Поездки сотрудников и гостей, встречи в аэропорту. 24/7.",
     siteName: SITE_NAME,
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Корпоративное такси",
+    title: "Корпоративное такси — Вектор РФ",
     description: "Перевозки для компаний: договор, безнал, отчётность. Поездки сотрудников и гостей. 24/7.",
     images: ["/og.jpg"],
   },

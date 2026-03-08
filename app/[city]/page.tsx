@@ -3,7 +3,7 @@ import Script from "next/script";
 import { notFound } from "next/navigation";
 
 import SeoCityClient from "@/app/ui/seo-city-client";
-import { CITY_BY_SLUG, CITY_LANDINGS, prettyCityNameFromSlug } from "@/lib/city-landings";
+import { CITY_BY_SLUG, prettyCityNameFromSlug } from "@/lib/city-landings";
 import { buildBreadcrumbJsonLd, buildCityMetadata, buildFaqJsonLd } from "@/lib/seo";
 import { CITY_CONTENT } from "@/lib/city-content";
 import { CITY_FAQ } from "@/lib/city-faq";
@@ -27,9 +27,11 @@ function normalizeSlug(input: string) {
   return s;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
-  const resolvedParams = await params;
-  const slug = normalizeSlug(resolvedParams.city);
+export const revalidate = 86400;
+export const dynamicParams = true;
+
+export async function generateMetadata({ params }: { params: { city: string } }): Promise<Metadata> {
+  const slug = normalizeSlug(params.city);
   const city = CITY_BY_SLUG.get(slug);
   if (!city) return { robots: { index: false, follow: false } };
 
@@ -40,13 +42,8 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   });
 }
 
-export function generateStaticParams() {
-  return CITY_LANDINGS.map((city) => ({ city: city.slug }));
-}
-
-export default async function Page({ params }: { params: Promise<{ city: string }> }) {
-  const resolvedParams = await params;
-  const slug = normalizeSlug(resolvedParams.city);
+export default function Page({ params }: { params: { city: string } }) {
+  const slug = normalizeSlug(params.city);
   const city = CITY_BY_SLUG.get(slug);
   if (!city) return notFound();
 

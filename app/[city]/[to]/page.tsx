@@ -3,7 +3,7 @@ import Script from "next/script";
 import { notFound } from "next/navigation";
 
 import SeoRouteClient from "@/app/ui/seo-route-client";
-import { CITY_BY_SLUG, CITY_LANDINGS, prettyCityNameFromSlug } from "@/lib/city-landings";
+import { CITY_BY_SLUG, prettyCityNameFromSlug } from "@/lib/city-landings";
 import { buildBreadcrumbJsonLd, buildFaqJsonLd, buildRouteMetadata } from "@/lib/seo";
 import { buildRouteSeoData } from "@/lib/route-seo";
 
@@ -23,14 +23,16 @@ function normalizeSlug(input: string) {
   return s;
 }
 
+export const revalidate = 86400;
+export const dynamicParams = true;
+
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ city: string; to: string }>;
+  params: { city: string; to: string };
 }): Promise<Metadata> {
-  const resolvedParams = await params;
-  const fromSlug = normalizeSlug(resolvedParams.city);
-  const toSlug = normalizeSlug(resolvedParams.to);
+  const fromSlug = normalizeSlug(params.city);
+  const toSlug = normalizeSlug(params.to);
 
   const fromCity = CITY_BY_SLUG.get(fromSlug);
   if (!fromCity) return { robots: { index: false, follow: false } };
@@ -58,14 +60,9 @@ export async function generateMetadata({
   });
 }
 
-export function generateStaticParams() {
-  return CITY_LANDINGS.flatMap((city) => city.popularTo.map((to) => ({ city: city.slug, to })));
-}
-
-export default async function Page({ params }: { params: Promise<{ city: string; to: string }> }) {
-  const resolvedParams = await params;
-  const fromSlug = normalizeSlug(resolvedParams.city);
-  const toSlug = normalizeSlug(resolvedParams.to);
+export default function Page({ params }: { params: { city: string; to: string } }) {
+  const fromSlug = normalizeSlug(params.city);
+  const toSlug = normalizeSlug(params.to);
 
   const fromCity = CITY_BY_SLUG.get(fromSlug);
   if (!fromCity) return notFound();
@@ -187,7 +184,6 @@ export default async function Page({ params }: { params: Promise<{ city: string;
         keywordText={seoData.keywordText}
         faq={seoData.faq}
         moreFromCity={moreFromCity}
-        routeFacts={seoData.facts}
       />
     </>
   );

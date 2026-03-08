@@ -5,14 +5,14 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: "Вопросы и ответы | Трансфер и междугороднее такси",
+  title: "Вопросы и ответы | Трансфер и междугороднее такси | Вектор РФ",
   description:
     "Ответы на частые вопросы о трансферах и междугородних поездках: стоимость, подача, ожидание, встреча в аэропорту, детское кресло, остановки, оплата и документы.",
   alternates: { canonical: `${SITE_URL}/faq` },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/faq`,
-    title: "Вопросы и ответы",
+    title: "Вопросы и ответы | Вектор РФ",
     description:
       "Стоимость, подача, аэропорты, ожидание, детское кресло, остановки, оплата и документы — ответы на популярные вопросы.",
     siteName: SITE_NAME,
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Вопросы и ответы",
+    title: "Вопросы и ответы | Вектор РФ",
     description:
       "Ответы на частые вопросы о трансферах и междугородних поездках — Вектор РФ.",
     images: ["/og.jpg"],

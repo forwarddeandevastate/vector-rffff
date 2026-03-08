@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
   title: {
     default: "Вектор РФ — трансферы и поездки по России",
-    template: "%s",
+    template: "%s | Вектор РФ",
   },
 
   description:

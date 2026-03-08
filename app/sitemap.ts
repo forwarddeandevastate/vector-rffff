@@ -80,9 +80,7 @@ const STATIC_CHANGE_FREQUENCY: Partial<
   "/transfer-iz-aeroporta": "weekly",
 };
 
-const CHUNK_SIZE = 5000;
-
-function getAllEntries(): MetadataRoute.Sitemap {
+export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   const seen = new Set<string>();
 
@@ -114,16 +112,4 @@ function getAllEntries(): MetadataRoute.Sitemap {
     seen.add(entry.url);
     return true;
   });
-}
-
-export async function generateSitemaps() {
-  const entries = getAllEntries();
-  const count = Math.max(1, Math.ceil(entries.length / CHUNK_SIZE));
-  return Array.from({ length: count }, (_, id) => ({ id }));
-}
-
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-  const entries = getAllEntries();
-  const start = id * CHUNK_SIZE;
-  return entries.slice(start, start + CHUNK_SIZE);
 }
