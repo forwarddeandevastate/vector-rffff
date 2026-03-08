@@ -7,10 +7,10 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 // ✅ ВАЖНО: считаем один раз на уровне модуля (не на каждый запрос/рендер)
-const SEO_ROUTES = buildSeoRoutes(2000);
+const SEO_ROUTES = buildSeoRoutes(10000);
 
 export const metadata: Metadata = {
-  title: "Каталог маршрутов по России — города и направления | Вектор РФ",
+  title: "Каталог маршрутов по России — города и направления",
   description:
     "Каталог популярных направлений и городов: междугородние поездки по России. Выберите маршрут и оставьте заявку онлайн — 24/7. Стоимость согласуем заранее.",
   alternates: { canonical: `${SITE_URL}/city` },
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: `${SITE_URL}/city`,
-    title: "Каталог маршрутов по России — города и направления | Вектор РФ",
+    title: "Каталог маршрутов по России — города и направления",
     description:
       "Каталог популярных направлений: выбирайте маршрут и оставляйте заявку. Комфорт, бизнес, минивэн. 24/7.",
     siteName: SITE_NAME,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Каталог направлений | Вектор РФ",
+    title: "Каталог направлений",
     description: "Популярные маршруты и города по России. Заявка онлайн 24/7.",
     images: ["/og.jpg"],
   },
@@ -184,7 +184,7 @@ export default function Page() {
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Каталог маршрутов — Вектор РФ",
+    name: "Каталог маршрутов",
     itemListOrder: "https://schema.org/ItemListUnordered",
     numberOfItems: routesForCatalog.length,
     itemListElement: routesForCatalog.slice(0, 200).map((r, idx) => ({

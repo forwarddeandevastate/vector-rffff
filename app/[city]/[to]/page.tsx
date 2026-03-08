@@ -26,10 +26,11 @@ function normalizeSlug(input: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { city: string; to: string };
+  params: Promise<{ city: string; to: string }>;
 }): Promise<Metadata> {
-  const fromSlug = normalizeSlug(params.city);
-  const toSlug = normalizeSlug(params.to);
+  const resolvedParams = await params;
+  const fromSlug = normalizeSlug(resolvedParams.city);
+  const toSlug = normalizeSlug(resolvedParams.to);
 
   const fromCity = CITY_BY_SLUG.get(fromSlug);
   if (!fromCity) return { robots: { index: false, follow: false } };
@@ -61,9 +62,10 @@ export function generateStaticParams() {
   return CITY_LANDINGS.flatMap((city) => city.popularTo.map((to) => ({ city: city.slug, to })));
 }
 
-export default function Page({ params }: { params: { city: string; to: string } }) {
-  const fromSlug = normalizeSlug(params.city);
-  const toSlug = normalizeSlug(params.to);
+export default async function Page({ params }: { params: Promise<{ city: string; to: string }> }) {
+  const resolvedParams = await params;
+  const fromSlug = normalizeSlug(resolvedParams.city);
+  const toSlug = normalizeSlug(resolvedParams.to);
 
   const fromCity = CITY_BY_SLUG.get(fromSlug);
   if (!fromCity) return notFound();
@@ -185,6 +187,7 @@ export default function Page({ params }: { params: { city: string; to: string } 
         keywordText={seoData.keywordText}
         faq={seoData.faq}
         moreFromCity={moreFromCity}
+        routeFacts={seoData.facts}
       />
     </>
   );

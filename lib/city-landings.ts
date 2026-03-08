@@ -169,6 +169,163 @@ const RAW_CITIES: RawCity[] = [
   { slug: "angarsk", name: "Ангарск", fromGenitive: "Ангарска", region: "siberia" },
 ];
 
+
+const EXTRA_RAW_CITIES: RawCity[] = [
+  { slug: "donetsk", name: "Донецк", fromGenitive: "Донецка", region: "south" },
+  { slug: "makeyevka", name: "Макеевка", fromGenitive: "Макеевки", region: "south" },
+  { slug: "gorlovka", name: "Горловка", fromGenitive: "Горловки", region: "south" },
+  { slug: "mariupol", name: "Мариуполь", fromGenitive: "Мариуполя", region: "south" },
+  { slug: "lugansk", name: "Луганск", fromGenitive: "Луганска", region: "south" },
+  { slug: "alchevsk", name: "Алчевск", fromGenitive: "Алчевска", region: "south" },
+  { slug: "melitopol", name: "Мелитополь", fromGenitive: "Мелитополя", region: "south" },
+  { slug: "berdyansk", name: "Бердянск", fromGenitive: "Бердянска", region: "south" },
+  { slug: "kherson", name: "Херсон", fromGenitive: "Херсона", region: "south" },
+  { slug: "genichesk", name: "Геническ", fromGenitive: "Геническа", region: "south" },
+  { slug: "severomorsk", name: "Североморск", fromGenitive: "Североморска", region: "northwest" },
+  { slug: "apatity", name: "Апатиты", fromGenitive: "Апатитов", region: "northwest" },
+  { slug: "monchegorsk", name: "Мончегорск", fromGenitive: "Мончегорска", region: "northwest" },
+  { slug: "kingisepp", name: "Кингисепп", fromGenitive: "Кингисеппа", region: "northwest" },
+  { slug: "gatchina", name: "Гатчина", fromGenitive: "Гатчины", region: "northwest" },
+  { slug: "vyborg", name: "Выборг", fromGenitive: "Выборга", region: "northwest" },
+  { slug: "sosnovyy-bor", name: "Сосновый Бор", fromGenitive: "Соснового Бора", region: "northwest" },
+  { slug: "luga", name: "Луга", fromGenitive: "Луги", region: "northwest" },
+  { slug: "borovichi", name: "Боровичи", fromGenitive: "Боровичей", region: "northwest" },
+  { slug: "velikiye-luki", name: "Великие Луки", fromGenitive: "Великих Лук", region: "northwest" },
+  { slug: "kineshma", name: "Кинешма", fromGenitive: "Кинешмы", region: "center" },
+  { slug: "shuya", name: "Шуя", fromGenitive: "Шуи", region: "center" },
+  { slug: "aleksandrov", name: "Александров", fromGenitive: "Александрова", region: "center" },
+  { slug: "kolchugino", name: "Кольчугино", fromGenitive: "Кольчугина", region: "center" },
+  { slug: "gus-khrustalnyy", name: "Гусь-Хрустальный", fromGenitive: "Гусь-Хрустального", region: "center" },
+  { slug: "vyazniki", name: "Вязники", fromGenitive: "Вязников", region: "center" },
+  { slug: "rossosh", name: "Россошь", fromGenitive: "Россоши", region: "center" },
+  { slug: "borisoglebsk", name: "Борисоглебск", fromGenitive: "Борисоглебска", region: "center" },
+  { slug: "liski", name: "Лиски", fromGenitive: "Лисок", region: "center" },
+  { slug: "semiluki", name: "Семилуки", fromGenitive: "Семилук", region: "center" },
+  { slug: "michurinsk", name: "Мичуринск", fromGenitive: "Мичуринска", region: "center" },
+  { slug: "kotovsk-tambov", name: "Котовск", fromGenitive: "Котовска", region: "center" },
+  { slug: "murom", name: "Муром", fromGenitive: "Мурома", region: "center" },
+  { slug: "kovrov", name: "Ковров", fromGenitive: "Коврова", region: "center" },
+  { slug: "rybnoye", name: "Рыбное", fromGenitive: "Рыбного", region: "center" },
+  { slug: "kasimov", name: "Касимов", fromGenitive: "Касимова", region: "center" },
+  { slug: "sasovo", name: "Сасово", fromGenitive: "Сасово", region: "center" },
+  { slug: "uzlovaya", name: "Узловая", fromGenitive: "Узловой", region: "center" },
+  { slug: "efremov", name: "Ефремов", fromGenitive: "Ефремова", region: "center" },
+  { slug: "kimry", name: "Кимры", fromGenitive: "Кимр", region: "center" },
+  { slug: "rzhev", name: "Ржев", fromGenitive: "Ржева", region: "center" },
+  { slug: "torzhok", name: "Торжок", fromGenitive: "Торжка", region: "center" },
+  { slug: "uglich", name: "Углич", fromGenitive: "Углича", region: "center" },
+  { slug: "pereslavl-zalesskiy", name: "Переславль-Залесский", fromGenitive: "Переславля-Залесского", region: "center" },
+  { slug: "sergiev-posad", name: "Сергиев Посад", fromGenitive: "Сергиева Посада", region: "center" },
+  { slug: "klin", name: "Клин", fromGenitive: "Клина", region: "center" },
+  { slug: "dmitrov", name: "Дмитров", fromGenitive: "Дмитрова", region: "center" },
+  { slug: "volokolamsk", name: "Волоколамск", fromGenitive: "Волоколамска", region: "center" },
+  { slug: "mozhaysk", name: "Можайск", fromGenitive: "Можайска", region: "center" },
+  { slug: "chekhov", name: "Чехов", fromGenitive: "Чехова", region: "center" },
+  { slug: "vidnoye", name: "Видное", fromGenitive: "Видного", region: "center" },
+  { slug: "solnechnogorsk", name: "Солнечногорск", fromGenitive: "Солнечногорска", region: "center" },
+  { slug: "dubna", name: "Дубна", fromGenitive: "Дубны", region: "center" },
+  { slug: "stupino", name: "Ступино", fromGenitive: "Ступино", region: "center" },
+  { slug: "zaraysk", name: "Зарайск", fromGenitive: "Зарайска", region: "center" },
+  { slug: "yegoryevsk", name: "Егорьевск", fromGenitive: "Егорьевска", region: "center" },
+  { slug: "salavat", name: "Салават", fromGenitive: "Салавата", region: "ural" },
+  { slug: "sterlitamak", name: "Стерлитамак", fromGenitive: "Стерлитамака", region: "ural" },
+  { slug: "neftekamsk", name: "Нефтекамск", fromGenitive: "Нефтекамска", region: "ural" },
+  { slug: "oktyabrskiy-bashkortostan", name: "Октябрьский", fromGenitive: "Октябрьского", region: "ural" },
+  { slug: "orsk", name: "Орск", fromGenitive: "Орска", region: "ural" },
+  { slug: "novotroitsk", name: "Новотроицк", fromGenitive: "Новотроицка", region: "ural" },
+  { slug: "bugulma", name: "Бугульма", fromGenitive: "Бугульмы", region: "volga" },
+  { slug: "almetyevsk", name: "Альметьевск", fromGenitive: "Альметьевска", region: "volga" },
+  { slug: "zelenodolsk", name: "Зеленодольск", fromGenitive: "Зеленодольска", region: "volga" },
+  { slug: "chistopol", name: "Чистополь", fromGenitive: "Чистополя", region: "volga" },
+  { slug: "balakovo", name: "Балаково", fromGenitive: "Балаково", region: "volga" },
+  { slug: "engels", name: "Энгельс", fromGenitive: "Энгельса", region: "volga" },
+  { slug: "volsk", name: "Вольск", fromGenitive: "Вольска", region: "volga" },
+  { slug: "syzran", name: "Сызрань", fromGenitive: "Сызрани", region: "volga" },
+  { slug: "novokuybyshevsk", name: "Новокуйбышевск", fromGenitive: "Новокуйбышевска", region: "volga" },
+  { slug: "zhigulevsk", name: "Жигулёвск", fromGenitive: "Жигулёвска", region: "volga" },
+  { slug: "dimitrovgrad", name: "Димитровград", fromGenitive: "Димитровграда", region: "volga" },
+  { slug: "novocherkassk", name: "Новочеркасск", fromGenitive: "Новочеркасска", region: "south" },
+  { slug: "shakhty", name: "Шахты", fromGenitive: "Шахт", region: "south" },
+  { slug: "bataysk", name: "Батайск", fromGenitive: "Батайска", region: "south" },
+  { slug: "azov", name: "Азов", fromGenitive: "Азова", region: "south" },
+  { slug: "krasnyy-sulin", name: "Красный Сулин", fromGenitive: "Красного Сулина", region: "south" },
+  { slug: "gelendzhik", name: "Геленджик", fromGenitive: "Геленджика", region: "south" },
+  { slug: "tuapse", name: "Туапсе", fromGenitive: "Туапсе", region: "south" },
+  { slug: "eysk", name: "Ейск", fromGenitive: "Ейска", region: "south" },
+  { slug: "armavir", name: "Армавир", fromGenitive: "Армавира", region: "south" },
+  { slug: "kropotkin", name: "Кропоткин", fromGenitive: "Кропоткина", region: "south" },
+  { slug: "slavyansk-na-kubani", name: "Славянск-на-Кубани", fromGenitive: "Славянска-на-Кубани", region: "south" },
+  { slug: "kamyshin", name: "Камышин", fromGenitive: "Камышина", region: "south" },
+  { slug: "mikhaylovka", name: "Михайловка", fromGenitive: "Михайловки", region: "south" },
+  { slug: "volzhskiy", name: "Волжский", fromGenitive: "Волжского", region: "south" },
+  { slug: "essentuki", name: "Ессентуки", fromGenitive: "Ессентуков", region: "caucasus" },
+  { slug: "kislovodsk", name: "Кисловодск", fromGenitive: "Кисловодска", region: "caucasus" },
+  { slug: "nevinnomyssk", name: "Невинномысск", fromGenitive: "Невинномысска", region: "caucasus" },
+  { slug: "cherkessk", name: "Черкесск", fromGenitive: "Черкесска", region: "caucasus" },
+  { slug: "nazran", name: "Назрань", fromGenitive: "Назрани", region: "caucasus" },
+  { slug: "kaspiysk", name: "Каспийск", fromGenitive: "Каспийска", region: "caucasus" },
+  { slug: "nazran", name: "Назрань", fromGenitive: "Назрани", region: "caucasus" },
+  { slug: "kamensk-uralskiy", name: "Каменск-Уральский", fromGenitive: "Каменска-Уральского", region: "ural" },
+  { slug: "pervouralsk", name: "Первоуральск", fromGenitive: "Первоуральска", region: "ural" },
+  { slug: "polevskoy", name: "Полевской", fromGenitive: "Полевского", region: "ural" },
+  { slug: "revda", name: "Ревда", fromGenitive: "Ревды", region: "ural" },
+  { slug: "nizhny-tagil", name: "Нижний Тагил", fromGenitive: "Нижнего Тагила", region: "ural" },
+  { slug: "asbest", name: "Асбест", fromGenitive: "Асбеста", region: "ural" },
+  { slug: "kopeysk", name: "Копейск", fromGenitive: "Копейска", region: "ural" },
+  { slug: "ozersk", name: "Озёрск", fromGenitive: "Озёрска", region: "ural" },
+  { slug: "troitsk-chel", name: "Троицк", fromGenitive: "Троицка", region: "ural" },
+  { slug: "miass", name: "Миасс", fromGenitive: "Миасса", region: "ural" },
+  { slug: "zlatoust", name: "Златоуст", fromGenitive: "Златоуста", region: "ural" },
+  { slug: "kurgan", name: "Курган", fromGenitive: "Кургана", region: "ural" },
+  { slug: "shadrinsk", name: "Шадринск", fromGenitive: "Шадринска", region: "ural" },
+  { slug: "surgut", name: "Сургут", fromGenitive: "Сургута", region: "ural" },
+  { slug: "nizhnevartovsk", name: "Нижневартовск", fromGenitive: "Нижневартовска", region: "ural" },
+  { slug: "nefteyugansk", name: "Нефтеюганск", fromGenitive: "Нефтеюганска", region: "ural" },
+  { slug: "khanty-mansiysk", name: "Ханты-Мансийск", fromGenitive: "Ханты-Мансийска", region: "ural" },
+  { slug: "novyy-urengoy", name: "Новый Уренгой", fromGenitive: "Нового Уренгоя", region: "ural" },
+  { slug: "salekhard", name: "Салехард", fromGenitive: "Салехарда", region: "ural" },
+  { slug: "noyabrsk", name: "Ноябрьск", fromGenitive: "Ноябрьска", region: "ural" },
+  { slug: "tobolsk", name: "Тобольск", fromGenitive: "Тобольска", region: "ural" },
+  { slug: "ishim", name: "Ишим", fromGenitive: "Ишима", region: "ural" },
+  { slug: "biysk", name: "Бийск", fromGenitive: "Бийска", region: "siberia" },
+  { slug: "rubtsovsk", name: "Рубцовск", fromGenitive: "Рубцовска", region: "siberia" },
+  { slug: "seversk", name: "Северск", fromGenitive: "Северска", region: "siberia" },
+  { slug: "achinsk", name: "Ачинск", fromGenitive: "Ачинска", region: "siberia" },
+  { slug: "kansk", name: "Канск", fromGenitive: "Канска", region: "siberia" },
+  { slug: "norilsk", name: "Норильск", fromGenitive: "Норильска", region: "siberia" },
+  { slug: "abakan", name: "Абакан", fromGenitive: "Абакана", region: "siberia" },
+  { slug: "cheremkhovo", name: "Черемхово", fromGenitive: "Черемхова", region: "siberia" },
+  { slug: "angarsk", name: "Ангарск", fromGenitive: "Ангарска", region: "siberia" },
+  { slug: "bratsk", name: "Братск", fromGenitive: "Братска", region: "siberia" },
+  { slug: "prokopyevsk", name: "Прокопьевск", fromGenitive: "Прокопьевска", region: "siberia" },
+  { slug: "leninsk-kuznetskiy", name: "Ленинск-Кузнецкий", fromGenitive: "Ленинска-Кузнецкого", region: "siberia" },
+  { slug: "belovo", name: "Белово", fromGenitive: "Белово", region: "siberia" },
+  { slug: "berdsk", name: "Бердск", fromGenitive: "Бердска", region: "siberia" },
+  { slug: "iskitim", name: "Искитим", fromGenitive: "Искитима", region: "siberia" },
+  { slug: "omsk-oblast-iskul", name: "Исилькуль", fromGenitive: "Исилькуля", region: "siberia" },
+  { slug: "arsenyev", name: "Арсеньев", fromGenitive: "Арсеньева", region: "far-east" },
+  { slug: "ussuriysk", name: "Уссурийск", fromGenitive: "Уссурийска", region: "far-east" },
+  { slug: "nahodka", name: "Находка", fromGenitive: "Находки", region: "far-east" },
+  { slug: "artem", name: "Артём", fromGenitive: "Артёма", region: "far-east" },
+  { slug: "birobidzhan", name: "Биробиджан", fromGenitive: "Биробиджана", region: "far-east" },
+  { slug: "yuzhno-sakhalinsk", name: "Южно-Сахалинск", fromGenitive: "Южно-Сахалинска", region: "far-east" },
+  { slug: "petropavlovsk-kamchatskiy", name: "Петропавловск-Камчатский", fromGenitive: "Петропавловска-Камчатского", region: "far-east" },
+  { slug: "magadan", name: "Магадан", fromGenitive: "Магадана", region: "far-east" },
+];
+
+function uniqueRawCities(items: RawCity[]) {
+  const seen = new Set<string>();
+  const out: RawCity[] = [];
+  for (const item of items) {
+    if (seen.has(item.slug)) continue;
+    seen.add(item.slug);
+    out.push(item);
+  }
+  return out;
+}
+
+const ALL_RAW_CITIES: RawCity[] = uniqueRawCities([...RAW_CITIES, ...EXTRA_RAW_CITIES]);
+
 function uniqueSlugs(items: string[], selfSlug: string, known: Set<string>) {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -200,14 +357,14 @@ function buildPopularTo(city: RawCity, cities: RawCity[]) {
     known
   );
 
-  return candidates.slice(0, 18);
+  return candidates;
 }
 
-export const CITY_LANDINGS: CityLanding[] = RAW_CITIES.map((city) => ({
+export const CITY_LANDINGS: CityLanding[] = ALL_RAW_CITIES.map((city) => ({
   slug: city.slug,
   name: city.name,
   fromGenitive: city.fromGenitive,
-  popularTo: buildPopularTo(city, RAW_CITIES),
+  popularTo: buildPopularTo(city, ALL_RAW_CITIES),
 }));
 
 export const CITY_BY_SLUG = new Map(CITY_LANDINGS.map((city) => [city.slug, city] as const));
@@ -217,7 +374,7 @@ export const CITY_NAME_BY_SLUG = new Map<string, string>(
 );
 
 export const CITY_REGION_BY_SLUG = new Map<string, string>(
-  RAW_CITIES.map((city) => [city.slug, city.region] as const)
+  ALL_RAW_CITIES.map((city) => [city.slug, city.region] as const)
 );
 
 export function prettyCityNameFromSlug(slug: string) {

@@ -77,6 +77,20 @@ const LONG_ROUTE_TEXT = [
   "Для дальнего маршрута особенно важны время выезда, комфорт в дороге и возможность заранее спланировать поездку без пересадок.",
 ];
 
+
+
+function buildRouteFacts(hash: number, sameRegion: boolean) {
+  const distance = sameRegion ? 90 + (hash % 420) : 260 + (hash % 2450);
+  const travelHours = Math.max(2, Math.round((distance / (sameRegion ? 62 : 68)) * 10) / 10);
+  const roadFormat = [
+    "без пересадок и ожиданий на стыковках",
+    "с адресной подачей и прямой дорогой",
+    "с выездом ко времени и подтверждением условий заранее",
+    "с подбором класса авто под багаж и количество пассажиров",
+  ][hash % 4];
+  return { distance, travelHours, roadFormat };
+}
+
 const FAQ_OPENERS = [
   "Да, поездку можно оформить заранее на нужную дату и время.",
   "Да, предварительная заявка доступна круглосуточно.",
@@ -98,6 +112,7 @@ export function buildRouteSeoData({
 }) {
   const hash = hashRoute(`${fromSlug}:${toSlug}`);
   const sameRegion = CITY_REGION_BY_SLUG.get(fromSlug) === CITY_REGION_BY_SLUG.get(toSlug);
+  const facts = buildRouteFacts(hash, sameRegion);
   const routeModel = pick(ROUTE_MODELS, hash, 0);
   const audience = pick(AUDIENCES, hash, 1);
   const airport = pick(AIRPORT_LINKS, hash, 2);
@@ -113,6 +128,7 @@ export function buildRouteSeoData({
 
   const contentParagraphs = [
     `${cityBase} Направление ${fromName} — ${toName} мы оформляем как ${routeModel}, когда пассажиру нужен выезд точно ко времени и дорога без лишней логистики.`,
+    `Ориентировочная дистанция по маршруту ${fromName} — ${toName} составляет около ${facts.distance} км, а расчётное время в пути — примерно ${facts.travelHours} ч. Такой формат поездки выбирают, когда важно доехать ${facts.roadFormat}.`,
     `${regionalTone} Поездку ${fromName} — ${toName} часто выбирают ${audience}. ${pricing}`,
     `${comfort} ${airport}`,
   ];
@@ -163,7 +179,7 @@ export function buildRouteSeoData({
   const metadataTitle = pick(
     [
       `Такси ${fromName} — ${toName} | Междугородний трансфер`,
-      `Междугороднее такси ${fromName} — ${toName} | Вектор РФ`,
+      `Междугороднее такси ${fromName} — ${toName} | Заказать поездку`,
       `Такси межгород ${fromName} — ${toName} | Заказать трансфер`,
       `Трансфер ${fromName} — ${toName} | Такси 24/7`,
     ],
@@ -186,6 +202,7 @@ export function buildRouteSeoData({
     contentParagraphs,
     keywordText,
     faq,
+    facts,
     metadataTitle,
     metadataDescription,
     metadataKeywords,

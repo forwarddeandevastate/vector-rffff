@@ -10,7 +10,7 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 
 export const metadata: Metadata = {
-  title: `Междугороднее такси из Брянска — трансфер 24/7 | ${SITE_NAME}`,
+  title: `Междугороднее такси из Брянска — трансфер 24/7`,
   description:
     `Заказать междугороднее такси из Брянска: комфорт, бизнес, минивэн. Стоимость согласуем заранее, подача по времени. Заявка онлайн 24/7.`,
   alternates: { canonical: `${SITE_URL}/bryansk` },
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: `${SITE_URL}/bryansk`,
-    title: `Междугороднее такси из Брянска — трансфер 24/7 | ${SITE_NAME}`,
+    title: `Междугороднее такси из Брянска — трансфер 24/7`,
     description:
       `Заказать междугороднее такси из Брянска: комфорт, бизнес, минивэн. Стоимость согласуем заранее, подача по времени. Заявка онлайн 24/7.`,
     siteName: SITE_NAME,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `Междугороднее такси из Брянска — трансфер 24/7 | ${SITE_NAME}`,
+    title: `Междугороднее такси из Брянска — трансфер 24/7`,
     description:
       `Заказать междугороднее такси из Брянска: комфорт, бизнес, минивэн. Стоимость согласуем заранее, подача по времени. Заявка онлайн 24/7.`,
     images: ["/og.jpg"],

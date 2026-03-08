@@ -14,14 +14,14 @@ function cn(...xs: Array<string | false | null | undefined>) {
 }
 
 export const metadata: Metadata = {
-  title: "О компании — Вектор РФ",
+  title: "О компании",
   description:
     "«Вектор РФ» — трансферы по городу, в аэропорт и междугородние поездки по России. Как мы работаем, какие классы авто, регионы и сервис.",
   alternates: { canonical: `${SITE_URL}/about` },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/about`,
-    title: "О компании — Вектор РФ",
+    title: "О компании",
     description:
       "Кто мы, как работаем и что предлагаем: город, аэропорт, межгород. Комфорт, бизнес, минивэн. 24/7.",
     siteName: SITE_NAME,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "О компании — Вектор РФ",
+    title: "О компании",
     description: "Трансферы и поездки по России: город, аэропорт, межгород. 24/7.",
     images: ["/og.jpg"],
   },

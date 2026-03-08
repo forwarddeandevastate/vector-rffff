@@ -14,7 +14,7 @@ const CANONICAL = `${SITE_URL}/reviews`;
 const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
-  title: "Отзывы клиентов — Вектор РФ",
+  title: "Отзывы клиентов",
   description:
     "Отзывы клиентов о «Вектор РФ»: трансферы по городу, в аэропорт и межгород. Посмотрите отзывы и оставьте свой.",
   alternates: { canonical: CANONICAL },
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: CANONICAL,
-    title: "Отзывы клиентов — Вектор РФ",
+    title: "Отзывы клиентов",
     description:
       "Отзывы клиентов о «Вектор РФ»: посмотрите реальные отзывы и оставьте свой.",
     siteName: SITE_NAME,
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Отзывы клиентов — Вектор РФ",
+    title: "Отзывы клиентов",
     description: "Отзывы клиентов о «Вектор РФ». Посмотрите отзывы и оставьте свой — 24/7.",
     images: ["/og.jpg"],
   },

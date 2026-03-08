@@ -27,8 +27,9 @@ function normalizeSlug(input: string) {
   return s;
 }
 
-export async function generateMetadata({ params }: { params: { city: string } }): Promise<Metadata> {
-  const slug = normalizeSlug(params.city);
+export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const slug = normalizeSlug(resolvedParams.city);
   const city = CITY_BY_SLUG.get(slug);
   if (!city) return { robots: { index: false, follow: false } };
 
@@ -43,8 +44,9 @@ export function generateStaticParams() {
   return CITY_LANDINGS.map((city) => ({ city: city.slug }));
 }
 
-export default function Page({ params }: { params: { city: string } }) {
-  const slug = normalizeSlug(params.city);
+export default async function Page({ params }: { params: Promise<{ city: string }> }) {
+  const resolvedParams = await params;
+  const slug = normalizeSlug(resolvedParams.city);
   const city = CITY_BY_SLUG.get(slug);
   if (!city) return notFound();
 

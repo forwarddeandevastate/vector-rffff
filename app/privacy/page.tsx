@@ -14,14 +14,14 @@ function cn(...xs: Array<string | false | null | undefined>) {
 }
 
 export const metadata: Metadata = {
-  title: "Политика конфиденциальности | Вектор РФ",
+  title: "Политика конфиденциальности",
   description:
     "Политика конфиденциальности сервиса «Вектор РФ»: обработка персональных данных, цели, сроки хранения, меры защиты, права пользователя.",
   alternates: { canonical: `${SITE_URL}/privacy` },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/privacy`,
-    title: "Политика конфиденциальности — Вектор РФ",
+    title: "Политика конфиденциальности",
     description:
       "Как «Вектор РФ» обрабатывает персональные данные: цели, состав, сроки хранения, защита, права пользователя.",
     siteName: SITE_NAME,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Политика конфиденциальности — Вектор РФ",
+    title: "Политика конфиденциальности",
     description:
       "Обработка персональных данных в «Вектор РФ»: цели, состав, сроки хранения, защита, права пользователя.",
     images: ["/og.jpg"],

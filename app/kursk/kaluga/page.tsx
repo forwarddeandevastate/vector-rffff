@@ -10,7 +10,7 @@ const SITE_NAME = "Вектор РФ";
 const TO_NAME = "Калуга";
 
 export const metadata: Metadata = {
-  title: `Такси Курск — ${TO_NAME} | Межгород 24/7 — ${SITE_NAME}`,
+  title: `Такси Курск — ${TO_NAME} | Межгород 24/7`,
   description:
     `Трансфер Курск — ${TO_NAME}: комфортные авто, подача по времени, стоимость согласуем заранее. Заявка онлайн 24/7.`,
   alternates: { canonical: `${SITE_URL}/kursk/kaluga` },
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: `${SITE_URL}/kursk/kaluga`,
-    title: `Такси Курск — ${TO_NAME} | Межгород 24/7 — ${SITE_NAME}`,
+    title: `Такси Курск — ${TO_NAME} | Межгород 24/7`,
     description:
       `Трансфер Курск — ${TO_NAME}: комфортные авто, подача по времени, стоимость согласуем заранее. Заявка онлайн 24/7.`,
     siteName: SITE_NAME,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `Такси Курск — ${TO_NAME} | Межгород 24/7 — ${SITE_NAME}`,
+    title: `Такси Курск — ${TO_NAME} | Межгород 24/7`,
     description:
       `Трансфер Курск — ${TO_NAME}: комфортные авто, подача по времени, стоимость согласуем заранее. Заявка онлайн 24/7.`,
     images: ["/og.jpg"],

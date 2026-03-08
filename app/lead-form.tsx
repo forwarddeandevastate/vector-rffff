@@ -68,12 +68,60 @@ const PER_KM: Record<CarClass, number> = {
   business: 65,
 };
 
+const NEW_TERRITORIES_PER_KM: Record<CarClass, number> = {
+  standard: 80,
+  comfort: 80,
+  business: 80,
+  minivan: 100,
+};
+
 const CITY_BASE_PRICE: Record<CarClass, number> = {
   standard: 1000,
   comfort: 1500,
   business: 3000,
   minivan: 3500,
 };
+
+const NEW_TERRITORY_KEYWORDS = [
+  "днр",
+  "лнр",
+  "донецк",
+  "донецкая",
+  "макеевка",
+  "горловка",
+  "мариуполь",
+  "луганск",
+  "луганская",
+  "алчевск",
+  "енакиево",
+  "харцызск",
+  "шахтерск",
+  "снежное",
+  "дебальцево",
+  "мелитополь",
+  "бердянск",
+  "энергодар",
+  "запорожская",
+  "херсон",
+  "херсонская",
+  "геническ",
+  "новая каховка",
+] as const;
+
+type NewTerritoryCode = "dnr" | "lnr" | "zapor" | "kherson";
+
+type NewTerritoryPlace = {
+  code: NewTerritoryCode;
+  keywords: readonly string[];
+  exitKm: number;
+};
+
+const NEW_TERRITORY_PLACES: readonly NewTerritoryPlace[] = [
+  { code: "dnr", keywords: ["днр", "донецк", "донецкая", "макеевка", "горловка", "мариуполь", "енакиево", "харцызск", "шахтерск", "снежное", "дебальцево"], exitKm: 240 },
+  { code: "lnr", keywords: ["лнр", "луганск", "луганская", "алчевск", "краснодон", "ровеньки", "свердловск", "стаханов"], exitKm: 180 },
+  { code: "zapor", keywords: ["запорожская", "мелитополь", "бердянск", "энергодар"], exitKm: 140 },
+  { code: "kherson", keywords: ["херсон", "херсонская", "геническ", "новая каховка", "скадовск"], exitKm: 170 },
+] as const;
 
 function looksLikeAirport(s: string) {
   const v = normalize(s);
@@ -91,6 +139,55 @@ function looksLikeAirport(s: string) {
     "пашков",
     "аэропорт",
   ].some((t) => v.includes(t));
+}
+
+function containsNewTerritory(value: string) {
+  const v = normalize(value);
+  if (!v) return false;
+  return NEW_TERRITORY_KEYWORDS.some((keyword) => v.includes(keyword));
+}
+
+function routeTouchesNewTerritories(from: string, to: string) {
+  return containsNewTerritory(from) || containsNewTerritory(to);
+}
+
+function getNewTerritoryPlace(value: string): NewTerritoryPlace | null {
+  const v = normalize(value);
+  if (!v) return null;
+  for (const place of NEW_TERRITORY_PLACES) {
+    if (place.keywords.some((keyword) => v.includes(keyword))) return place;
+  }
+  return null;
+}
+
+function estimateNewTerritorySegmentKm(from: string, to: string, totalKm: number | null) {
+  if (!totalKm || !Number.isFinite(totalKm) || totalKm <= 0) {
+    return { specialKm: 0, regularKm: 0, specialPlaces: [] as NewTerritoryPlace[] };
+  }
+
+  const fromPlace = getNewTerritoryPlace(from);
+  const toPlace = getNewTerritoryPlace(to);
+  const places = [fromPlace, toPlace].filter(Boolean) as NewTerritoryPlace[];
+  if (!places.length) {
+    return { specialKm: 0, regularKm: totalKm, specialPlaces: [] as NewTerritoryPlace[] };
+  }
+
+  const uniquePlaces = places.filter((place, index, arr) => arr.findIndex((x) => x.code === place.code) === index);
+
+  let specialKm = 0;
+  if (fromPlace && toPlace && fromPlace.code === toPlace.code) {
+    specialKm = totalKm;
+  } else if (uniquePlaces.length === 2) {
+    specialKm = Math.min(totalKm, uniquePlaces[0].exitKm + uniquePlaces[1].exitKm);
+  } else {
+    specialKm = Math.min(totalKm, uniquePlaces[0].exitKm);
+  }
+
+  return {
+    specialKm,
+    regularKm: Math.max(0, totalKm - specialKm),
+    specialPlaces: uniquePlaces,
+  };
 }
 
 function sameCity(a: string, b: string) {
@@ -294,8 +391,25 @@ export default function LeadForm({
 
   const canSubmit = Boolean(name.trim() && phone.trim() && fromText.trim() && toText.trim());
 
+  const hasNewTerritoriesRate = useMemo(() => routeTouchesNewTerritories(fromText, toText), [fromText, toText]);
+  const territoryPricing = useMemo(() => estimateNewTerritorySegmentKm(fromText, toText, km), [fromText, toText, km]);
+
   const pricesByClass = useMemo(() => {
     const calcFor = (klass: CarClass) => {
+      if (hasNewTerritoriesRate) {
+        if (!km) return null;
+        const specialPart = territoryPricing.specialKm * NEW_TERRITORIES_PER_KM[klass];
+        const regularBase = routeType === "city" ? 0 : territoryPricing.regularKm * PER_KM[klass];
+        let total = Math.round(specialPart + regularBase);
+        if (routeType === "airport") {
+          total = Math.round(specialPart + regularBase * 1.1);
+        }
+        if (!territoryPricing.specialKm && routeType === "city") {
+          total = CITY_BASE_PRICE[klass];
+        }
+        if (roundTrip) total *= 2;
+        return total;
+      }
       if (routeType === "city") return CITY_BASE_PRICE[klass];
       if (!km) return null;
       let total = Math.round(km * PER_KM[klass]);
@@ -309,7 +423,7 @@ export default function LeadForm({
       business: calcFor("business"),
       minivan: calcFor("minivan"),
     };
-  }, [routeType, km, roundTrip]);
+  }, [hasNewTerritoriesRate, routeType, km, roundTrip]);
 
   const finalPrice = pricesByClass[carClass];
   const travelTimeText = useMemo(() => {
@@ -583,15 +697,21 @@ export default function LeadForm({
                   {!calcLoading && !calcError && km ? <span className="font-semibold text-orange-500">~ {Math.round(km)} км</span> : null}
                   {!calcLoading && !calcError && km && travelTimeText ? <span>•</span> : null}
                   {!calcLoading && !calcError && travelTimeText ? <span>~ {travelTimeText}</span> : null}
-                  {!calcLoading && !calcError && !km && routeType === "city" ? <span>{formatFrom(CITY_BASE_PRICE[carClass])}</span> : null}
-                  {!calcLoading && !calcError && !km && routeType !== "city" ? <span>Маршрут считается автоматически</span> : null}
+                  {!calcLoading && !calcError && hasNewTerritoriesRate ? (
+                    <span className="font-semibold text-amber-600">
+                      По новым территориям: {carClass === "minivan" ? "100 ₽/км" : "80 ₽/км"}
+                      {territoryPricing.specialKm > 0 ? ` • участок ~${Math.round(territoryPricing.specialKm)} км` : ""}
+                    </span>
+                  ) : null}
+                  {!calcLoading && !calcError && !km && !hasNewTerritoriesRate && routeType === "city" ? <span>{formatFrom(CITY_BASE_PRICE[carClass])}</span> : null}
+                  {!calcLoading && !calcError && !km && !hasNewTerritoriesRate && routeType !== "city" ? <span>Маршрут считается автоматически</span> : null}
                 </div>
               </div>
 
               <div className="text-left sm:text-right">
                 <div className="text-[12px] font-semibold uppercase tracking-wide text-zinc-400">цена</div>
                 <div className="text-[16px] font-black text-zinc-950">
-                  {finalPrice != null ? formatRub(finalPrice) : routeType === "city" ? formatFrom(CITY_BASE_PRICE[carClass]) : "—"}
+                  {finalPrice != null ? formatRub(finalPrice) : !hasNewTerritoriesRate && routeType === "city" ? formatFrom(CITY_BASE_PRICE[carClass]) : "—"}
                 </div>
                 <div className="mt-1 flex items-center gap-1.5 text-[12px] text-zinc-600 sm:justify-end">
                   <IconCar />
@@ -603,10 +723,10 @@ export default function LeadForm({
             </div>
 
             <div className="mt-3 grid grid-cols-4 gap-2">
-              <CarClassCard active={carClass === "standard"} title="Стандарт" price={pricesByClass.standard != null ? formatRub(pricesByClass.standard) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.standard) : "—"} onClick={() => onCarClassChange("standard")} />
-              <CarClassCard active={carClass === "comfort"} title="Комфорт" price={pricesByClass.comfort != null ? formatRub(pricesByClass.comfort) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.comfort) : "—"} onClick={() => onCarClassChange("comfort")} />
-              <CarClassCard active={carClass === "business"} title="Бизнес" price={pricesByClass.business != null ? formatRub(pricesByClass.business) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.business) : "—"} onClick={() => onCarClassChange("business")} />
-              <CarClassCard active={carClass === "minivan"} title="Минивен" price={pricesByClass.minivan != null ? formatRub(pricesByClass.minivan) : routeType === "city" ? formatFrom(CITY_BASE_PRICE.minivan) : "—"} onClick={() => onCarClassChange("minivan")} />
+              <CarClassCard active={carClass === "standard"} title="Стандарт" price={pricesByClass.standard != null ? formatRub(pricesByClass.standard) : !hasNewTerritoriesRate && routeType === "city" ? formatFrom(CITY_BASE_PRICE.standard) : "—"} onClick={() => onCarClassChange("standard")} />
+              <CarClassCard active={carClass === "comfort"} title="Комфорт" price={pricesByClass.comfort != null ? formatRub(pricesByClass.comfort) : !hasNewTerritoriesRate && routeType === "city" ? formatFrom(CITY_BASE_PRICE.comfort) : "—"} onClick={() => onCarClassChange("comfort")} />
+              <CarClassCard active={carClass === "business"} title="Бизнес" price={pricesByClass.business != null ? formatRub(pricesByClass.business) : !hasNewTerritoriesRate && routeType === "city" ? formatFrom(CITY_BASE_PRICE.business) : "—"} onClick={() => onCarClassChange("business")} />
+              <CarClassCard active={carClass === "minivan"} title="Минивен" price={pricesByClass.minivan != null ? formatRub(pricesByClass.minivan) : !hasNewTerritoriesRate && routeType === "city" ? formatFrom(CITY_BASE_PRICE.minivan) : "—"} onClick={() => onCarClassChange("minivan")} />
             </div>
           </div>
 
