@@ -9,31 +9,24 @@ function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
-// ВАЖНО: не импортируем LeadForm обычным import — чтобы не пытаться SSR
 const LeadForm = dynamic(() => import("@/app/lead-form"), {
   ssr: false,
   loading: () => (
-    <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm">
-      <div className="text-sm font-extrabold text-zinc-900">Форма заявки</div>
-      <div className="mt-2 text-sm text-zinc-600">
-        Загружаем форму… Если не загрузится — нажмите «Оставить заявку» и заполните на главной.
+    <div className="rounded-[28px] border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
+      <div className="text-sm font-extrabold text-zinc-900">Загружаем форму</div>
+      <div className="mt-2 text-sm leading-6 text-zinc-600">
+        Если форма не загрузится, вернитесь на главную и оставьте заявку там.
       </div>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href="/#order"
-          className={cn(
-            "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
-            "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
-          )}
+          className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
         >
           Оставить заявку
         </Link>
         <Link
           href="/"
-          className={cn(
-            "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-            "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-          )}
+          className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
         >
           На главную
         </Link>
@@ -42,13 +35,19 @@ const LeadForm = dynamic(() => import("@/app/lead-form"), {
   ),
 });
 
-// Типы не импортируем из lead-form, чтобы снова не подтянуть модуль на сервер
 type CarClass = "standard" | "comfort" | "business" | "minivan";
 type RouteType = "city" | "airport" | "intercity";
 
 type Breadcrumb = { name: string; href: string };
-
 type FAQItem = { q: string; a: string };
+
+function Badge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
+      {children}
+    </span>
+  );
+}
 
 export default function ServicePage({
   breadcrumbs,
@@ -67,7 +66,6 @@ export default function ServicePage({
   const PHONE_TEL = "+78002225650";
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  // Пробуем определить routeType по крошкам (не критично)
   const routeType: RouteType = useMemo(() => {
     const last = breadcrumbs?.[breadcrumbs.length - 1]?.href ?? "";
     if (last.includes("airport")) return "airport";
@@ -82,28 +80,48 @@ export default function ServicePage({
       <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.35),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.18),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.14),transparent_55%)]" />
 
-      <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        {/* Breadcrumbs */}
-        <nav className="text-sm text-zinc-600">
-          <ol className="flex flex-wrap gap-2">
-            {breadcrumbs.map((b, idx) => (
-              <li key={b.href} className="flex items-center gap-2">
-                <Link className="hover:text-zinc-900 hover:underline" href={b.href}>
-                  {b.name}
-                </Link>
-                {idx !== breadcrumbs.length - 1 ? <span className="text-zinc-400">/</span> : null}
-              </li>
-            ))}
-          </ol>
-        </nav>
+      <div className="mx-auto max-w-6xl px-4 py-8 md:py-10">
+        <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
+          <section className="pt-2">
+            <nav className="text-sm text-zinc-500">
+              <ol className="flex flex-wrap gap-2">
+                {breadcrumbs.map((b, idx) => (
+                  <li key={b.href} className="flex items-center gap-2">
+                    <Link href={b.href} className="hover:text-zinc-900">
+                      {b.name}
+                    </Link>
+                    {idx !== breadcrumbs.length - 1 ? <span>/</span> : null}
+                  </li>
+                ))}
+              </ol>
+            </nav>
 
-        <div className="mt-6 grid gap-8 md:grid-cols-12">
-          {/* Left */}
-          <section className="md:col-span-7">
-            <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{title}</h1>
-            <p className="mt-4 text-base leading-7 text-zinc-700">{subtitle}</p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Badge>Проверенные водители</Badge>
+              <Badge>Фиксация заявки</Badge>
+              <Badge>Стоимость заранее</Badge>
+            </div>
 
-            <div className="mt-6 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h1 className="mt-6 max-w-3xl text-4xl font-black tracking-tight text-zinc-900 md:text-6xl">
+              {title}
+            </h1>
+
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-zinc-700">
+              {subtitle}
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {bullets.slice(0, 3).map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-zinc-200 bg-white/80 p-4 shadow-sm backdrop-blur"
+                >
+                  <div className="text-sm font-extrabold text-zinc-900">{item}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 rounded-3xl border border-sky-100 bg-white/85 p-5 shadow-sm backdrop-blur">
               <div className="text-sm font-extrabold text-zinc-900">Преимущества</div>
               <ul className="mt-3 grid gap-2 text-sm text-zinc-700">
                 {bullets.map((b) => (
@@ -113,120 +131,121 @@ export default function ServicePage({
                   </li>
                 ))}
               </ul>
+            </div>
 
-              <div className="mt-6 flex flex-wrap gap-2">
-                {/* ✅ На сервисной странице логичнее скроллить к форме справа */}
-                <a
-                  href="#order"
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold text-white shadow-sm",
-                    "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95"
-                  )}
-                >
-                  Оставить заявку
-                </a>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a
+                href="#order"
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-5 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
+              >
+                Оставить заявку
+              </a>
 
+              <a
+                href={`tel:${PHONE_TEL}`}
+                className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                {PHONE_DISPLAY}
+              </a>
+
+              <a
+                href={TELEGRAM}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                Telegram
+              </a>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link
+                href="/#order"
+                className="inline-flex items-center rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-5 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
+              >
+                Оставить заявку
+              </Link>
+              <Link
+                href="/prices"
+                className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                Выбрать класс авто
+              </Link>
+              <Link
+                href="/reviews"
+                className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                Отзывы
+              </Link>
+              <Link
+                href="/faq"
+                className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                Вопросы и ответы
+              </Link>
+              <Link
+                href="/contacts"
+                className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                Контакты
+              </Link>
+            </div>
+          </section>
+
+          <aside id="order" className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start">
+            <div className="overflow-hidden rounded-[32px] border border-zinc-200 bg-white/88 shadow-xl backdrop-blur">
+              <div className="grid grid-cols-2 gap-3 border-b border-zinc-200 p-4">
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                  )}
+                  className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
                 >
-                  Позвонить: {PHONE_DISPLAY}
+                  Позвонить
                 </a>
-
                 <a
                   href={TELEGRAM}
                   target="_blank"
                   rel="noreferrer"
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                  )}
+                  className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
                 >
                   Telegram
                 </a>
               </div>
-            </div>
 
-            {/* FAQ */}
-            <div className="mt-8 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
-              <div className="text-sm font-extrabold text-zinc-900">Вопросы</div>
-              <div className="mt-4 grid gap-4">
-                {faq.map((x) => (
-                  <div key={x.q} className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm">
-                    <div className="text-sm font-extrabold text-zinc-900">{x.q}</div>
-                    <div className="mt-2 text-sm leading-6 text-zinc-700">{x.a}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Right */}
-          {/* ✅ Якорь для /...#order */}
-          <aside id="order" className="md:col-span-5 scroll-mt-24">
-            <div className="rounded-3xl border border-zinc-200 bg-white/85 shadow-xl backdrop-blur">
-              <div className="border-b border-zinc-200 p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-extrabold text-zinc-900">Заявка на трансфер</div>
-                    <div className="mt-1 text-sm text-zinc-600">Заполните форму — мы свяжемся с вами.</div>
-                  </div>
-                  <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
-                    ~ 1 мин
-                  </div>
+              <div className="border-b border-zinc-200 px-5 py-4">
+                <div className="text-sm font-extrabold text-zinc-900">
+                  Заполнить заявку
                 </div>
               </div>
 
-              <div className="p-5">
-                {/* LeadForm рендерится ТОЛЬКО на клиенте */}
+              <div className="p-4 md:p-5">
                 <LeadForm
                   carClass={defaultClass}
                   routeType={routeType}
-                  // эти колбэки нужны типам, но нам на SEO-странице менять не обязательно
                   onCarClassChange={() => {}}
                   onRouteTypeChange={() => {}}
                 />
-              </div>
-
-              <div className="border-t border-zinc-200 bg-white/70 p-5">
-                <div className="text-sm font-extrabold text-zinc-900">Связаться напрямую</div>
-                <div className="mt-3 grid gap-2">
-                  <a
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={`tel:${PHONE_TEL}`}
-                  >
-                    {PHONE_DISPLAY}
-                  </a>
-
-                  <a
-                    className={cn(
-                      "inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
-                      "border border-zinc-200 bg-white/80 shadow-sm backdrop-blur hover:bg-white"
-                    )}
-                    href={TELEGRAM}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Telegram
-                  </a>
-                </div>
-
-                <div className="mt-4 text-xs text-zinc-500">
-                  Нажимая “Отправить заявку”, вы соглашаетесь на обработку персональных данных.
-                </div>
               </div>
             </div>
           </aside>
         </div>
 
+        <section className="mt-10 rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
+          <div className="text-xl font-extrabold text-zinc-900">Вопросы</div>
+          <div className="mt-5 grid gap-4">
+            {faq.map((x) => (
+              <div
+                key={x.q}
+                className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
+              >
+                <div className="text-sm font-extrabold text-zinc-900">{x.q}</div>
+                <div className="mt-2 text-sm leading-6 text-zinc-700">{x.a}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <section className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Полезные разделы</div>
             <div className="mt-4 flex flex-wrap gap-2">
               {CORE_SERVICE_LINKS.map((item) => (
@@ -241,7 +260,7 @@ export default function ServicePage({
             </div>
           </section>
 
-          <section className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
+          <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
             <div className="text-sm font-extrabold text-zinc-900">Популярные маршруты</div>
             <div className="mt-4 flex flex-wrap gap-2">
               {POPULAR_ROUTE_LINKS.slice(0, 8).map((item) => (
