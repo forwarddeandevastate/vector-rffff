@@ -33,7 +33,10 @@ function okJson(data: unknown, cacheSeconds = 3600) {
 }
 
 function errJson(error: string, status = 400, details?: string) {
-  return NextResponse.json({ ok: false, error, ...(details ? { details } : {}) }, { status });
+  return NextResponse.json(
+    { ok: false, error, ...(details ? { details } : {}) },
+    { status }
+  );
 }
 
 const geoCache = new Map<string, CacheEntry<Coords>>();
@@ -67,7 +70,13 @@ function readCache<T>(map: Map<string, CacheEntry<T>>, key: string): T | null {
   return entry.value;
 }
 
-function writeCache<T>(map: Map<string, CacheEntry<T>>, key: string, value: T, ttlMs: number, maxSize: number) {
+function writeCache<T>(
+  map: Map<string, CacheEntry<T>>,
+  key: string,
+  value: T,
+  ttlMs: number,
+  maxSize: number
+) {
   map.set(key, { value, expiresAt: now() + ttlMs });
 
   while (map.size > maxSize) {
@@ -77,7 +86,11 @@ function writeCache<T>(map: Map<string, CacheEntry<T>>, key: string, value: T, t
   }
 }
 
-async function dedupe<T>(map: Map<string, Promise<T>>, key: string, factory: () => Promise<T>) {
+async function dedupe<T>(
+  map: Map<string, Promise<T>>,
+  key: string,
+  factory: () => Promise<T>
+) {
   const current = map.get(key);
   if (current) return current;
 
@@ -119,6 +132,7 @@ async function geocodeNominatim(q: string): Promise<Coords | null> {
 
     const lat = Number(arr[0]?.lat);
     const lon = Number(arr[0]?.lon);
+
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
 
     const coords = { lat, lon };
@@ -147,6 +161,7 @@ async function routeKmSecondsOSRM(from: string, to: string): Promise<DistanceRes
 
     const meters = Number(data?.routes?.[0]?.distance);
     const seconds = Number(data?.routes?.[0]?.duration);
+
     if (!Number.isFinite(meters) || meters <= 0) return null;
 
     const value: DistanceResult = {
@@ -175,6 +190,7 @@ async function routeKmSecondsGoogle(body: ReqBody): Promise<DistanceResult | nul
 
   const origin = fromPlaceId ? { placeId: fromPlaceId } : from ? { address: from } : null;
   const destination = toPlaceId ? { placeId: toPlaceId } : to ? { address: to } : null;
+
   if (!origin || !destination) return null;
 
   return dedupe(inflightRoute, routeKey, async () => {
@@ -227,12 +243,14 @@ function parseBodyFromUrl(req: Request): ReqBody {
   const to = (searchParams.get("to") || "").trim();
   const fromPlaceId = (searchParams.get("fromPlaceId") || "").trim() || null;
   const toPlaceId = (searchParams.get("toPlaceId") || "").trim() || null;
+
   return { from, to, fromPlaceId, toPlaceId };
 }
 
 async function getDistance(body: ReqBody) {
   const from = (body.from ?? "").trim();
   const to = (body.to ?? "").trim();
+
   if (!from || !to) return null;
 
   const google = await routeKmSecondsGoogle(body);
@@ -244,12 +262,14 @@ async function getDistance(body: ReqBody) {
 async function handleDistance(body: ReqBody) {
   const from = (body.from ?? "").trim();
   const to = (body.to ?? "").trim();
+
   if (!from || !to) return errJson("Missing from/to", 400);
 
   const distance = await getDistance(body);
+
   if (!distance) {
     return errJson(
-      "Не удалось построить маршрут. Уточните адреса (например: 'Москва', 'Пулково (LED)')",
+      "Не удалось построить маршрут. Уточните адреса, например: Москва, Пулково (LED).",
       422
     );
   }

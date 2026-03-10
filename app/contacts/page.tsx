@@ -3,35 +3,45 @@ import Link from "next/link";
 import Script from "next/script";
 
 const SITE_URL = "https://vector-rf.ru";
-const SITE_NAME = "Вектор РФ";
-
+const PAGE_URL = `${SITE_URL}/contacts`;
+const PHONE_E164 = "+78002225650";
 const PHONE_DISPLAY = "8 (800) 222-56-50";
-const PHONE_TEL = "+78002225650";
 const TELEGRAM = "https://t.me/vector_rf52";
-const TELEGRAM_USERNAME = "@vector_rf52";
-
-function cn(...xs: Array<string | false | null | undefined>) {
-  return xs.filter(Boolean).join(" ");
-}
+const WHATSAPP = "https://wa.me/78314233929";
 
 export const metadata: Metadata = {
   title: "Контакты",
   description:
-    "Контакты сервиса «Вектор РФ»: телефон, Telegram, режим работы 24/7. Оставьте заявку на трансфер по городу, в аэропорт или на межгород.",
-  alternates: { canonical: `${SITE_URL}/contacts` },
+    "Контакты Вектор РФ: телефон, Telegram, WhatsApp и страницы сайта для заявок на междугородние поездки и трансферы.",
+  alternates: {
+    canonical: "/contacts",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     type: "website",
-    url: `${SITE_URL}/contacts`,
-    title: "Контакты",
-    description: "Телефон, Telegram и режим работы. Трансферы и поездки по России. 24/7.",
-    siteName: SITE_NAME,
+    url: PAGE_URL,
+    title: "Контакты Вектор РФ",
+    description:
+      "Телефон, Telegram, WhatsApp и страницы сайта для заявок на междугородние поездки и трансферы.",
+    siteName: "Вектор РФ",
     locale: "ru_RU",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+    images: [
+      {
+        url: "/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Контакты Вектор РФ",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Контакты",
-    description: "Телефон, Telegram и режим работы. Трансферы 24/7.",
+    title: "Контакты Вектор РФ",
+    description:
+      "Телефон, Telegram, WhatsApp и страницы сайта для заявок на междугородние поездки и трансферы.",
     images: ["/og.jpg"],
   },
 };
@@ -41,230 +51,132 @@ export default function ContactsPage() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: "Контакты", item: `${SITE_URL}/contacts` },
+      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Контакты", item: PAGE_URL },
     ],
   };
 
-  // Мягкая микроразметка Organization (без адреса/координат — безопасно)
-  const orgJsonLd = {
+  const contactJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": `${SITE_URL}/#organization`,
-    name: SITE_NAME,
+    name: "Вектор РФ",
     url: SITE_URL,
-    telephone: "8-800-222-56-50",
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        telephone: PHONE_E164,
+        contactType: "customer service",
+        availableLanguage: ["Russian"],
+      },
+    ],
     sameAs: [TELEGRAM],
   };
 
   return (
-    <main className="min-h-screen text-zinc-900">
+    <>
       <Script
         id="ld-contacts-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Script
         id="ld-contacts-organization"
         type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
       />
 
-      {/* фон как на главной */}
-      <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.28),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.14),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.12),transparent_55%)]" />
-      <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
+      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
+        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
+          <nav className="text-sm text-zinc-500">
+            <Link href="/" className="hover:text-zinc-900">
+              Главная
+            </Link>
+            <span className="mx-2">/</span>
+            <span>Контакты</span>
+          </nav>
 
-      <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <header className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="text-xs font-semibold text-zinc-600">Контакты</div>
-              <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Как с нами связаться</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
-                Быстрее всего отвечаем в Telegram и по телефону. Работаем 24/7: город, аэропорт и межгород.
-              </p>
-            </div>
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+            Контакты
+          </h1>
 
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/#order"
-                className="rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
-              >
-                Оставить заявку
-              </Link>
-              <Link
-                href="/"
-                className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
-              >
-                На главную
-              </Link>
-            </div>
-          </div>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+            Для заявок на междугородние поездки, трансферы в аэропорт, городские
+            и корпоративные маршруты можно использовать телефон, Telegram,
+            WhatsApp или форму на главной странице сайта.
+          </p>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-2">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <a
-              href={`tel:${PHONE_TEL}`}
-              className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
+              href={`tel:${PHONE_E164}`}
+              className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm hover:bg-zinc-100"
             >
-              <div className="text-xs font-semibold text-zinc-600">Телефон</div>
-              <div className="mt-1 text-sm font-extrabold text-zinc-900">{PHONE_DISPLAY}</div>
-              <div className="mt-1 text-sm text-zinc-600">Нажмите, чтобы позвонить</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Телефон
+              </div>
+              <div className="mt-2 text-sm font-bold text-zinc-900">
+                {PHONE_DISPLAY}
+              </div>
             </a>
 
             <a
               href={TELEGRAM}
               target="_blank"
               rel="noreferrer"
-              className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
+              className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm hover:bg-zinc-100"
             >
-              <div className="text-xs font-semibold text-zinc-600">Telegram</div>
-              <div className="mt-1 text-sm font-extrabold text-zinc-900">Написать в Telegram</div>
-              <div className="mt-1 text-sm text-zinc-600">
-                {TELEGRAM_USERNAME} • Ответим быстрее по срочным вопросам
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Telegram
+              </div>
+              <div className="mt-2 text-sm font-bold text-zinc-900">
+                @vector_rf52
               </div>
             </a>
-          </div>
-        </header>
 
-        <section className="mt-8 grid gap-6 md:grid-cols-12">
-          <div className="md:col-span-7">
-            <div className="rounded-3xl border border-zinc-200 bg-white/75 p-6 shadow-sm backdrop-blur md:p-8">
-              <h2 className="text-2xl font-extrabold tracking-tight">Режим работы и география</h2>
-              <p className="mt-2 text-sm text-zinc-600">
-                Подтверждаем детали и стоимость до подачи автомобиля. Учитываем багаж, детское кресло и остановки.
-              </p>
-
-              <div className="mt-6 grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
-                  <div className="text-xs font-semibold text-zinc-600">Работаем</div>
-                  <div className="mt-1 text-sm font-extrabold text-zinc-900">24/7</div>
-                  <div className="mt-1 text-sm text-zinc-600">Город • Аэропорты • Межгород</div>
-                </div>
-
-                <div className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
-                  <div className="text-xs font-semibold text-zinc-600">Основной регион</div>
-                  <div className="mt-1 text-sm font-extrabold text-zinc-900">Нижний Новгород и область</div>
-                  <div className="mt-1 text-sm text-zinc-600">Также — поездки по России</div>
-                </div>
+            <a
+              href={WHATSAPP}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm hover:bg-zinc-100"
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                WhatsApp
               </div>
-
-              <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm backdrop-blur">
-                <div className="text-sm font-extrabold text-zinc-900">Что написать в сообщении</div>
-                <div className="mt-3 grid gap-2 text-sm text-zinc-700">
-                  <div className="flex items-start gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
-                    <span>Откуда → куда (адрес или город)</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
-                    <span>Дата и время подачи</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
-                    <span>Класс авто: Стандарт / Комфорт / Бизнес / Минивэн</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
-                    <span>Пожелания: багаж, детское кресло, остановки, номер рейса</span>
-                  </div>
-                </div>
+              <div className="mt-2 text-sm font-bold text-zinc-900">
+                Написать в WhatsApp
               </div>
+            </a>
 
-              <div className="mt-6 flex flex-wrap gap-2">
-                <Link
-                  href="/services"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
-                >
-                  Услуги
-                </Link>
-                <Link
-                  href="/faq"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
-                >
-                  Вопросы и ответы
-                </Link>
-                <Link
-                  href="/#order"
-                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-5 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
-                >
-                  Оставить заявку
-                </Link>
+            <Link
+              href="/"
+              className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm hover:bg-zinc-100"
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Заявка
               </div>
-            </div>
+              <div className="mt-2 text-sm font-bold text-zinc-900">
+                Перейти к форме
+              </div>
+            </Link>
           </div>
 
-          <aside className="md:col-span-5">
-            <div className="rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-xl backdrop-blur md:p-7">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-extrabold text-zinc-900">Быстрый контакт</div>
-                  <div className="mt-1 text-sm text-zinc-600">Для срочных вопросов — Telegram или звонок.</div>
-                </div>
-                <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
-                  быстро
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-2">
-                <a
-                  href={`tel:${PHONE_TEL}`}
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                >
-                  Позвонить: {PHONE_DISPLAY}
-                </a>
-
-                <a
-                  href={TELEGRAM}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                >
-                  Написать в Telegram
-                </a>
-
-                <Link
-                  href="/#order"
-                  className="mt-1 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
-                >
-                  Оставить заявку на сайте
-                </Link>
-              </div>
-
-              <div className="mt-4 text-xs text-zinc-500">
-                Нажимая “Оставить заявку”, вы соглашаетесь на обработку персональных данных.
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-7">
-              <div className="text-sm font-extrabold text-zinc-900">Документы</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Link href="/privacy" className="text-sm font-semibold text-zinc-700 hover:text-zinc-900 hover:underline">
-                  Политика конфиденциальности
-                </Link>
-                <span className="text-zinc-300">•</span>
-                <Link
-                  href="/personal-data"
-                  className="text-sm font-semibold text-zinc-700 hover:text-zinc-900 hover:underline"
-                >
-                  Согласие на обработку ПДн
-                </Link>
-                <span className="text-zinc-300">•</span>
-                <Link
-                  href="/agreement"
-                  className="text-sm font-semibold text-zinc-700 hover:text-zinc-900 hover:underline"
-                >
-                  Пользовательское соглашение
-                </Link>
-              </div>
-            </div>
-          </aside>
-        </section>
-
-        <footer className="mt-8 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</footer>
-      </div>
-    </main>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/services"
+              className="inline-flex items-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
+            >
+              Все услуги
+            </Link>
+            <Link
+              href="/requisites"
+              className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+            >
+              Реквизиты
+            </Link>
+          </div>
+        </div>
+      </main>
+    </>
   );
 }

@@ -1,256 +1,252 @@
 import { NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
-import { leadKeyboard, leadMessage, sendTelegramToAll } from "@/lib/telegram";
+import { sendLeadToTelegram } from "@/lib/telegram";
 
-export const runtime = "nodejs";
+type LeadPayload = Record<string, unknown>;
 
-/**
- * Anti-bot ENV (опционально):
- * BOT_RATE_LIMIT_PER_MIN=12
- * BOT_DUPLICATE_WINDOW_SEC=20
- * BOT_REQUIRE_REFERER=1
- * BOT_BLOCK_IPS=1.2.3.4,5.6.7.8
- * BOT_BLOCK_UA_CONTAINS=python-requests,curl,wget,axios,httpclient,bot,spider,crawler,headless
- */
+function getCookieValue(cookieHeader: string | null, key: string) {
+  if (!cookieHeader) return null;
 
-const RATE_LIMIT_PER_MIN = clampInt(process.env.BOT_RATE_LIMIT_PER_MIN, 12, 3, 60);
-const DUPLICATE_WINDOW_SEC = clampInt(process.env.BOT_DUPLICATE_WINDOW_SEC, 20, 5, 180);
-const REQUIRE_REFERER = (process.env.BOT_REQUIRE_REFERER ?? "1") === "1";
+  const parts = cookieHeader.split(";").map((v) => v.trim());
+  const found = parts.find((item) => item.startsWith(`${key}=`));
 
-const BLOCK_IPS = parseList(process.env.BOT_BLOCK_IPS);
-const BLOCK_UA_CONTAINS = parseList(
-  process.env.BOT_BLOCK_UA_CONTAINS ??
-    "python-requests,curl,wget,axios,httpclient,bot,spider,crawler,headless"
-).map((s) => s.toLowerCase());
+  if (!found) return null;
 
-// In-memory защита (на Vercel может сбрасываться между инстансами — но всё равно режет много мусора)
-type Hit = { ts: number };
-const ipHits = new Map<string, Hit[]>();
-const lastPayloadByIp = new Map<string, { hash: string; ts: number }>();
-
-// 🇷🇺 СТРОГАЯ нормализация ТОЛЬКО РФ
-function normalizePhoneRU(input: string): string | null {
-  const digits = String(input || "").replace(/\D+/g, "");
-
-  // 7XXXXXXXXXX
-  if (/^7\d{10}$/.test(digits)) return `+${digits}`;
-
-  // 8XXXXXXXXXX → +7
-  if (/^8\d{10}$/.test(digits)) return `+7${digits.slice(1)}`;
-
-  // 10 цифр → +7
-  if (/^\d{10}$/.test(digits)) return `+7${digits}`;
-
-  return null; // ❌ всё остальное запрещаем
+  return decodeURIComponent(found.split("=")[1] ?? "");
 }
 
-function getCookie(req: Request, name: string) {
-  const raw = req.headers.get("cookie") || "";
-  const parts = raw.split(";").map((s) => s.trim());
-  for (const p of parts) {
-    const i = p.indexOf("=");
-    if (i === -1) continue;
-    if (decodeURIComponent(p.slice(0, i)) === name) {
-      return decodeURIComponent(p.slice(i + 1));
-    }
-  }
-  return "";
+function asTrimmedString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
-function pickUtm(body: any, req: Request) {
-  return {
-    utmSource: body.utmSource || getCookie(req, "vrf_utm_source") || null,
-    utmMedium: body.utmMedium || getCookie(req, "vrf_utm_medium") || null,
-    utmCampaign: body.utmCampaign || getCookie(req, "vrf_utm_campaign") || null,
-  };
+function asNullableString(value: unknown) {
+  const v = asTrimmedString(value);
+  return v ? v : null;
 }
 
-function getClientIp(req: Request): string {
-  // Vercel / прокси
-  const xff = req.headers.get("x-forwarded-for") || "";
-  const first = xff.split(",")[0]?.trim();
-  if (first) return first;
-  return req.headers.get("x-real-ip") || "";
+function asBoolean(value: unknown) {
+  return value === true;
 }
 
-function silentOk(extra?: Record<string, any>) {
-  // ВАЖНО: “тихий успех”, чтобы бот не понял, что его режут
-  return NextResponse.json({ ok: true, ignored: true, ...(extra || {}) });
+function normalizePhone(input: string) {
+  const raw = (input ?? "").trim();
+  if (!raw) return raw;
+
+  if (raw.startsWith("+8")) return `+7${raw.slice(2)}`;
+  if (raw.startsWith("8")) return `+7${raw.slice(1)}`;
+  if (raw.startsWith("7")) return `+7${raw.slice(1)}`;
+
+  return raw;
 }
 
-function sha1(s: string) {
-  return require("crypto").createHash("sha1").update(s).digest("hex");
-}
+function normalizeCarClass(value: unknown) {
+  const v = asTrimmedString(value).toLowerCase();
 
-function clampInt(v: any, def: number, min: number, max: number) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return def;
-  return Math.max(min, Math.min(max, Math.trunc(n)));
-}
-
-function parseList(v?: string) {
-  if (!v) return [];
-  return v
-    .split(/[,\n;]/g)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-function isSuspiciousHeaders(req: Request) {
-  const ua = (req.headers.get("user-agent") || "").toLowerCase();
-  const accept = req.headers.get("accept") || "";
-  const lang = req.headers.get("accept-language") || "";
-  const referer = req.headers.get("referer") || "";
-
-  // Явные боты по UA
-  if (ua && BLOCK_UA_CONTAINS.some((x) => ua.includes(x))) return { bad: true, reason: "ua_block" };
-
-  // Иногда скрипты шлют пустые заголовки
-  if (!ua || ua.length < 8) return { bad: true, reason: "ua_missing" };
-
-  // Для “нормальных” браузеров обычно есть accept-language
-  if (!lang) return { bad: true, reason: "lang_missing" };
-
-  // Если хотим требовать реферер (обычно есть при переходе с сайта; но бывают исключения)
-  if (REQUIRE_REFERER && !referer) {
-    // Не блокируем прям “жёстко”, но считаем подозрительным
-    return { bad: true, reason: "referer_missing" };
+  if (v === "comfort" || v === "business" || v === "minivan") {
+    return v;
   }
 
-  // accept часто у браузеров содержит text/html или */*
-  if (accept && !accept.includes("text/html") && !accept.includes("*/*")) {
-    return { bad: true, reason: "accept_weird" };
-  }
-
-  return { bad: false as const, reason: "" };
+  return "standard";
 }
 
-function rateLimit(ip: string) {
-  const now = Date.now();
-  const hits = (ipHits.get(ip) ?? []).filter((h) => now - h.ts < 60_000);
-  hits.push({ ts: now });
-  ipHits.set(ip, hits);
-  return hits.length > RATE_LIMIT_PER_MIN;
+function normalizeRouteType(value: unknown) {
+  const v = asTrimmedString(value).toLowerCase();
+
+  if (v === "city" || v === "airport" || v === "intercity") {
+    return v;
+  }
+
+  return null;
 }
 
-function duplicateGuard(ip: string, payloadHash: string) {
-  const now = Date.now();
-  const prev = lastPayloadByIp.get(ip);
-  if (prev && prev.hash === payloadHash && now - prev.ts < DUPLICATE_WINDOW_SEC * 1000) {
-    return true;
+function parsePrice(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.max(0, Math.round(value));
   }
-  lastPayloadByIp.set(ip, { hash: payloadHash, ts: now });
-  return false;
+
+  if (typeof value === "string") {
+    const cleaned = value.replace(/[^\d.-]/g, "").trim();
+    if (!cleaned) return null;
+
+    const parsed = Number(cleaned);
+    if (!Number.isFinite(parsed)) return null;
+
+    return Math.max(0, Math.round(parsed));
+  }
+
+  return null;
+}
+
+function buildComment(params: {
+  comment: string | null;
+  datetime: string | null;
+  routeType: string | null;
+  distanceKm: string | null;
+}) {
+  const parts: string[] = [];
+
+  if (params.comment) {
+    parts.push(params.comment);
+  }
+
+  if (params.datetime) {
+    parts.push(`Дата/время: ${params.datetime}`);
+  }
+
+  if (params.routeType === "airport") {
+    parts.push("Тип поездки: аэропорт");
+  } else if (params.routeType === "intercity") {
+    parts.push("Тип поездки: межгород");
+  } else if (params.routeType === "city") {
+    parts.push("Тип поездки: город");
+  }
+
+  if (params.distanceKm) {
+    parts.push(`Ориентир по расстоянию: ${params.distanceKm} км`);
+  }
+
+  return parts.length ? parts.join("\n\n") : null;
 }
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
+    const body = (await req.json().catch(() => null)) as LeadPayload | null;
 
-    // 🛡 honeypot
-    if (String(body.company || "").trim()) {
-      return silentOk();
-    }
-
-    const ip = getClientIp(req);
-
-    // 1) IP block list
-    if (ip && BLOCK_IPS.includes(ip)) {
-      return silentOk();
-    }
-
-    // 2) Rate-limit (если IP есть)
-    if (ip && rateLimit(ip)) {
-      console.warn("[LEADS][BOT] rate_limit", { ip });
-      return silentOk();
-    }
-
-    // 3) Header/UA эвристики (НЕ ломаем людям — режем только явные)
-    const hdr = isSuspiciousHeaders(req);
-    // если причина "referer_missing" — это может быть человек, но часто бот.
-    // Поэтому: при referer_missing не режем сразу, а усилим проверку на дубликат/частоту.
-    const hardBlockReasons = new Set(["ua_block", "ua_missing", "lang_missing", "accept_weird"]);
-    if (hdr.bad && hardBlockReasons.has(hdr.reason)) {
-      console.warn("[LEADS][BOT] headers", { ip, reason: hdr.reason, ua: req.headers.get("user-agent") });
-      return silentOk();
-    }
-
-    const name = String(body.name || "").trim();
-    const phoneRaw = String(body.phone || "").trim();
-    const phone = normalizePhoneRU(phoneRaw);
-
-    const fromText = String(body.fromText || body.from || "").trim();
-    const toText = String(body.toText || body.to || "").trim();
-
-    if (name.length < 2) {
-      return NextResponse.json({ ok: false, error: "Введите имя" }, { status: 400 });
-    }
-
-    if (!phone) {
-      return NextResponse.json({ ok: false, error: "Введите телефон в формате РФ" }, { status: 400 });
-    }
-
-    if (!fromText || !toText) {
-      return NextResponse.json({ ok: false, error: "Укажите маршрут" }, { status: 400 });
-    }
-
-    // 4) Анти-дубликаты: одинаковая заявка с одного IP за короткое время
-    if (ip) {
-      const payloadHash = sha1(
-        JSON.stringify({
-          name: name.toLowerCase(),
-          phone,
-          fromText: fromText.toLowerCase(),
-          toText: toText.toLowerCase(),
-          carClass: String(body.carClass || "standard"),
-          roundTrip: Boolean(body.roundTrip),
-        })
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { ok: false, error: "Некорректные данные заявки" },
+        { status: 400 }
       );
-
-      // Если referer отсутствует — считаем более подозрительным, и дубликаты режем особенно строго
-      const isDup = duplicateGuard(ip, payloadHash);
-      if (isDup) {
-        console.warn("[LEADS][BOT] duplicate", { ip, reason: "same_payload_fast" });
-        return silentOk();
-      }
-
-      if (hdr.bad && hdr.reason === "referer_missing") {
-        // “мягкий” бан: если реферера нет, но заявка выглядит ок — всё равно пропускаем.
-        // Просто отметим в логах, чтобы видеть масштаб.
-        console.warn("[LEADS][SUSPECT] no_referer", { ip });
-      }
     }
 
-    const utm = pickUtm(body, req);
+    const company = asTrimmedString(body.company);
+
+    if (company) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const name = asTrimmedString(body.name);
+    const phone = normalizePhone(asTrimmedString(body.phone));
+
+    const from =
+      asTrimmedString(body.from) || asTrimmedString(body.fromText);
+
+    const to =
+      asTrimmedString(body.to) || asTrimmedString(body.toText);
+
+    const datetime = asNullableString(body.datetime);
+    const comment = asNullableString(body.comment);
+    const carClass = normalizeCarClass(body.carClass);
+    const roundTrip = asBoolean(body.roundTrip);
+    const routeType = normalizeRouteType(body.routeType);
+    const distanceKm = asNullableString(body.distanceKm);
+
+    if (name.length < 2 || name.length > 120) {
+      return NextResponse.json(
+        { ok: false, error: "Укажите корректное имя" },
+        { status: 400 }
+      );
+    }
+
+    if (phone.length < 6 || phone.length > 30) {
+      return NextResponse.json(
+        { ok: false, error: "Укажите корректный телефон" },
+        { status: 400 }
+      );
+    }
+
+    if (!from || from.length > 200) {
+      return NextResponse.json(
+        { ok: false, error: "Укажите адрес отправления" },
+        { status: 400 }
+      );
+    }
+
+    if (!to || to.length > 200) {
+      return NextResponse.json(
+        { ok: false, error: "Укажите адрес назначения" },
+        { status: 400 }
+      );
+    }
+
+    const cookieHeader = req.headers.get("cookie");
+
+    const utmSource =
+      asNullableString(body.utmSource) ??
+      getCookieValue(cookieHeader, "vrf_utm_source");
+
+    const utmMedium =
+      asNullableString(body.utmMedium) ??
+      getCookieValue(cookieHeader, "vrf_utm_medium");
+
+    const utmCampaign =
+      asNullableString(body.utmCampaign) ??
+      getCookieValue(cookieHeader, "vrf_utm_campaign");
+
+    const price = parsePrice(body.price);
 
     const lead = await prisma.lead.create({
       data: {
         name,
         phone,
-        fromText,
-        toText,
-        datetime: body.datetime || null,
-        comment: body.comment || null,
-        carClass: body.carClass || "standard",
-        roundTrip: Boolean(body.roundTrip),
-        price: typeof body.price === "number" ? Math.round(body.price) : null,
-        status: "new",
-        utmSource: utm.utmSource,
-        utmMedium: utm.utmMedium,
-        utmCampaign: utm.utmCampaign,
+        fromText: from,
+        toText: to,
+        pickupAddress: from,
+        dropoffAddress: to,
+        datetime,
+        carClass,
+        roundTrip,
+        price,
+        priceIsManual: false,
+        comment: buildComment({
+          comment,
+          datetime,
+          routeType,
+          distanceKm,
+        }),
+        utmSource,
+        utmMedium,
+        utmCampaign,
+      },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        fromText: true,
+        toText: true,
+        datetime: true,
+        carClass: true,
+        roundTrip: true,
+        comment: true,
+        price: true,
+        priceIsManual: true,
+        commission: true,
+        status: true,
+        isDuplicate: true,
       },
     });
 
-    const sourceLine =
-      utm.utmSource || utm.utmCampaign
-        ? `\n\nИсточник: ${utm.utmSource || "—"} / ${utm.utmMedium || "—"} / ${utm.utmCampaign || "—"}`
-        : "";
+    try {
+      await sendLeadToTelegram(lead);
+    } catch (telegramError) {
+      console.error("Telegram notify error:", telegramError);
+    }
 
-    await sendTelegramToAll(leadMessage(lead) + sourceLine, leadKeyboard(lead.id));
+    return NextResponse.json({
+      ok: true,
+      id: lead.id,
+      lead: {
+        id: lead.id,
+        isDuplicate: lead.isDuplicate,
+      },
+    });
+  } catch (error) {
+    console.error("Lead create error:", error);
 
-    return NextResponse.json({ ok: true, leadId: lead.id });
-  } catch (e: any) {
-    console.error("LEADS API ERROR:", e);
-    return NextResponse.json({ ok: false, error: "server error" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "Не удалось отправить заявку" },
+      { status: 500 }
+    );
   }
 }

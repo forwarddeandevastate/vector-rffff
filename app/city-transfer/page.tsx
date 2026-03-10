@@ -1,203 +1,239 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Script from "next/script";
-import ServicePage from "../ui/service-page";
 
 const SITE_URL = "https://vector-rf.ru";
-const SITE_NAME = "Вектор РФ";
+const PAGE_URL = `${SITE_URL}/city-transfer`;
 
 export const metadata: Metadata = {
-  title: "Трансфер по городу — заказать поездку",
+  title: "Городские поездки и трансферы",
   description:
-    "Городской трансфер: быстрая подача, фиксируем заявку и согласуем стоимость заранее. Комфорт, бизнес, минивэн. Онлайн-заявка 24/7.",
-  alternates: { canonical: `${SITE_URL}/city-transfer` },
-  robots: { index: true, follow: true },
+    "Городские поездки и трансферы с подачей ко времени: поездки по городу, встречи, деловые маршруты, комфорт, бизнес и минивэн.",
+  alternates: {
+    canonical: "/city-transfer",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     type: "website",
-    url: `${SITE_URL}/city-transfer`,
-    title: "Трансфер по городу",
+    url: PAGE_URL,
+    title: "Городские поездки и трансферы",
     description:
-      "Городской трансфер: быстро, комфортно, согласуем стоимость заранее. Заказ онлайн 24/7.",
-    siteName: SITE_NAME,
+      "Подача ко времени, поездки по городу, встречи, деловые маршруты, комфорт, бизнес и минивэн.",
+    siteName: "Вектор РФ",
     locale: "ru_RU",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — трансферы" }],
+    images: [
+      {
+        url: "/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Городские поездки и трансферы",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Трансфер по городу",
-    description: "Городской трансфер. Онлайн-заявка 24/7.",
+    title: "Городские поездки и трансферы",
+    description:
+      "Подача ко времени, поездки по городу, встречи, деловые маршруты, комфорт, бизнес и минивэн.",
     images: ["/og.jpg"],
   },
 };
 
-type CityLink = { slug: string; label: string };
-
-const CITY_POINTS: CityLink[] = [
-  { slug: "nizhniy-novgorod", label: "Нижний Новгород" },
-  { slug: "dzerzhinsk", label: "Дзержинск" },
-  { slug: "bor", label: "Бор" },
-  { slug: "kstovo", label: "Кстово" },
-
-  { slug: "moskva", label: "Москва" },
-  { slug: "sankt-peterburg", label: "Санкт-Петербург" },
-  { slug: "kazan", label: "Казань" },
-  { slug: "samara", label: "Самара" },
-  { slug: "krasnodar", label: "Краснодар" },
-  { slug: "rostov-na-donu", label: "Ростов-на-Дону" },
+const faq = [
+  {
+    question: "Для каких задач подходит городской трансфер?",
+    answer:
+      "Он подходит для поездок по городу, деловых встреч, маршрутов по нескольким адресам, трансферов на вокзал и в аэропорт, а также для личных поездок с заранее понятной подачей.",
+  },
+  {
+    question: "Можно ли заказать поездку на конкретное время?",
+    answer:
+      "Да, заявку можно оформить заранее на нужную дату и время, чтобы автомобиль был подан ко времени.",
+  },
+  {
+    question: "Есть ли выбор класса автомобиля?",
+    answer:
+      "Да, доступны стандарт, комфорт, бизнес и минивэн, в зависимости от формата поездки и количества пассажиров.",
+  },
+  {
+    question: "Когда удобен именно городской трансфер, а не обычный вызов машины?",
+    answer:
+      "Когда важны предсказуемые условия поездки, подача ко времени, поездка по нескольким точкам, повышенный комфорт или заранее согласованный формат обслуживания.",
+  },
 ];
 
-function cn(...xs: Array<string | false | null | undefined>) {
-  return xs.filter(Boolean).join(" ");
-}
-
-function CityBlock() {
-  return (
-    <section className="mx-auto max-w-6xl px-4 pb-12">
-      <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-        <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">
-          Городской трансфер — популярные точки
-        </h2>
-        <p className="mt-2 text-sm text-zinc-600">
-          Быстрые ссылки для заявки. Если нужен другой адрес — оставьте заявку, мы уточним детали и согласуем стоимость.
-        </p>
-
-        <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {CITY_POINTS.map((c) => (
-            <a
-              key={c.slug}
-              href={`/#order?utm_source=city-transfer&utm_medium=internal&utm_campaign=${encodeURIComponent(
-                c.slug
-              )}`}
-              className={cn(
-                "rounded-2xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-semibold",
-                "text-zinc-800 shadow-sm backdrop-blur hover:bg-white hover:border-sky-200/80"
-              )}
-            >
-              {c.label}
-            </a>
-          ))}
-        </div>
-
-        <div className="mt-6 text-xs text-zinc-500">
-          Работаем 24/7. Учитываем пожелания: багаж, детское кресло, остановки по пути.
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export default function Page() {
-  const canonical = `${SITE_URL}/city-transfer`;
-
-  const serviceJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "@id": `${canonical}#service`,
-    name: "Трансфер по городу",
-    serviceType: ["Такси по городу", "Городской трансфер"],
-    url: canonical,
-    areaServed: { "@type": "Country", name: "Россия" },
-    provider: {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-    },
-  };
-
+export default function CityTransferPage() {
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Главная", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: "Трансфер по городу", item: canonical },
+      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Городские поездки",
+        item: PAGE_URL,
+      },
     ],
   };
 
-  // ✅ FAQPage JSON-LD (вопросы совпадают с блоком FAQ на странице)
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "Как быстро подаёте автомобиль?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text:
-            "Обычно подача занимает от 15–30 минут (зависит от адреса и загрузки). Точное время подтверждаем после заявки.",
-        },
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
       },
-      {
-        "@type": "Question",
-        name: "Можно ли заказать поездку заранее?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Да, укажите дату и время — мы зафиксируем заявку и подтвердим подачу.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Что если нужна остановка по пути?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Укажите остановку в комментарии — учтём при расчёте и согласовании стоимости.",
-        },
-      },
-    ],
+    })),
+  };
+
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "Городские поездки и трансферы",
+    serviceType: "Городской трансфер",
+    provider: {
+      "@type": "Organization",
+      name: "Вектор РФ",
+      url: SITE_URL,
+      telephone: "+78002225650",
+    },
+    areaServed: {
+      "@type": "Country",
+      name: "Россия",
+    },
+    url: PAGE_URL,
+    description:
+      "Городские поездки и трансферы с подачей ко времени и подбором класса автомобиля.",
   };
 
   return (
     <>
       <Script
-        id="ld-city-service"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
-      />
-      <Script
-        id="ld-city-breadcrumbs"
+        id="ld-city-transfer-breadcrumbs"
         type="application/ld+json"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Script
-        id="ld-city-faq"
+        id="ld-city-transfer-faq"
         type="application/ld+json"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-
-      <ServicePage
-        breadcrumbs={[
-          { name: "Главная", href: "/" },
-          { name: "Трансфер по городу", href: "/city-transfer" },
-        ]}
-        title="Трансфер по городу"
-        subtitle="Комфортные поездки по городу: подача автомобиля, фиксация заявки и согласование стоимости до подачи. Работаем 24/7."
-        bullets={[
-          "Стоимость согласуем до подачи автомобиля",
-          "Подача авто по адресу и времени",
-          "Комфорт / Бизнес / Минивэн",
-          "Учитываем пожелания: багаж, детское кресло, остановки",
-          "Связь по телефону и в Telegram",
-        ]}
-        faq={[
-          {
-            q: "Как быстро подаёте автомобиль?",
-            a: "Обычно подача занимает от 15–30 минут (зависит от адреса и загрузки). Точное время подтверждаем после заявки.",
-          },
-          {
-            q: "Можно ли заказать поездку заранее?",
-            a: "Да, вы можете указать дату и время — мы зафиксируем заявку и подтвердим подачу.",
-          },
-          {
-            q: "Что если нужна остановка по пути?",
-            a: "Укажите это в комментарии — учтём при расчёте и согласовании стоимости.",
-          },
-        ]}
+      <Script
+        id="ld-city-transfer-service"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
 
-      <CityBlock />
+      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
+        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
+          <nav className="text-sm text-zinc-500">
+            <Link href="/" className="hover:text-zinc-900">
+              Главная
+            </Link>
+            <span className="mx-2">/</span>
+            <span>Городские поездки</span>
+          </nav>
+
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+            Городские поездки и трансферы
+          </h1>
+
+          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+            Городской трансфер подходит для поездок, где важны подача ко времени,
+            понятный маршрут и заранее согласованный формат поездки. Это удобно
+            для деловых встреч, поездок по нескольким адресам, выездов на вокзал
+            или в аэропорт, а также для личных маршрутов, когда не хочется
+            зависеть от случайной подачи.
+          </p>
+
+          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+            Такой формат часто выбирают для рабочих задач, встреч гостей,
+            сопровождения важных поездок и случаев, когда нужен более
+            предсказуемый сервис. Можно заранее выбрать класс автомобиля и
+            указать детали поездки, чтобы маршрут был понятен ещё до подачи.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
+            >
+              Оставить заявку
+            </Link>
+            <Link
+              href="/services"
+              className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+            >
+              Все услуги
+            </Link>
+          </div>
+        </div>
+
+        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            "Подача ко времени",
+            "Поездки по нескольким адресам",
+            "Комфорт, бизнес и минивэн",
+            "Подходит для личных и деловых задач",
+          ].map((item) => (
+            <div
+              key={item}
+              className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm"
+            >
+              <div className="text-sm font-semibold text-zinc-800">{item}</div>
+            </div>
+          ))}
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-zinc-900">
+            Когда городской трансфер удобнее стандартной поездки
+          </h2>
+          <div className="mt-4 space-y-4 text-sm leading-7 text-zinc-700">
+            <p>
+              В первую очередь тогда, когда важно заранее понимать время подачи,
+              маршрут и формат автомобиля. Это особенно заметно при рабочих
+              встречах, поездках по нескольким адресам, выезде на мероприятия и
+              в ситуациях, когда нужно строго соблюдать тайминг.
+            </p>
+            <p>
+              Городские поездки также часто оформляют для сопровождения гостей,
+              семейных поездок, выездов на вокзал и в аэропорт. В этих случаях
+              удобнее заранее согласовать поездку, чем искать транспорт в
+              последний момент.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-zinc-900">FAQ</h2>
+          <div className="mt-4 space-y-4">
+            {faq.map((item) => (
+              <div
+                key={item.question}
+                className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+              >
+                <div className="text-sm font-semibold text-zinc-900">
+                  {item.question}
+                </div>
+                <div className="mt-2 text-sm leading-6 text-zinc-600">
+                  {item.answer}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
     </>
   );
 }

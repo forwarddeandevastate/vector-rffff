@@ -50,7 +50,12 @@ function IconTelegram({ className }: { className?: string }) {
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
-      <path d="M8.1 15.4 18.4 7.9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M8.1 15.4 18.4 7.9"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -94,7 +99,7 @@ export default function SeoRouteClient(props: {
   keywordText?: string[];
   faq: FAQItem[];
   moreFromCity: Array<{ toSlug: string; toName: string }>;
-  siblingVariants?: Array<{ key: string; href: string; label: string }>;
+  reverseRoute?: { href: string; label: string };
 }) {
   const PHONE_TEL = "+78002225650";
   const PHONE_DISPLAY = "8 (800) 222-56-50";
@@ -118,10 +123,16 @@ export default function SeoRouteClient(props: {
 
       <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/65 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-          <Link href="/" className="text-sm font-extrabold text-zinc-900 hover:opacity-90">
+          <Link
+            href="/"
+            className="text-sm font-extrabold text-zinc-900 hover:opacity-90"
+          >
             Вектор РФ
           </Link>
-          <Link href={props.cityBackHref} className="text-sm font-semibold text-sky-700 hover:text-sky-800">
+          <Link
+            href={props.cityBackHref}
+            className="text-sm font-semibold text-sky-700 hover:text-sky-800"
+          >
             {props.cityBackLabel}
           </Link>
         </div>
@@ -158,7 +169,9 @@ export default function SeoRouteClient(props: {
               </a>
             </div>
 
-            <div className="mt-3 text-sm font-extrabold text-zinc-900">Заполнить заявку</div>
+            <div className="mt-3 text-sm font-extrabold text-zinc-900">
+              Заполнить заявку
+            </div>
           </div>
 
           <div className="p-4 md:p-5">
@@ -175,7 +188,9 @@ export default function SeoRouteClient(props: {
 
         <div className="mt-8 grid gap-8">
           <section>
-            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">{props.heading}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">
+              {props.heading}
+            </h1>
             <p className="mt-2 text-sm text-zinc-600">{props.subtitle}</p>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -193,7 +208,10 @@ export default function SeoRouteClient(props: {
 
           <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {props.routeFacts.map((fact) => (
-              <div key={fact} className="rounded-3xl border border-sky-100 bg-sky-50/70 p-4 shadow-sm">
+              <div
+                key={fact}
+                className="rounded-3xl border border-sky-100 bg-sky-50/70 p-4 shadow-sm"
+              >
                 <div className="text-sm font-semibold text-zinc-800">{fact}</div>
               </div>
             ))}
@@ -201,14 +219,19 @@ export default function SeoRouteClient(props: {
 
           <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {TRUST_FACTS.map((fact) => (
-              <div key={fact} className="rounded-3xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
+              <div
+                key={fact}
+                className="rounded-3xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur"
+              >
                 <div className="text-sm leading-6 text-zinc-700">{fact}</div>
               </div>
             ))}
           </section>
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-            <div className="text-sm font-extrabold text-zinc-900">Описание маршрута</div>
+            <div className="text-sm font-extrabold text-zinc-900">
+              Описание маршрута
+            </div>
             <div className="mt-3 space-y-4">
               {props.content
                 .split(/\n\n+/)
@@ -244,7 +267,9 @@ export default function SeoRouteClient(props: {
           </section>
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-            <div className="text-sm font-extrabold text-zinc-900">Текст по ключевым запросам</div>
+            <div className="text-sm font-extrabold text-zinc-900">
+              Текст по ключевым запросам
+            </div>
             <div className="mt-4 space-y-4">
               {(props.keywordText && props.keywordText.length > 0
                 ? props.keywordText
@@ -252,7 +277,8 @@ export default function SeoRouteClient(props: {
                     `Такси ${props.fromName} — ${props.toName} доступно для поездок между городами без пересадок и ожиданий.`,
                     `Маршрут ${props.fromName} — ${props.toName} можно заранее оформить как междугороднее такси с подачей ко времени.`,
                     `Трансфер ${props.fromName} — ${props.toName} подойдёт для деловых поездок, семейных выездов и поездок с багажом.`,
-                  ]).map((text, index) => (
+                  ]
+              ).map((text, index) => (
                 <p key={index} className="text-sm leading-6 text-zinc-700">
                   {text}
                 </p>
@@ -260,28 +286,49 @@ export default function SeoRouteClient(props: {
             </div>
           </section>
 
-          {props.siblingVariants && props.siblingVariants.length > 0 ? (
+          {props.reverseRoute ? (
             <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-              <div className="text-sm font-extrabold text-zinc-900">Другие варианты этой страницы</div>
+              <div className="text-sm font-extrabold text-zinc-900">
+                Обратный маршрут и полезные переходы
+              </div>
               <p className="mt-2 text-sm leading-6 text-zinc-600">
-                Для маршрута {props.fromName} — {props.toName} доступны отдельные SEO-страницы под разные коммерческие формулировки: такси, трансфер и междугородние запросы.
+                Для маршрута {props.fromName} — {props.toName} также может быть
+                полезен обратный путь, страница города отправления и основные
+                коммерческие разделы сайта.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                {props.siblingVariants.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                <Link
+                  href={props.reverseRoute.href}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  {props.reverseRoute.label}
+                </Link>
+                <Link
+                  href={`/${props.fromSlug}`}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  Все маршруты из {props.fromName}
+                </Link>
+                <Link
+                  href={`/${props.toSlug}`}
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  Все маршруты в {props.toName}
+                </Link>
+                <Link
+                  href="/intercity-taxi"
+                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                >
+                  Междугороднее такси
+                </Link>
               </div>
             </section>
           ) : null}
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-            <div className="text-sm font-extrabold text-zinc-900">Ещё маршруты из {props.fromName}</div>
+            <div className="text-sm font-extrabold text-zinc-900">
+              Ещё маршруты из {props.fromName}
+            </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {props.moreFromCity.map((p) => (
                 <Link
@@ -296,7 +343,9 @@ export default function SeoRouteClient(props: {
           </section>
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-            <div className="text-sm font-extrabold text-zinc-900">Полезные разделы</div>
+            <div className="text-sm font-extrabold text-zinc-900">
+              Полезные разделы
+            </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {CORE_SERVICE_LINKS.map((item) => (
                 <Link
@@ -311,11 +360,18 @@ export default function SeoRouteClient(props: {
           </section>
 
           <section className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-            <div className="text-sm font-extrabold text-zinc-900">Популярные маршруты по регионам</div>
+            <div className="text-sm font-extrabold text-zinc-900">
+              Популярные маршруты по регионам
+            </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               {REGIONAL_ROUTE_GROUPS.map((group) => (
-                <div key={group.title} className="rounded-2xl border border-zinc-200 bg-white/70 p-4">
-                  <div className="text-sm font-bold text-zinc-900">{group.title}</div>
+                <div
+                  key={group.title}
+                  className="rounded-2xl border border-zinc-200 bg-white/70 p-4"
+                >
+                  <div className="text-sm font-bold text-zinc-900">
+                    {group.title}
+                  </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {group.links.map((link) => (
                       <Link
@@ -336,9 +392,16 @@ export default function SeoRouteClient(props: {
             <div className="text-sm font-extrabold text-zinc-900">FAQ</div>
             <div className="mt-4 space-y-4">
               {props.faq.map((f, idx) => (
-                <div key={idx} className="rounded-2xl border border-zinc-200 bg-white/70 p-4">
-                  <div className="text-sm font-semibold text-zinc-900">{f.question}</div>
-                  <div className="mt-2 text-sm leading-6 text-zinc-600">{f.answer}</div>
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-zinc-200 bg-white/70 p-4"
+                >
+                  <div className="text-sm font-semibold text-zinc-900">
+                    {f.question}
+                  </div>
+                  <div className="mt-2 text-sm leading-6 text-zinc-600">
+                    {f.answer}
+                  </div>
                 </div>
               ))}
             </div>
@@ -353,7 +416,11 @@ export default function SeoRouteClient(props: {
               <div className="text-xs font-semibold text-zinc-700">Услуги</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
                 {CORE_SERVICE_LINKS.slice(0, 5).map((item) => (
-                  <Link key={item.href} href={item.href} className="hover:text-zinc-900 hover:underline">
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="hover:text-zinc-900 hover:underline"
+                  >
                     {item.label}
                   </Link>
                 ))}
@@ -361,10 +428,16 @@ export default function SeoRouteClient(props: {
             </div>
 
             <div>
-              <div className="text-xs font-semibold text-zinc-700">Популярные маршруты</div>
+              <div className="text-xs font-semibold text-zinc-700">
+                Популярные маршруты
+              </div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
                 {POPULAR_ROUTE_LINKS.slice(0, 6).map((item) => (
-                  <Link key={item.href} href={item.href} className="hover:text-zinc-900 hover:underline">
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="hover:text-zinc-900 hover:underline"
+                  >
                     {item.label}
                   </Link>
                 ))}
@@ -374,20 +447,33 @@ export default function SeoRouteClient(props: {
             <div>
               <div className="text-xs font-semibold text-zinc-700">Контакты</div>
               <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-                <a href={`tel:${PHONE_TEL}`} className="hover:text-zinc-900 hover:underline">
+                <a
+                  href={`tel:${PHONE_TEL}`}
+                  className="hover:text-zinc-900 hover:underline"
+                >
                   {PHONE_DISPLAY}
                 </a>
-                <a href={TELEGRAM} target="_blank" rel="noreferrer" className="hover:text-zinc-900 hover:underline">
+                <a
+                  href={TELEGRAM}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-zinc-900 hover:underline"
+                >
                   Telegram
                 </a>
-                <Link href="/contacts" className="hover:text-zinc-900 hover:underline">
+                <Link
+                  href="/contacts"
+                  className="hover:text-zinc-900 hover:underline"
+                >
                   Контакты и реквизиты
                 </Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</div>
+          <div className="mt-6 text-xs text-zinc-500">
+            © {new Date().getFullYear()} Вектор РФ. Все права защищены.
+          </div>
         </div>
       </footer>
     </div>

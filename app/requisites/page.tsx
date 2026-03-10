@@ -1,166 +1,84 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import RequisitesClient from "./requisites-client";
+import Script from "next/script";
 
 const SITE_URL = "https://vector-rf.ru";
-const SITE_NAME = "Вектор РФ";
-
-const PHONE_DISPLAY = "8 (800) 222-56-50";
-const PHONE_TEL = "+78002225650";
-const TELEGRAM = "https://t.me/vector_rf52";
+const PAGE_URL = `${SITE_URL}/requisites`;
 
 export const metadata: Metadata = {
   title: "Реквизиты",
-  description: "Реквизиты для оплаты услуг «Вектор РФ».",
-  alternates: { canonical: `${SITE_URL}/requisites` },
-  openGraph: {
-    type: "website",
-    url: `${SITE_URL}/requisites`,
-    title: "Реквизиты",
-    description: "Реквизиты для оплаты услуг «Вектор РФ».",
-    siteName: SITE_NAME,
-    locale: "ru_RU",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — реквизиты" }],
+  description:
+    "Реквизиты и служебная информация Вектор РФ. Контакты, страницы услуг и информация для связи по вопросам поездок и сотрудничества.",
+  alternates: {
+    canonical: "/requisites",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Реквизиты",
-    description: "Реквизиты для оплаты услуг «Вектор РФ».",
-    images: ["/og.jpg"],
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
-function cn(...xs: Array<string | false | null | undefined>) {
-  return xs.filter(Boolean).join(" ");
-}
-
 export default function RequisitesPage() {
-  const requisites = [
-    { label: "Получатель", value: "ИП НАРТОВ АЛЕКСЕЙ АЛЕКСЕЕВИЧ" },
-    { label: "ИНН", value: "526320552640" },
-    { label: "ОГРНИП", value: "326237500025657" },
-  ];
-
-  const plainText = `ИП НАРТОВ АЛЕКСЕЙ АЛЕКСЕЕВИЧ
-ИНН 526320552640
-ОГРНИП 326237500025657`;
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Реквизиты", item: PAGE_URL },
+    ],
+  };
 
   return (
-    <main className="min-h-screen text-zinc-900">
-      {/* фон как на главной */}
-      <div className="fixed inset-0 -z-20 bg-[#f3f7ff]" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.28),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.14),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.12),transparent_55%)]" />
-      <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
+    <>
+      <Script
+        id="ld-requisites-breadcrumbs"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
 
-      <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <header className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="text-xs font-semibold text-zinc-600">Документы</div>
-              <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Реквизиты</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
-                Реквизиты для оплаты услуг. Если нужно выставить счёт или уточнить детали — напишите в Telegram или
-                позвоните.
-              </p>
-            </div>
+      <main className="mx-auto max-w-4xl px-4 py-10 md:py-12">
+        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
+          <nav className="text-sm text-zinc-500">
+            <Link href="/" className="hover:text-zinc-900">Главная</Link>
+            <span className="mx-2">/</span>
+            <span>Реквизиты</span>
+          </nav>
 
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/"
-                className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
-              >
-                На главную
-              </Link>
-              <Link
-                href="/contacts"
-                className="rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95"
-              >
-                Контакты
-              </Link>
-            </div>
-          </div>
-        </header>
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900">
+            Реквизиты
+          </h1>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-12">
-          {/* QR */}
-          <div className="md:col-span-5 rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
-            <div className="text-sm font-extrabold text-zinc-900">QR для оплаты</div>
-            <p className="mt-2 text-sm text-zinc-600">Отсканируйте QR-код в приложении банка.</p>
+          <p className="mt-4 text-base leading-7 text-zinc-700">
+            На этой странице размещается реквизитная и служебная информация.
+            При необходимости актуальные данные можно уточнить через страницу
+            контактов.
+          </p>
 
-            <div className="mt-5 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-3">
-              <div className="relative mx-auto aspect-square w-full max-w-[360px]">
-                <Image
-                  src="/requisites-qr.png"
-                  alt="QR-код для оплаты"
-                  fill
-                  sizes="(max-width: 768px) 92vw, 360px"
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 text-xs text-zinc-500">
-              Если QR не сканируется — используйте реквизиты вручную справа.
-            </div>
+          <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm leading-7 text-zinc-700">
+            <p>Заполни здесь свои актуальные реквизиты, если они используются на сайте.</p>
+            <p className="mt-3">
+              Если страница нужна только как обязательная служебная, достаточно
+              поддерживать её в аккуратном и актуальном состоянии.
+            </p>
           </div>
 
-          {/* Реквизиты */}
-          <div className="md:col-span-7 rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <div className="text-sm font-extrabold text-zinc-900">Реквизиты</div>
-                <p className="mt-2 text-sm text-zinc-600">Скопируйте данные одним нажатием.</p>
-              </div>
-
-              <RequisitesClient plainText={plainText} />
-            </div>
-
-            <div className="mt-6 divide-y divide-zinc-200 rounded-2xl border border-zinc-200 bg-white/70">
-              {requisites.map((r) => (
-                <div key={r.label} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs font-semibold text-zinc-600">{r.label}</div>
-                  <div className="text-sm font-extrabold text-zinc-900">{r.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/70 p-4">
-              <div className="text-xs font-semibold text-zinc-600">Связь</div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <a
-                  href={`tel:${PHONE_TEL}`}
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                  )}
-                >
-                  {PHONE_DISPLAY}
-                </a>
-                <a
-                  href={TELEGRAM}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-extrabold",
-                    "border border-zinc-200 bg-white/80 text-zinc-900 shadow-sm backdrop-blur hover:bg-white"
-                  )}
-                >
-                  Telegram
-                </a>
-              </div>
-              <div className="mt-3 text-xs text-zinc-500">
-                Напишите, что вам нужны реквизиты/счёт — ответим быстрее.
-              </div>
-            </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/contacts"
+              className="inline-flex items-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
+            >
+              Контакты
+            </Link>
+            <Link
+              href="/services"
+              className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+            >
+              Все услуги
+            </Link>
           </div>
-        </section>
-
-        <footer className="mt-8 border-t border-zinc-200/70 pt-6 text-xs text-zinc-500">
-          © {new Date().getFullYear()} Вектор РФ. Все права защищены.
-        </footer>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

@@ -321,10 +321,16 @@ export function buildRouteSeoData({
 
   const variantLead = pick(VARIANT_INTRO_LEADS[variantKey] ?? VARIANT_INTRO_LEADS.main, hash, 12);
   const contentParagraphs = [
-    `${variantLead} ${cityBase} Направление ${fromName} — ${toName} мы оформляем как ${routeModel}, когда пассажиру нужен ${metrics.departureWindow} и дорога без лишней логистики. По этому маршруту ориентировочная дистанция составляет около ${metrics.km} км, а время в пути обычно занимает ${metrics.hours}.`,
-    `${regionalTone} Поездку ${fromName} — ${toName} часто выбирают ${audience}. Чаще всего маршрут проходит по ${metrics.roadType}, поэтому пассажирам важно заранее согласовать подачу, формат багажа и время выезда. ${pricing}`,
-    `${comfort} ${airport}`,
-  ];
+  `${variantLead} ${cityBase} Направление ${fromName} — ${toName} мы оформляем как ${routeModel}. Такой формат поездки выбирают, когда нужна прямая дорога между городами без пересадок, ожиданий и сложной логистики. По маршруту ориентировочная дистанция составляет около ${metrics.km} км, а среднее время в пути обычно занимает ${metrics.hours}.`,
+
+  `${regionalTone} Поездку ${fromName} — ${toName} часто выбирают ${audience}. Междугородняя дорога проходит по ${metrics.roadType}, поэтому пассажирам важно заранее согласовать подачу автомобиля, формат багажа и точное время отправления. ${pricing}`,
+
+  `${comfort} ${airport}`,
+
+  `Поездка между городами ${fromName} — ${toName} может быть оформлена как индивидуальный маршрут с подачей автомобиля к адресу. Такой формат особенно удобен для ${metrics.useCase}, когда важно доехать напрямую без пересадок и ожиданий транспорта.`,
+
+  `Маршрут ${fromName} — ${toName} относится к категории междугородних поездок по России. В зависимости от маршрута дорога может занимать несколько часов, поэтому пассажиры часто выбирают более комфортный класс автомобиля и заранее планируют время выезда.`,
+];
 
   const keywordTemplates = VARIANT_KEYWORD_TEXTS[variantKey] ?? VARIANT_KEYWORD_TEXTS.main;
   const keywordText = keywordTemplates.map((template) =>

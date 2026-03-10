@@ -1,7 +1,13 @@
-import { buildRoutePageMetadata, createRoutePage } from "@/lib/route-page";
+import { permanentRedirect } from "next/navigation";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
-export const generateMetadata = buildRoutePageMetadata("taksi-iz");
 
-export default createRoutePage("taksi-iz");
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ city: string; to: string }> | { city: string; to: string };
+}) {
+  const resolved = await Promise.resolve(params as any);
+  permanentRedirect(`/${resolved.city}/${resolved.to}`);
+}

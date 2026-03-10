@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { CITY_LANDINGS } from "@/lib/city-landings";
 import { absoluteUrl } from "@/lib/seo";
-import { buildSeoRouteUrls } from "@/lib/seo-routes";
+import { buildSeoRoutes } from "@/lib/seo-routes";
 
 const STATIC_PATHS = [
   "/",
@@ -23,75 +23,108 @@ const STATIC_PATHS = [
   "/privacy",
   "/personal-data",
   "/agreement",
-  "/taxi-mezhgorod",
-  "/taksi-mezhgorod",
-  "/mezhdugorodnee-taksi",
-  "/transfer-v-aeroport",
-  "/transfer-iz-aeroporta",
-  "/taxi-v-aeroport",
 ] as const;
 
 const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> = {
   "/": 1,
-  "/services": 0.95,
-  "/intercity-taxi": 0.95,
-  "/airport-transfer": 0.92,
-  "/city": 0.9,
-  "/city-transfer": 0.85,
-  "/minivan-transfer": 0.8,
-  "/corporate-taxi": 0.8,
-  "/corporate": 0.75,
-  "/about": 0.7,
-  "/contacts": 0.7,
-  "/reviews": 0.7,
-  "/faq": 0.65,
-  "/prices": 0.6,
-  "/requisites": 0.4,
-  "/privacy": 0.35,
-  "/personal-data": 0.35,
-  "/agreement": 0.35,
-  "/taxi-mezhgorod": 0.93,
-  "/taksi-mezhgorod": 0.92,
-  "/mezhdugorodnee-taksi": 0.93,
-  "/transfer-v-aeroport": 0.92,
-  "/transfer-iz-aeroporta": 0.9,
-  "/taxi-v-aeroport": 0.92,
+  "/services": 0.82,
+  "/intercity-taxi": 0.92,
+  "/airport-transfer": 0.9,
+  "/city": 0.78,
+  "/city-transfer": 0.74,
+  "/minivan-transfer": 0.72,
+  "/corporate-taxi": 0.74,
+  "/corporate": 0.68,
+  "/about": 0.5,
+  "/contacts": 0.58,
+  "/reviews": 0.58,
+  "/faq": 0.52,
+  "/prices": 0.66,
+  "/requisites": 0.25,
+  "/privacy": 0.2,
+  "/personal-data": 0.2,
+  "/agreement": 0.2,
 };
 
-// Один стабильный sitemap.xml. Держим запас ниже лимита 50 000 URL.
-const MAX_SITEMAP_URLS = 49900;
+const MAX_ROUTE_URLS = 45000;
+const ROUTES_PER_SITEMAP = 10000;
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
+function dedupe<T extends { url: string }>(items: T[]) {
   const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.url)) return false;
+    seen.add(item.url);
+    return true;
+  });
+}
 
-  const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
+function buildStaticEntries(lastModified: Date): MetadataRoute.Sitemap {
+  return STATIC_PATHS.map((path) => ({
     url: absoluteUrl(path),
     lastModified,
     changeFrequency: "weekly",
     priority: STATIC_PRIORITIES[path] ?? 0.5,
   }));
+}
 
-  const cityEntries: MetadataRoute.Sitemap = CITY_LANDINGS.map((city) => ({
+function buildCityEntries(lastModified: Date): MetadataRoute.Sitemap {
+  return CITY_LANDINGS.map((city) => ({
     url: absoluteUrl(`/${city.slug}`),
     lastModified,
     changeFrequency: "weekly",
-    priority: 0.8,
+    priority: 0.72,
   }));
+}
 
-  const reserved = staticEntries.length + cityEntries.length;
-  const routeLimit = Math.max(0, MAX_SITEMAP_URLS - reserved);
-
-  const routeEntries: MetadataRoute.Sitemap = buildSeoRouteUrls("", routeLimit).map((path) => ({
-    url: absoluteUrl(path),
+function buildRouteEntries(lastModified: Date): MetadataRoute.Sitemap {
+  return buildSeoRoutes(MAX_ROUTE_URLS).map((route) => ({
+    url: absoluteUrl(`/${route.from}/${route.to}`),
     lastModified,
     changeFrequency: "weekly",
-    priority: path.split("/").length > 3 ? 0.63 : 0.68,
+    priority: 0.64,
   }));
+}
 
-  return [...staticEntries, ...cityEntries, ...routeEntries].filter((entry) => {
-    if (seen.has(entry.url)) return false;
-    seen.add(entry.url);
-    return true;
-  });
+export async function generateSitemaps() {
+  const totalRouteSitemaps = Math.max(
+    1,
+    Math.ceil(MAX_ROUTE_URLS / ROUTES_PER_SITEMAP)
+  );
+
+  return [
+    { id: "core" },
+    ...Array.from({ length: totalRouteSitemaps }, (_, index) => ({
+      id: `routes-${index + 1}`,
+    })),
+  ];
+}
+
+export default async function sitemap(props: {
+  id: Promise<string>;
+}): Promise<MetadataRoute.Sitemap> {
+  const id = await props.id;
+  const lastModified = new Date();
+
+  if (id === "core") {
+    const coreEntries = [
+      ...buildStaticEntries(lastModified),
+      ...buildCityEntries(lastModified),
+    ];
+
+    return dedupe(coreEntries);
+  }
+
+  if (id.startsWith("routes-")) {
+    const pageNumber = Number(id.replace("routes-", ""));
+    const pageIndex =
+      Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber - 1 : 0;
+
+    const allRoutes = buildRouteEntries(lastModified);
+    const start = pageIndex * ROUTES_PER_SITEMAP;
+    const end = start + ROUTES_PER_SITEMAP;
+
+    return dedupe(allRoutes.slice(start, end));
+  }
+
+  return [];
 }

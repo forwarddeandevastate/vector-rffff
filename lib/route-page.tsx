@@ -3,39 +3,101 @@ import Script from "next/script";
 import { notFound } from "next/navigation";
 
 import SeoRouteClient from "@/app/ui/seo-route-client";
-import { CITY_BY_SLUG, CITY_LANDINGS, isValidRouteSlugs, prettyCityNameFromSlug } from "@/lib/city-landings";
-import { buildBreadcrumbJsonLd, buildFaqJsonLd, buildRouteMetadata } from "@/lib/seo";
+import {
+  CITY_BY_SLUG,
+  CITY_LANDINGS,
+  isValidRouteSlugs,
+  prettyCityNameFromSlug,
+} from "@/lib/city-landings";
+import {
+  buildBreadcrumbJsonLd,
+  buildFaqJsonLd,
+  buildRouteMetadata,
+} from "@/lib/seo";
 import { buildRouteSeoData } from "@/lib/route-seo";
-import { ROUTE_VARIANTS, buildVariantHeading, buildVariantPath, type RouteVariantKey } from "@/lib/route-variants";
-import { isRouteVariantIndexable } from "@/lib/seo-routes";
+import { type RouteVariantKey } from "@/lib/route-variants";
+
+const SITE_PHONE = "+78314233929";
 
 function normalizeSlug(input: string) {
   const raw = (input ?? "").trim();
   let s = raw;
+
   try {
     s = decodeURIComponent(raw);
   } catch {}
-  return s.trim().toLowerCase().replace(/[—–-−]/g, "-").replace(/-+/g, "-");
+
+  return s
+    .trim()
+    .toLowerCase()
+    .replace(/[—–-−]/g, "-")
+    .replace(/-+/g, "-");
 }
 
 function getCity(slug: string) {
   return CITY_BY_SLUG.get(slug) ?? null;
 }
 
-export function buildRoutePageMetadata(variantKey: RouteVariantKey) {
+export function buildRoutePageMetadata(_variantKey: RouteVariantKey) {
   return async function generateMetadata({
     params,
   }: {
     params: Promise<{ city: string; to: string }> | { city: string; to: string };
   }): Promise<Metadata> {
-    const resolved = await Promise.resolve(params as any);
+    const resolved = await Promise.resolve(params as { city: string; to: string });
     const fromSlug = normalizeSlug(resolved.city);
     const toSlug = normalizeSlug(resolved.to);
+
     const fromCity = getCity(fromSlug);
     const toCity = getCity(toSlug);
 
     if (!fromCity || !toCity || !isValidRouteSlugs(fromSlug, toSlug)) {
-      return { robots: { index: false, follow: false } };
+      return {
+        robots: {
+          index: false,
+          follow: false,
+        },
+      };
+    }
+
+    const seoData = buildRouteSeoData({
+      fromSlug: fromCity.slug,
+      fromName: fromCity.name,
+      fromGenitive: fromCity.fromGenitive,
+      toSlug: toCity.slug,
+      toName: toCity.name,
+      variantKey: "main",
+    });
+
+    return buildRouteMetadata({
+      fromSlug: fromCity.slug,
+      fromName: fromCity.name,
+      toSlug: toCity.slug,
+      toName: toCity.name,
+      title: seoData.metadataTitle,
+      description: seoData.metadataDescription,
+      keywords: seoData.metadataKeywords,
+      canonicalPath: `/${fromCity.slug}/${toCity.slug}`,
+      indexable: true,
+    });
+  };
+}
+
+export function createRoutePage(variantKey: RouteVariantKey) {
+  return async function RoutePage({
+    params,
+  }: {
+    params: Promise<{ city: string; to: string }> | { city: string; to: string };
+  }) {
+    const resolved = await Promise.resolve(params as { city: string; to: string });
+    const fromSlug = normalizeSlug(resolved.city);
+    const toSlug = normalizeSlug(resolved.to);
+
+    const fromCity = getCity(fromSlug);
+    const toCity = getCity(toSlug);
+
+    if (!fromCity || !toCity || !isValidRouteSlugs(fromSlug, toSlug)) {
+      return notFound();
     }
 
     const seoData = buildRouteSeoData({
@@ -47,65 +109,31 @@ export function buildRoutePageMetadata(variantKey: RouteVariantKey) {
       variantKey,
     });
 
-    return buildRouteMetadata({
-      fromSlug: fromCity.slug,
-      fromName: fromCity.name,
-      toSlug: toCity.slug,
-      toName: toCity.name,
-      title: seoData.metadataTitle,
-      description: seoData.metadataDescription,
-      keywords: seoData.metadataKeywords,
-      canonicalPath: buildVariantPath(variantKey, fromCity.slug, toCity.slug),
-      indexable: isRouteVariantIndexable(variantKey, fromCity.slug, toCity.slug),
-    });
-  };
-}
+    const reverseRoute = {
+      href: `/${toCity.slug}/${fromCity.slug}`,
+      label: `${toCity.name} — ${fromCity.name}`,
+    };
 
-export function createRoutePage(variantKey: RouteVariantKey) {
-  return async function RoutePage({
-    params,
-  }: {
-    params: Promise<{ city: string; to: string }> | { city: string; to: string };
-  }) {
-    const resolved = await Promise.resolve(params as any);
-    const fromSlug = normalizeSlug(resolved.city);
-    const toSlug = normalizeSlug(resolved.to);
-    const fromCity = getCity(fromSlug);
-    const toCity = getCity(toSlug);
-
-    if (!fromCity || !toCity || !isValidRouteSlugs(fromSlug, toSlug)) return notFound();
-
-    const seoData = buildRouteSeoData({
-      fromSlug: fromCity.slug,
-      fromName: fromCity.name,
-      fromGenitive: fromCity.fromGenitive,
-      toSlug: toCity.slug,
-      toName: toCity.name,
-      variantKey,
-    });
-
-    const moreFromCity = CITY_LANDINGS.filter((item) => item.slug !== fromCity.slug && item.slug !== toCity.slug)
-      .slice(0, 10)
-      .map((item) => ({ toSlug: item.slug, toName: prettyCityNameFromSlug(item.slug) }));
-
-    const pagePath = buildVariantPath(variantKey, fromCity.slug, toCity.slug);
-    const siblingVariants = ROUTE_VARIANTS.filter(
-      (item) => item.key !== "route" && item.key !== variantKey
+    const moreFromCity = CITY_LANDINGS.filter(
+      (item) => item.slug !== fromCity.slug && item.slug !== toCity.slug
     )
+      .slice(0, 10)
       .map((item) => ({
-        key: item.key,
-        href: buildVariantPath(item.key, fromCity.slug, toCity.slug),
-        label: buildVariantHeading(item.key, fromCity.name, toCity.name),
-      }))
-      .slice(0, 5);
+        toSlug: item.slug,
+        toName: prettyCityNameFromSlug(item.slug),
+      }));
 
     const breadcrumbsJsonLd = buildBreadcrumbJsonLd([
       { name: "Главная", path: "/" },
       { name: fromCity.name, path: `/${fromCity.slug}` },
-      { name: buildVariantHeading(variantKey, fromCity.name, toCity.name), path: pagePath },
+      {
+        name: `${fromCity.name} — ${toCity.name}`,
+        path: `/${fromCity.slug}/${toCity.slug}`,
+      },
     ]);
 
     const faqJsonLd = buildFaqJsonLd(seoData.faq);
+
     const moreRoutesJsonLd = {
       "@context": "https://schema.org",
       "@type": "ItemList",
@@ -121,56 +149,83 @@ export function createRoutePage(variantKey: RouteVariantKey) {
     const serviceJsonLd = {
       "@context": "https://schema.org",
       "@type": "Service",
-      name: buildVariantHeading(variantKey, fromCity.name, toCity.name),
-      serviceType:
-        variantKey === "transfer"
-          ? "Междугородний трансфер"
-          : variantKey === "mezhdugorodnee-taksi"
-            ? "Междугороднее такси"
-            : variantKey === "taxi-mezhgorod"
-              ? "Такси межгород"
-              : "Такси между городами",
+      name: `${fromCity.name} — ${toCity.name}`,
+      serviceType: "Междугороднее такси и трансфер",
       provider: {
         "@type": "LocalBusiness",
         name: "Вектор РФ",
-        telephone: "+78002225650",
+        telephone: SITE_PHONE,
         areaServed: "Россия",
-        url: `https://vector-rf.ru${pagePath}`,
+        url: `https://vector-rf.ru/${fromCity.slug}/${toCity.slug}`,
       },
       areaServed: [fromCity.name, toCity.name],
-      availableChannel: {
-        "@type": "ServiceChannel",
-        serviceUrl: `https://vector-rf.ru${pagePath}`,
-        availableLanguage: "ru",
-      },
       description: seoData.metadataDescription,
+    };
+
+    const offerJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Offer",
+      url: `https://vector-rf.ru/${fromCity.slug}/${toCity.slug}`,
+      priceCurrency: "RUB",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        priceCurrency: "RUB",
+        valueAddedTaxIncluded: false,
+        description: "Итоговая стоимость подтверждается заранее до поездки",
+      },
+      availability: "https://schema.org/InStock",
+      eligibleRegion: {
+        "@type": "Country",
+        name: "Россия",
+      },
+      seller: {
+        "@type": "Organization",
+        name: "Вектор РФ",
+        url: "https://vector-rf.ru",
+      },
     };
 
     return (
       <>
         <Script
-          id={`ld-route-breadcrumbs-${variantKey}-${fromCity.slug}-${toCity.slug}`}
+          id={`ld-route-breadcrumbs-${fromCity.slug}-${toCity.slug}`}
           type="application/ld+json"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbsJsonLd),
+          }}
         />
         <Script
-          id={`ld-route-faq-${variantKey}-${fromCity.slug}-${toCity.slug}`}
+          id={`ld-route-faq-${fromCity.slug}-${toCity.slug}`}
           type="application/ld+json"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(faqJsonLd),
+          }}
         />
         <Script
-          id={`ld-route-more-${variantKey}-${fromCity.slug}-${toCity.slug}`}
+          id={`ld-route-more-${fromCity.slug}-${toCity.slug}`}
           type="application/ld+json"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(moreRoutesJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(moreRoutesJsonLd),
+          }}
         />
         <Script
-          id={`ld-route-service-${variantKey}-${fromCity.slug}-${toCity.slug}`}
+          id={`ld-route-service-${fromCity.slug}-${toCity.slug}`}
           type="application/ld+json"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(serviceJsonLd),
+          }}
+        />
+        <Script
+          id={`ld-route-offer-${fromCity.slug}-${toCity.slug}`}
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(offerJsonLd),
+          }}
         />
 
         <SeoRouteClient
@@ -180,14 +235,14 @@ export function createRoutePage(variantKey: RouteVariantKey) {
           fromName={fromCity.name}
           toSlug={toCity.slug}
           toName={toCity.name}
-          heading={buildVariantHeading(variantKey, fromCity.name, toCity.name)}
+          heading={seoData.h1 || `${fromCity.name} — ${toCity.name}`}
           subtitle={seoData.subtitle}
           routeFacts={seoData.routeFacts}
           content={seoData.content}
           keywordText={seoData.keywordText}
           faq={seoData.faq}
           moreFromCity={moreFromCity}
-          siblingVariants={siblingVariants}
+          reverseRoute={reverseRoute}
         />
       </>
     );
