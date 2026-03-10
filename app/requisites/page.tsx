@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
+
+import RequisitesClient from "./requisites-client";
+import { prisma } from "@/lib/prisma";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/requisites`;
 
 export const metadata: Metadata = {
-  title: "Реквизиты",
+  title: "Реквизиты компании",
   description:
-    "Реквизиты и служебная информация Вектор РФ. Контакты, страницы услуг и информация для связи по вопросам поездок и сотрудничества.",
+    "Реквизиты компании Вектор РФ: наименование, ИНН, ОГРН, адрес и контактная информация.",
   alternates: {
     canonical: "/requisites",
   },
@@ -18,13 +22,43 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RequisitesPage() {
+function row(label: string, value?: string | null) {
+  return {
+    label,
+    value: value?.trim() || "Уточняйте у менеджера",
+  };
+}
+
+export default async function RequisitesPage() {
+  const settings = await prisma.siteSettings.findFirst({
+    orderBy: { id: "asc" },
+  });
+
+  const phone = settings?.phone?.trim() || "8 (800) 222-56-50";
+  const telegram = settings?.telegram?.trim() || "https://t.me/vector_rf52";
+  const email = settings?.email?.trim() || "Уточняйте у менеджера";
+
+  const rows = [
+    row("Наименование", settings?.companyName || settings?.brandName || "Вектор РФ"),
+    row("ИНН", settings?.inn),
+    row("ОГРН", settings?.ogrn),
+    row("Адрес", settings?.address),
+    row("Телефон", phone),
+    row("Email", email),
+    row("Режим работы", settings?.workHours),
+    row("Дополнительно", settings?.notes),
+  ];
+
+  const plainText = rows
+    .map((item) => `${item.label}: ${item.value}`)
+    .join("\n");
+
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Реквизиты", item: PAGE_URL },
+      { "@type": "ListItem", position: 2, name: "Реквизиты компании", item: PAGE_URL },
     ],
   };
 
@@ -37,46 +71,105 @@ export default function RequisitesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
-      <main className="mx-auto max-w-4xl px-4 py-10 md:py-12">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
-          <nav className="text-sm text-zinc-500">
-            <Link href="/" className="hover:text-zinc-900">Главная</Link>
-            <span className="mx-2">/</span>
-            <span>Реквизиты</span>
-          </nav>
+      <main className="mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-14">
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
+            <nav className="text-sm text-zinc-500">
+              <Link href="/" className="hover:text-zinc-900">
+                Главная
+              </Link>
+              <span className="mx-2">/</span>
+              <span>Реквизиты компании</span>
+            </nav>
 
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900">
-            Реквизиты
-          </h1>
+            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+              Реквизиты компании
+            </h1>
 
-          <p className="mt-4 text-base leading-7 text-zinc-700">
-            На этой странице размещается реквизитная и служебная информация.
-            При необходимости актуальные данные можно уточнить через страницу
-            контактов.
-          </p>
-
-          <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm leading-7 text-zinc-700">
-            <p>Заполни здесь свои актуальные реквизиты, если они используются на сайте.</p>
-            <p className="mt-3">
-              Если страница нужна только как обязательная служебная, достаточно
-              поддерживать её в аккуратном и актуальном состоянии.
+            <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+              На этой странице размещена реквизитная и контактная информация по сервису
+              «Вектор РФ». Если вам нужны уточнения по документам, оплате или сотрудничеству,
+              свяжитесь с нами удобным способом.
             </p>
-          </div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/contacts"
-              className="inline-flex items-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
-            >
-              Контакты
-            </Link>
-            <Link
-              href="/services"
-              className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
-            >
-              Все услуги
-            </Link>
-          </div>
+            <div className="mt-8 overflow-hidden rounded-3xl border border-zinc-200">
+              <div className="grid grid-cols-1 divide-y divide-zinc-200">
+                {rows.map((item) => (
+                  <div
+                    key={item.label}
+                    className="grid gap-2 bg-white px-5 py-4 md:grid-cols-[220px_1fr] md:gap-4"
+                  >
+                    <div className="text-sm font-bold text-zinc-500">{item.label}</div>
+                    <div className="text-sm leading-7 text-zinc-900">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <RequisitesClient plainText={plainText} />
+
+              <Link
+                href="/contacts"
+                className="inline-flex items-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                Контакты
+              </Link>
+
+              <a
+                href={telegram}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              >
+                Telegram
+              </a>
+            </div>
+          </section>
+
+          <aside className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="text-sm font-extrabold text-zinc-900">Контактная информация</div>
+
+            <div className="mt-5 space-y-4">
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                  Телефон
+                </div>
+                <div className="mt-2 text-base font-extrabold text-zinc-900">{phone}</div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                  Telegram
+                </div>
+                <div className="mt-2 break-all text-sm font-semibold text-zinc-900">
+                  {telegram}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                  Email
+                </div>
+                <div className="mt-2 break-all text-sm font-semibold text-zinc-900">
+                  {email}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-3xl border border-zinc-200 bg-white p-4">
+              <div className="text-sm font-extrabold text-zinc-900">QR для реквизитов</div>
+              <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-3">
+                <Image
+                  src="/requisites-qr.png"
+                  alt="QR-код реквизитов"
+                  width={560}
+                  height={560}
+                  className="h-auto w-full rounded-xl"
+                />
+              </div>
+            </div>
+          </aside>
         </div>
       </main>
     </>

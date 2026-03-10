@@ -158,9 +158,18 @@ export default function RootLayout({
             __html: `
 (function () {
   try {
+    var isAdmin = window.location.pathname.startsWith("/admin");
     var saved = localStorage.getItem("admin-theme");
-    if (saved === "dark") document.documentElement.classList.add("dark");
-    if (saved === "light") document.documentElement.classList.remove("dark");
+
+    if (isAdmin) {
+      if (saved === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   } catch (e) {}
 })();
             `,

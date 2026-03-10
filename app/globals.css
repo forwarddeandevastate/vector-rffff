@@ -1,27 +1,17 @@
 @import "tailwindcss";
 
-/* ✅ Включаем class-based dark variant для Tailwind v4 */
+/* dark-вариант оставляем только для классов,
+   но без автопереключения по системной теме */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Базовые переменные (светлая тема) */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-/* ✅ Тёмная тема ПО КЛАССУ (когда на <html> есть .dark) */
 :root.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
-}
-
-/* (Опционально) Если пользователь ничего не выбирал — можно оставить авто по системе.
-   Но это НЕ мешает переключателю: класс будет иметь приоритет. */
-@media (prefers-color-scheme: dark) {
-  :root:not(.dark) {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 @theme inline {
@@ -31,13 +21,17 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  background: #ffffff;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Google Places Autocomplete (нельзя убирать "powered by Google" по правилам Google) */
+/* Google Places Autocomplete */
 .pac-container {
   border-radius: 14px;
   border: 1px solid rgba(228, 228, 231, 0.9);
