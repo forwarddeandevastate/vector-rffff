@@ -128,23 +128,25 @@ export default function PricesPage() {
                   <th className="px-4 py-3 font-bold text-slate-800 rounded-tl-xl">Маршрут</th>
                   <th className="px-4 py-3 font-bold text-slate-800 text-center">Стандарт</th>
                   <th className="px-4 py-3 font-bold text-slate-800 text-center">Комфорт</th>
+                  <th className="px-4 py-3 font-bold text-slate-800 text-center">Бизнес</th>
                   <th className="px-4 py-3 font-bold text-slate-800 text-center rounded-tr-xl">Минивэн</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { route: "Москва — Нижний Новгород (430 км)", std: "от 7 000 ₽", comfort: "от 9 500 ₽", van: "от 12 000 ₽" },
-                  { route: "Москва — Тула (175 км)", std: "от 3 500 ₽", comfort: "от 4 500 ₽", van: "от 5 500 ₽" },
-                  { route: "Москва — Ярославль (280 км)", std: "от 5 000 ₽", comfort: "от 6 500 ₽", van: "от 8 000 ₽" },
-                  { route: "Москва — Казань (820 км)", std: "от 13 000 ₽", comfort: "от 16 000 ₽", van: "от 20 000 ₽" },
-                  { route: "Н. Новгород — Казань (400 км)", std: "от 6 500 ₽", comfort: "от 8 500 ₽", van: "от 11 000 ₽" },
-                  { route: "Краснодар — Сочи (280 км)", std: "от 5 000 ₽", comfort: "от 6 500 ₽", van: "от 8 000 ₽" },
-                  { route: "В аэропорт (30–60 км)", std: "от 1 500 ₽", comfort: "от 2 000 ₽", van: "от 2 500 ₽" },
+                  { route: "Москва — Нижний Новгород (430 км)", std: "от 13 000 ₽", comfort: "от 19 500 ₽", biz: "от 34 000 ₽", van: "от 23 500 ₽" },
+                  { route: "Москва — Тула (175 км)", std: "от 5 000 ₽", comfort: "от 8 000 ₽", biz: "от 14 000 ₽", van: "от 9 500 ₽" },
+                  { route: "Москва — Ярославль (280 км)", std: "от 8 500 ₽", comfort: "от 12 500 ₽", biz: "от 22 000 ₽", van: "от 15 000 ₽" },
+                  { route: "Москва — Казань (820 км)", std: "от 25 000 ₽", comfort: "от 37 500 ₽", biz: "от 65 500 ₽", van: "от 45 000 ₽" },
+                  { route: "Н. Новгород — Казань (400 км)", std: "от 12 000 ₽", comfort: "от 18 000 ₽", biz: "от 32 000 ₽", van: "от 22 000 ₽" },
+                  { route: "Краснодар — Сочи (280 км)", std: "от 8 500 ₽", comfort: "от 12 500 ₽", biz: "от 22 000 ₽", van: "от 15 000 ₽" },
+                  { route: "В аэропорт (30–60 км)", std: "от 1 500 ₽", comfort: "от 2 500 ₽", biz: "от 3 500 ₽", van: "от 2 500 ₽" },
                 ].map((row) => (
                   <tr key={row.route} className="border-b border-blue-50 hover:bg-blue-50/40">
                     <td className="px-4 py-3 text-slate-700 font-medium">{row.route}</td>
                     <td className="px-4 py-3 text-center text-slate-600">{row.std}</td>
                     <td className="px-4 py-3 text-center text-slate-600">{row.comfort}</td>
+                    <td className="px-4 py-3 text-center text-slate-600">{row.biz}</td>
                     <td className="px-4 py-3 text-center text-slate-600">{row.van}</td>
                   </tr>
                 ))}
