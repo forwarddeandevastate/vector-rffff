@@ -2,12 +2,17 @@ import type { NextConfig } from "next";
 
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://yastatic.net",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  // Яндекс.Метрика: mc.yandex.ru + mc.yandex.com + yastatic.net
+  // Google Maps: maps.googleapis.com + maps.gstatic.com
+  // Google Tag Manager / GA4: googletagmanager.com + google-analytics.com
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://mc.yandex.com https://yastatic.net https://www.googletagmanager.com https://www.google-analytics.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://yandex.ru",
-  "frame-src https://www.google.com",
+  // connect-src: все внешние fetch/XHR запросы
+  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://mc.yandex.com https://yandex.ru https://www.google-analytics.com https://www.googletagmanager.com https://region.metrica.yandex.com",
+  "worker-src 'self' blob:",
+  "frame-src https://www.google.com https://www.googletagmanager.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -52,6 +57,13 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  compiler: {
+    // Убираем console.log в продакшене
+    removeConsole: process.env.NODE_ENV === "production"
+      ? { exclude: ["error", "warn"] }
+      : false,
+  },
+
   async headers() {
     return [
       // Security headers на всех маршрутах
@@ -71,6 +83,13 @@ const nextConfig: NextConfig = {
         source: "/(.*)\.(png|jpg|jpeg|gif|ico|svg|webp|avif|woff2|woff)",
         headers: [
           { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+      // Кэш шрифтов через next/font — на 1 год
+      {
+        source: "/_next/static/media/(.*)\.woff2",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
       // CORS на публичных API (в dev без проверки origin)

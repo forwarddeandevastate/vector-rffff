@@ -149,8 +149,11 @@ export default async function sitemap(props: {
   id: Promise<string>;
 }): Promise<MetadataRoute.Sitemap> {
   const id = await props.id;
-  // Фиксированная дата последнего релиза — не new Date() чтобы не обманывать краулер
-  const lastModified = new Date("2025-04-15T00:00:00Z");
+  // Дата релиза из env (SITE_LAST_MODIFIED) — обновляйте при каждом деплое
+  // Если env не задан — fallback на фиксированную дату
+  const lastModified = new Date(
+    process.env.SITE_LAST_MODIFIED ?? "2025-04-15T00:00:00Z"
+  );
 
   if (id === "core") {
     return dedupe([

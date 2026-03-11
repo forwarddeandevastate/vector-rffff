@@ -9,7 +9,13 @@
 
 html {
   background: #eef4ff;
-  scroll-behavior: smooth;
+}
+
+/* scroll-behavior только для пользователей без prefered-reduced-motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {

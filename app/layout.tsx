@@ -5,9 +5,12 @@ import "./globals.css";
 import UTMCollector from "./utm";
 
 const manrope = Manrope({
-  subsets: ["cyrillic"],
-  weight: ["500", "700", "800"],
+  subsets: ["cyrillic", "latin"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
+  preload: true,
+  fallback: ["system-ui", "-apple-system", "sans-serif"],
+  adjustFontFallback: true, // уменьшает CLS от смены шрифта
 });
 
 const SITE_URL = "https://vector-rf.ru";
@@ -158,11 +161,13 @@ export default function RootLayout({
           addressRegion: "Нижегородская область",
           addressLocality: "Нижний Новгород",
         },
+        // Координаты головного офиса (Нижний Новгород) — федеральный сервис по всей России
         geo: {
           "@type": "GeoCoordinates",
           latitude: 56.3269,
           longitude: 44.0059,
         },
+        description: "Федеральный сервис заказа межгородских трансферов и такси. Диспетчеры работают из Нижнего Новгорода, поездки выполняются по всей России.",
         priceRange: "₽₽",
         openingHours: "Mo-Su 00:00-23:59",
         currenciesAccepted: "RUB",
@@ -197,26 +202,14 @@ export default function RootLayout({
         isPartOf: { "@id": `${SITE_URL}/#website` },
         about: { "@id": `${SITE_URL}/#service` },
       },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE_URL}/#website-search`,
-        url: SITE_URL,
-        name: SITE_NAME,
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${SITE_URL}/city?q={search_term_string}`,
-          },
-          "query-input": "required name=search_term_string",
-        },
-      },
+
     ],
   };
 
   return (
     <html lang="ru">
       <head>
+        <meta name="theme-color" content="#2563eb" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -240,8 +233,22 @@ export default function RootLayout({
           }}
         />
 
+        {/* Яндекс.Метрика — оба домена */}
         <link rel="preconnect" href="https://mc.yandex.ru" crossOrigin="" />
         <link rel="dns-prefetch" href="https://mc.yandex.ru" />
+        <link rel="preconnect" href="https://mc.yandex.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://mc.yandex.com" />
+        {/* Яндекс.Метрика preconnect */}
+        <link rel="preconnect" href="https://mc.yandex.ru" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://mc.yandex.ru" />
+        <link rel="dns-prefetch" href="https://mc.yandex.com" />
+        {/* Google Tag Manager / GA4 */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        {/* Google Maps — lazy, только DNS */}
+        <link rel="dns-prefetch" href="https://maps.googleapis.com" />
+        <link rel="dns-prefetch" href="https://maps.gstatic.com" />
 
         <script
           type="application/ld+json"
@@ -252,40 +259,7 @@ export default function RootLayout({
       </head>
 
       <body className={`${manrope.className} bg-[#eef4ff] text-slate-900`}>
-        <Script
-          id="yandex-metrika"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-(function(m,e,t,r,i,k,a){
-  m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-  m[i].l=1*new Date();
-  for (var j = 0; j < document.scripts.length; j++) {
-    if (document.scripts[j].src === r) { return; }
-  }
-  k=e.createElement(t),a=e.getElementsByTagName(t)[0],
-  k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-})(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id=${YM_ID}", "ym");
 
-ym(${YM_ID}, "init", {
-  webvisor: true,
-  clickmap: true,
-  accurateTrackBounce: true,
-  trackLinks: true
-});
-            `,
-          }}
-        />
-
-        <noscript>
-          <div>
-            <img
-              src={`https://mc.yandex.ru/watch/${YM_ID}`}
-              style={{ position: "absolute", left: "-9999px" }}
-              alt=""
-            />
-          </div>
-        </noscript>
 
         {/* Google Analytics GA4 */}
         {process.env.NEXT_PUBLIC_GA_ID && (
@@ -293,9 +267,9 @@ ym(${YM_ID}, "init", {
             <Script
               id="ga4-init"
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             />
-            <Script id="ga4-config" strategy="afterInteractive">
+            <Script id="ga4-config" strategy="lazyOnload">
               {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}',{anonymize_ip:true});`}
             </Script>
           </>
