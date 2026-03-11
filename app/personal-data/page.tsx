@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Согласие на обработку персональных данных",
   description:
     "Согласие на обработку персональных данных для сервиса «Вектор РФ»: состав данных, цели, сроки хранения и отзыв согласия.",
-  alternates: { canonical: `${SITE_URL}/personal-data` },
+  alternates: { canonical: "/personal-data" },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/personal-data`,

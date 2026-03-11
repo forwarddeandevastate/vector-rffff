@@ -287,6 +287,18 @@ export default function IntercityTaxiPage() {
           </div>
         </section>
 
+        <section className="mt-8">
+          <h2 className="text-xl font-extrabold text-slate-900 mb-4">Популярные направления межгород</h2>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {SOUTH_ROUTE_LINKS.map((item) => (
+              <a key={item.href} href={item.href}
+                className="rounded-2xl border border-blue-100/60 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:border-sky-200 hover:bg-white">
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </section>
+
         <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-extrabold text-slate-900">FAQ</h2>
           <div className="mt-4 space-y-4">

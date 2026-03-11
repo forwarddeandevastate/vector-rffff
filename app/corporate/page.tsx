@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: "Корпоративные перевозки и трансферы — Вектор РФ",
   description:
     "Корпоративные трансферы и регулярные поездки для компаний: договор, безнал, единые условия, отчётность. Заключаем договор. Работаем 24/7.",
-  alternates: { canonical: CANONICAL },
+  alternates: { canonical: "/corporate" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",

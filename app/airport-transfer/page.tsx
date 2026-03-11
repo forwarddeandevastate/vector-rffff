@@ -217,7 +217,7 @@ export default function AirportTransferPage() {
               организованная подача без ожиданий и лишних пересадок.
             </p>
             <p>
-              Если маршрут включает другой город, трансфер из аэропорта может
+              Если маршрут включает другой город, поездка из аэропорта может
               сразу перейти в междугороднюю поездку. Это особенно удобно, когда
               после прилёта нужно быстро продолжить дорогу без пересадок и
               повторного поиска транспорта.
@@ -243,7 +243,7 @@ export default function AirportTransferPage() {
               href="/transfer-iz-aeroporta"
               className="rounded-full border border-blue-100/60 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-blue-50/50"
             >
-              Трансфер из аэропорта
+              Поездка из аэропорта
             </Link>
             <Link
               href="/prices"

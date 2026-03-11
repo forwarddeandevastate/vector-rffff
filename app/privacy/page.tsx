@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Политика конфиденциальности — Вектор РФ 2025",
   description:
     "Политика конфиденциальности сервиса «Вектор РФ»: обработка персональных данных, цели, сроки хранения, меры защиты, права пользователя.",
-  alternates: { canonical: `${SITE_URL}/privacy` },
+  alternates: { canonical: "/privacy" },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/privacy`,

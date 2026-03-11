@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 import Link from "next/link";
 import Script from "next/script";
 import ServicePage from "@/app/ui/service-page";
-import { CORE_SERVICE_LINKS } from "@/lib/internal-links";
+import { CORE_SERVICE_LINKS, KEYWORD_PAGE_LINKS } from "@/lib/internal-links";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import type { KeywordLandingConfig } from "@/lib/keyword-landings";
 
@@ -37,39 +37,28 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
     <>
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="flex flex-wrap gap-2">
-            {config.keywords.map((item) => (
-              <span
-                key={item}
-                className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
+            Как мы работаем
+          </h2>
+          <p className="mt-3 text-base leading-7 text-slate-600">
+            Оформите заявку через форму на сайте, по телефону или в Telegram — оператор перезвонит,
+            уточнит маршрут и подтвердит стоимость. В день поездки водитель подаётся к указанному адресу
+            ко времени. Рассчитываемся удобным способом: наличными или по безналу.
+          </p>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
-            <div className="rounded-2xl border border-blue-100/60 bg-white/85 p-5 shadow-sm">
-              <h2 className="text-lg font-extrabold text-slate-900">Коммерческий трафик под ключ</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-700">
-                Эта страница усилена под конкретный коммерческий интент и помогает продвигаться по широким запросам без
-                жёсткой привязки к одному городу или одному маршруту.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-blue-100/60 bg-white/85 p-5 shadow-sm">
-              <h2 className="text-lg font-extrabold text-slate-900">Связка с основными услугами</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-700">
-                Страница связана с основной услугой, маршрутными страницами и соседними кластерами, чтобы усиливать
-                индексируемость и внутреннюю перелинковку сайта.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-blue-100/60 bg-white/85 p-5 shadow-sm">
-              <h2 className="text-lg font-extrabold text-slate-900">Форма заявки прямо на странице</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-700">
-                Пользователь может сразу оставить заявку на поездку, не уходя на другую страницу. Это полезно и для SEO,
-                и для конверсии в лиды.
-              </p>
-            </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { step: "1", title: "Оставьте заявку", text: "На сайте, по телефону или в Telegram. Займёт 2 минуты." },
+              { step: "2", title: "Подтвердим стоимость", text: "Оператор уточнит детали и назовёт итоговую цену до выезда." },
+              { step: "3", title: "Водитель подаётся", text: "В нужное время по указанному адресу. Без опозданий." },
+              { step: "4", title: "Доедете с комфортом", text: "Прямой маршрут без пересадок до нужного адреса." },
+            ].map((item) => (
+              <div key={item.step} className="rounded-2xl border border-blue-100/60 bg-white/85 p-5 shadow-sm">
+                <div className="text-2xl font-black text-blue-600">{item.step}</div>
+                <div className="mt-2 text-sm font-extrabold text-slate-900">{item.title}</div>
+                <p className="mt-1 text-sm leading-5 text-slate-600">{item.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -111,6 +100,20 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
                 </Link>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-8">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+          <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-4">Другие разделы сайта</h2>
+          <div className="flex flex-wrap gap-2">
+            {KEYWORD_PAGE_LINKS.map((item) => (
+              <a key={item.href} href={item.href}
+                className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm hover:bg-blue-50/50">
+                {item.label}
+              </a>
+            ))}
           </div>
         </div>
       </section>

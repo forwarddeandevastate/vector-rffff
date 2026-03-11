@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "Отзывы клиентов о Вектор РФ — трансферы и такси",
   description:
     "Отзывы клиентов Вектор РФ о трансферах и такси по России: межгород, аэропорт, поездки по городу. Читайте реальные отзывы и оставьте свой.",
-  alternates: { canonical: CANONICAL },
+  alternates: { canonical: "/reviews" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",

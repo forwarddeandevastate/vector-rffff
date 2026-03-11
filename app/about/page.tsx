@@ -55,7 +55,8 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-4">
+            <h2 className="mt-8 text-xl font-extrabold text-slate-900">В цифрах</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-4">
               {[
                 { value: "500+", label: "маршрутов по России" },
                 { value: "24/7", label: "приём заявок" },
@@ -69,7 +70,8 @@ export default function AboutPage() {
               ))}
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <h2 className="mt-8 text-xl font-extrabold text-slate-900">Что мы делаем</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
               {[
                 { title: "Межгород", text: "Прямые поездки между городами без пересадок. Уточняем остановки и обратную дорогу." },
                 { title: "Аэропорт", text: "Встреча с табличкой, учёт времени рейса, помощь с багажом." },

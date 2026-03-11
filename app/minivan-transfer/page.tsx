@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Минивэн и групповой трансфер — до 7 мест 24/7",
   description:
     "Минивэн и групповой трансфер: для семьи/компании и большого багажа. В аэропорт, по городу и на межгород. Согласуем стоимость заранее. Онлайн-заявка 24/7.",
-  alternates: { canonical: CANONICAL },
+  alternates: { canonical: "/minivan-transfer" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",

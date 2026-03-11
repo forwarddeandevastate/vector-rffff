@@ -20,6 +20,12 @@ export const metadata: Metadata = {
     siteName: "Вектор РФ",
     locale: "ru_RU",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Блог Вектор РФ" }],
+  },,
+  twitter: {
+    card: "summary_large_image",
+    title: "Блог о трансферах и такси — Вектор РФ",
+    description: "Советы, сравнения и маршруты: как заказать такси межгород, трансфер в аэропорт и поездки по России.",
+    images: ["/og.jpg"],
   },
 };
 

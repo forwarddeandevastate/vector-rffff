@@ -54,7 +54,8 @@ export default function ContactsPage() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <h2 className="mt-8 text-xl font-extrabold text-slate-900">Как с нами связаться</h2>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             {contacts.map((c) => (
               <a
                 key={c.type}
@@ -75,7 +76,7 @@ export default function ContactsPage() {
           </div>
 
           <GlassPanel className="mt-8 p-6 md:p-8">
-            <div className="text-sm font-bold text-slate-800 mb-4">Быстрые ссылки</div>
+            <h2 className="text-lg font-extrabold text-slate-900 mb-4">Быстрые ссылки</h2>
             <div className="flex flex-wrap gap-2">
               <Link href="/services" className="btn-primary inline-flex items-center rounded-xl px-4 py-2.5 text-sm">Все услуги</Link>
               <Link href="/" className="btn-ghost inline-flex items-center rounded-xl px-4 py-2.5 text-sm">Оставить заявку</Link>

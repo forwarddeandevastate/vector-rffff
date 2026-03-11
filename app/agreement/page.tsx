@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Пользовательское соглашение и публичная оферта",
   description:
     "Пользовательское соглашение и публичная оферта сервиса «Вектор РФ»: условия оформления заявки на трансфер, порядок согласования стоимости, ответственнос...",
-  alternates: { canonical: `${SITE_URL}/agreement` },
+  alternates: { canonical: "/agreement" },
   openGraph: {
     type: "website",
     url: `${SITE_URL}/agreement`,

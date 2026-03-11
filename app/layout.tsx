@@ -150,6 +150,8 @@ export default function RootLayout({
         email: "info@vector-rf.ru",
         address: {
           "@type": "PostalAddress",
+          streetAddress: "ул. Большая Покровская, 60",
+          postalCode: "603000",
           addressCountry: "RU",
           addressRegion: "Нижегородская область",
           addressLocality: "Нижний Новгород",
