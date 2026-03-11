@@ -1,8 +1,6 @@
 import Link from "next/link";
-import {
-  PageShell, PageBackground, Header, Footer,
-  CORE_SERVICE_LINKS
-} from "@/app/ui/shared";
+import { PageShell } from "@/app/ui/shared";
+import { CORE_SERVICE_LINKS } from "@/lib/internal-links";
 
 export default function NotFound() {
   return (
