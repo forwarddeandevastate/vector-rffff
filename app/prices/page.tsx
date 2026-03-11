@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/prices`;
@@ -89,7 +90,7 @@ export default function PricesPage() {
   };
 
   return (
-    <>
+    <PageShell>
       <Script
         id="ld-prices-breadcrumbs"
         type="application/ld+json"
@@ -103,9 +104,9 @@ export default function PricesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
-      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
-          <nav className="text-sm text-zinc-500">
+      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
+          <nav className="text-sm text-slate-400">
             <Link href="/" className="hover:text-zinc-900">
               Главная
             </Link>
@@ -113,11 +114,11 @@ export default function PricesPage() {
             <span>Цены</span>
           </nav>
 
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
             Цены на поездки и трансферы
           </h1>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             Стоимость поездки зависит от направления, расстояния, класса
             автомобиля и условий маршрута. На сайте можно получить
             предварительный расчёт, а итоговая стоимость подтверждается заранее,
@@ -125,7 +126,7 @@ export default function PricesPage() {
             аэропортных трансферов, и для городских поездок.
           </p>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             Такой подход позволяет заранее понимать формат поездки и условия
             заказа. При этом цена зависит не только от километража, но и от типа
             маршрута, времени подачи, обратной поездки и класса автомобиля.
@@ -147,7 +148,7 @@ export default function PricesPage() {
           <h2 className="text-xl font-extrabold text-zinc-900">
             Что влияет на стоимость
           </h2>
-          <div className="mt-4 space-y-4 text-sm leading-7 text-zinc-700">
+          <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
             <p>
               На итоговую цену влияет маршрут, расстояние, выбранный класс
               автомобиля, время поездки и особенности заказа. Для аэропортных и
@@ -170,13 +171,13 @@ export default function PricesPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/"
-              className="inline-flex items-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
+              className="btn-primary inline-flex items-center rounded-xl px-5 py-3 text-sm"
             >
               Рассчитать поездку
             </Link>
             <Link
               href="/intercity-taxi"
-              className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+              className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm"
             >
               Междугороднее такси
             </Link>
@@ -191,10 +192,10 @@ export default function PricesPage() {
                 key={item.question}
                 className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
               >
-                <div className="text-sm font-semibold text-zinc-900">
+                <div className="text-sm font-bold text-slate-800">
                   {item.question}
                 </div>
-                <div className="mt-2 text-sm leading-6 text-zinc-600">
+                <div className="mt-2 text-sm leading-6 text-slate-500">
                   {item.answer}
                 </div>
               </div>
@@ -202,6 +203,6 @@ export default function PricesPage() {
           </div>
         </section>
       </main>
-    </>
+    </PageShell>
   );
 }

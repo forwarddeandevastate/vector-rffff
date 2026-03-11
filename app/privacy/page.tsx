@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
@@ -48,6 +49,7 @@ export default function PrivacyPage() {
   };
 
   return (
+    <PageShell>
     <main className="min-h-screen text-zinc-900">
       <Script
         id="ld-privacy-breadcrumbs"
@@ -65,9 +67,9 @@ export default function PrivacyPage() {
         <header className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="text-xs font-semibold text-zinc-600">Документы</div>
+              <div className="text-xs font-semibold text-slate-500">Документы</div>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Политика конфиденциальности</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
                 Здесь описано, какие данные мы получаем через сайт, зачем они нужны, как мы их защищаем и какие права
                 есть у пользователя.
               </p>
@@ -94,9 +96,9 @@ export default function PrivacyPage() {
               href={`tel:${PHONE_TEL}`}
               className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
             >
-              <div className="text-xs font-semibold text-zinc-600">Телефон</div>
+              <div className="text-xs font-semibold text-slate-500">Телефон</div>
               <div className="mt-1 text-sm font-extrabold text-zinc-900">{PHONE_DISPLAY}</div>
-              <div className="mt-1 text-sm text-zinc-600">Нажмите, чтобы позвонить</div>
+              <div className="mt-1 text-sm text-slate-500">Нажмите, чтобы позвонить</div>
             </a>
 
             <a
@@ -105,9 +107,9 @@ export default function PrivacyPage() {
               rel="noreferrer"
               className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
             >
-              <div className="text-xs font-semibold text-zinc-600">Telegram</div>
+              <div className="text-xs font-semibold text-slate-500">Telegram</div>
               <div className="mt-1 text-sm font-extrabold text-zinc-900">Написать в Telegram</div>
-              <div className="mt-1 text-sm text-zinc-600">Ответим быстрее по срочным вопросам</div>
+              <div className="mt-1 text-sm text-slate-500">Ответим быстрее по срочным вопросам</div>
             </a>
           </div>
         </header>
@@ -196,8 +198,9 @@ export default function PrivacyPage() {
           </div>
         </section>
 
-        <footer className="mt-8 text-xs text-zinc-500">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</footer>
+        <footer className="mt-8 text-xs text-slate-400">© {new Date().getFullYear()} Вектор РФ. Все права защищены.</footer>
       </div>
     </main>
+    </PageShell>
   );
 }

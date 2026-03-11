@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/airport-transfer`;
@@ -119,7 +120,7 @@ export default function AirportTransferPage() {
   };
 
   return (
-    <>
+    <PageShell>
       <Script
         id="ld-airport-breadcrumbs"
         type="application/ld+json"
@@ -139,9 +140,9 @@ export default function AirportTransferPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
 
-      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
-          <nav className="text-sm text-zinc-500">
+      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
+          <nav className="text-sm text-slate-400">
             <Link href="/" className="hover:text-zinc-900">
               Главная
             </Link>
@@ -149,11 +150,11 @@ export default function AirportTransferPage() {
             <span>Трансфер в аэропорт</span>
           </nav>
 
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
             Трансфер в аэропорт и из аэропорта
           </h1>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             Трансфер в аэропорт нужен там, где важны точное время подачи,
             понятный маршрут и отсутствие лишней логистики. Такой формат
             подходит для вылета, прилёта, встречи пассажиров, поездок с багажом,
@@ -162,7 +163,7 @@ export default function AirportTransferPage() {
             условиями.
           </p>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             Аэропортный трансфер может быть как городским, так и междугородним.
             Это удобно, если после прилёта нужно сразу ехать в другой город или,
             наоборот, заранее добраться до терминала из соседнего региона.
@@ -173,13 +174,13 @@ export default function AirportTransferPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/"
-              className="inline-flex items-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
+              className="btn-primary inline-flex items-center rounded-xl px-5 py-3 text-sm"
             >
               Оставить заявку
             </Link>
             <Link
               href="/intercity-taxi"
-              className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+              className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm"
             >
               Междугороднее такси
             </Link>
@@ -195,7 +196,7 @@ export default function AirportTransferPage() {
           ].map((item) => (
             <div
               key={item}
-              className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm"
+              className="rounded-3xl border border-blue-100/60 bg-white/80 p-5 shadow-sm backdrop-blur-sm"
             >
               <div className="text-sm font-semibold text-zinc-800">{item}</div>
             </div>
@@ -206,7 +207,7 @@ export default function AirportTransferPage() {
           <h2 className="text-xl font-extrabold text-zinc-900">
             Когда аэропортный трансфер особенно удобен
           </h2>
-          <div className="mt-4 space-y-4 text-sm leading-7 text-zinc-700">
+          <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
             <p>
               Такой формат удобен при ранних вылетах, поздних прилётах, поездках
               с чемоданами, семейных поездках и командировках. Также он подходит
@@ -265,10 +266,10 @@ export default function AirportTransferPage() {
                 key={item.question}
                 className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
               >
-                <div className="text-sm font-semibold text-zinc-900">
+                <div className="text-sm font-bold text-slate-800">
                   {item.question}
                 </div>
-                <div className="mt-2 text-sm leading-6 text-zinc-600">
+                <div className="mt-2 text-sm leading-6 text-slate-500">
                   {item.answer}
                 </div>
               </div>
@@ -276,6 +277,6 @@ export default function AirportTransferPage() {
           </div>
         </section>
       </main>
-    </>
+    </PageShell>
   );
 }

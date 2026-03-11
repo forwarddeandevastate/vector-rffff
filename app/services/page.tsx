@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/services`;
@@ -104,7 +105,7 @@ export default function ServicesPage() {
   };
 
   return (
-    <>
+    <PageShell>
       <Script
         id="ld-services-breadcrumbs"
         type="application/ld+json"
@@ -118,9 +119,9 @@ export default function ServicesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
 
-      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
-          <nav className="text-sm text-zinc-500">
+      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
+          <nav className="text-sm text-slate-400">
             <Link href="/" className="hover:text-zinc-900">
               Главная
             </Link>
@@ -128,11 +129,11 @@ export default function ServicesPage() {
             <span>Услуги</span>
           </nav>
 
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
             Услуги
           </h1>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             На сайте собраны основные направления сервиса: междугородние поездки,
             аэропортные трансферы, городские маршруты, корпоративные поездки и
             варианты с минивэном. Для каждой задачи можно подобрать подходящий
@@ -140,7 +141,7 @@ export default function ServicesPage() {
             заранее.
           </p>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             Такой подход удобен для частных клиентов, семейных поездок, поездок
             с багажом, деловых задач и трансферов под конкретное время. Страницы
             услуг помогают быстро выбрать подходящий формат и перейти к расчёту
@@ -152,10 +153,10 @@ export default function ServicesPage() {
           {services.map((item) => (
             <div
               key={item.href}
-              className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
+              className="rounded-3xl border border-blue-100/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm"
             >
-              <h2 className="text-lg font-extrabold text-zinc-900">{item.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-zinc-700">{item.text}</p>
+              <h2 className="text-lg font-extrabold text-slate-800">{item.title}</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{item.text}</p>
               <Link
                 href={item.href}
                 className="mt-5 inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
@@ -166,6 +167,6 @@ export default function ServicesPage() {
           ))}
         </section>
       </main>
-    </>
+    </PageShell>
   );
 }

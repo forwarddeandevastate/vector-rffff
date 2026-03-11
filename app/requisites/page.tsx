@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -63,7 +64,7 @@ export default async function RequisitesPage() {
   };
 
   return (
-    <>
+    <PageShell>
       <Script
         id="ld-requisites-breadcrumbs"
         type="application/ld+json"
@@ -73,8 +74,8 @@ export default async function RequisitesPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-14">
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
-            <nav className="text-sm text-zinc-500">
+          <section className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
+            <nav className="text-sm text-slate-400">
               <Link href="/" className="hover:text-zinc-900">
                 Главная
               </Link>
@@ -82,11 +83,11 @@ export default async function RequisitesPage() {
               <span>Реквизиты компании</span>
             </nav>
 
-            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
               Реквизиты компании
             </h1>
 
-            <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
+            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
               На этой странице размещена реквизитная и контактная информация по сервису
               «Вектор РФ». Если вам нужны уточнения по документам, оплате или сотрудничеству,
               свяжитесь с нами удобным способом.
@@ -99,7 +100,7 @@ export default async function RequisitesPage() {
                     key={item.label}
                     className="grid gap-2 bg-white px-5 py-4 md:grid-cols-[220px_1fr] md:gap-4"
                   >
-                    <div className="text-sm font-bold text-zinc-500">{item.label}</div>
+                    <div className="text-sm font-bold text-slate-400">{item.label}</div>
                     <div className="text-sm leading-7 text-zinc-900">{item.value}</div>
                   </div>
                 ))}
@@ -127,19 +128,19 @@ export default async function RequisitesPage() {
             </div>
           </section>
 
-          <aside className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
-            <div className="text-sm font-extrabold text-zinc-900">Контактная информация</div>
+          <aside className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
+            <div className="text-sm font-bold text-slate-800">Контактная информация</div>
 
             <div className="mt-5 space-y-4">
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
                   Телефон
                 </div>
                 <div className="mt-2 text-base font-extrabold text-zinc-900">{phone}</div>
               </div>
 
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
                   Telegram
                 </div>
                 <div className="mt-2 break-all text-sm font-semibold text-zinc-900">
@@ -148,7 +149,7 @@ export default async function RequisitesPage() {
               </div>
 
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
                   Email
                 </div>
                 <div className="mt-2 break-all text-sm font-semibold text-zinc-900">
@@ -158,7 +159,7 @@ export default async function RequisitesPage() {
             </div>
 
             <div className="mt-6 rounded-3xl border border-zinc-200 bg-white p-4">
-              <div className="text-sm font-extrabold text-zinc-900">QR для реквизитов</div>
+              <div className="text-sm font-bold text-slate-800">QR для реквизитов</div>
               <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-3">
                 <Image
                   src="/requisites-qr.png"
@@ -172,6 +173,6 @@ export default async function RequisitesPage() {
           </aside>
         </div>
       </main>
-    </>
+    </PageShell>
   );
 }

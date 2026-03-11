@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/intercity-taxi`;
@@ -137,7 +138,7 @@ export default function IntercityTaxiPage() {
   };
 
   return (
-    <>
+    <PageShell>
       <Script
         id="ld-intercity-breadcrumbs"
         type="application/ld+json"
@@ -157,9 +158,9 @@ export default function IntercityTaxiPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
 
-      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
-        <div className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
-          <nav className="text-sm text-zinc-500">
+      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
+          <nav className="text-sm text-slate-400">
             <Link href="/" className="hover:text-zinc-900">
               Главная
             </Link>
@@ -167,11 +168,11 @@ export default function IntercityTaxiPage() {
             <span>Междугороднее такси</span>
           </nav>
 
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
             Междугороднее такси по России
           </h1>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             Междугороднее такси — это удобный формат поездки, когда нужно
             доехать из одного города в другой без пересадок, ожиданий и лишней
             логистики. Такой вариант выбирают для деловых поездок, семейных
@@ -181,7 +182,7 @@ export default function IntercityTaxiPage() {
             прямой маршрут между городами с заранее понятными условиями.
           </p>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-zinc-700">
+          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
             На этапе оформления можно выбрать класс автомобиля, указать детали
             поездки и получить предварительный расчёт. Итоговая стоимость
             подтверждается заранее, поэтому формат хорошо подходит тем, кто
@@ -194,13 +195,13 @@ export default function IntercityTaxiPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/"
-              className="inline-flex items-center rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
+              className="btn-primary inline-flex items-center rounded-xl px-5 py-3 text-sm"
             >
               Оставить заявку
             </Link>
             <Link
               href="/prices"
-              className="inline-flex items-center rounded-2xl border border-zinc-200 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
+              className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm"
             >
               Перейти к ценам
             </Link>
@@ -211,7 +212,7 @@ export default function IntercityTaxiPage() {
           {benefits.map((item) => (
             <div
               key={item}
-              className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm"
+              className="rounded-3xl border border-blue-100/60 bg-white/80 p-5 shadow-sm backdrop-blur-sm"
             >
               <div className="text-sm font-semibold text-zinc-800">{item}</div>
             </div>
@@ -222,7 +223,7 @@ export default function IntercityTaxiPage() {
           <h2 className="text-xl font-extrabold text-zinc-900">
             Когда междугороднее такси особенно удобно
           </h2>
-          <div className="mt-4 space-y-4 text-sm leading-7 text-zinc-700">
+          <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
             <p>
               Такой формат особенно удобен, когда нужно доехать напрямую без
               стыковок и смены транспорта. Это актуально для поездок на важные
@@ -294,10 +295,10 @@ export default function IntercityTaxiPage() {
                 key={item.question}
                 className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
               >
-                <div className="text-sm font-semibold text-zinc-900">
+                <div className="text-sm font-bold text-slate-800">
                   {item.question}
                 </div>
-                <div className="mt-2 text-sm leading-6 text-zinc-600">
+                <div className="mt-2 text-sm leading-6 text-slate-500">
                   {item.answer}
                 </div>
               </div>
@@ -305,6 +306,6 @@ export default function IntercityTaxiPage() {
           </div>
         </section>
       </main>
-    </>
+    </PageShell>
   );
 }

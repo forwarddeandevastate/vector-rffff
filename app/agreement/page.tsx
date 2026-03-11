@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
@@ -46,12 +47,12 @@ function H2({ children, id }: { children: React.ReactNode; id?: string }) {
 }
 
 function P({ children }: { children: React.ReactNode }) {
-  return <p className="mt-2 text-sm leading-6 text-zinc-700">{children}</p>;
+  return <p className="mt-2 text-sm leading-6 text-slate-600">{children}</p>;
 }
 
 function Li({ children }: { children: React.ReactNode }) {
   return (
-    <li className="flex items-start gap-2 text-sm leading-6 text-zinc-700">
+    <li className="flex items-start gap-2 text-sm leading-6 text-slate-600">
       <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
       <span>{children}</span>
     </li>
@@ -80,6 +81,7 @@ export default function AgreementPage() {
   };
 
   return (
+    <PageShell>
     <main className="min-h-screen text-zinc-900">
       <Script
         id="ld-agreement-breadcrumbs"
@@ -103,15 +105,15 @@ export default function AgreementPage() {
         <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="text-xs font-semibold text-zinc-600">Документы</div>
+              <div className="text-xs font-semibold text-slate-500">Документы</div>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
                 Пользовательское соглашение и публичная оферта
               </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-600">
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
                 Настоящий документ регулирует порядок оформления заявки на трансфер/перевозку через сайт «Вектор РФ»,
                 а также условия оказания услуг после подтверждения заявки диспетчером.
               </p>
-              <div className="mt-3 text-xs text-zinc-500">
+              <div className="mt-3 text-xs text-slate-400">
                 Дата публикации: {new Date().toLocaleDateString("ru-RU")}
               </div>
             </div>
@@ -137,9 +139,9 @@ export default function AgreementPage() {
               href={`tel:${PHONE_TEL}`}
               className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
             >
-              <div className="text-xs font-semibold text-zinc-600">Телефон</div>
+              <div className="text-xs font-semibold text-slate-500">Телефон</div>
               <div className="mt-1 text-sm font-extrabold text-zinc-900">{PHONE_DISPLAY}</div>
-              <div className="mt-1 text-sm text-zinc-600">Нажмите, чтобы позвонить</div>
+              <div className="mt-1 text-sm text-slate-500">Нажмите, чтобы позвонить</div>
             </a>
 
             <a
@@ -148,9 +150,9 @@ export default function AgreementPage() {
               rel="noreferrer"
               className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
             >
-              <div className="text-xs font-semibold text-zinc-600">Telegram</div>
+              <div className="text-xs font-semibold text-slate-500">Telegram</div>
               <div className="mt-1 text-sm font-extrabold text-zinc-900">Написать в Telegram</div>
-              <div className="mt-1 text-sm text-zinc-600">Ответим быстрее по срочным вопросам</div>
+              <div className="mt-1 text-sm text-slate-500">Ответим быстрее по срочным вопросам</div>
             </a>
           </div>
         </div>
@@ -287,10 +289,11 @@ export default function AgreementPage() {
           </section>
         </article>
 
-        <footer className="mt-8 text-xs text-zinc-500">
+        <footer className="mt-8 text-xs text-slate-400">
           © {new Date().getFullYear()} Вектор РФ. Все права защищены.
         </footer>
       </div>
     </main>
+    </PageShell>
   );
 }

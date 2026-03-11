@@ -1,3 +1,4 @@
+import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
 import Link from "next/link";
 
 const PHONE_DISPLAY = "8 (800) 222-56-50";
@@ -10,6 +11,7 @@ function cn(...xs: Array<string | false | null | undefined>) {
 
 export default function ThanksPage() {
   return (
+    <PageShell>
     <main className="relative min-h-screen overflow-hidden bg-[#f3f7ff] text-zinc-900">
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.30),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.14),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.12),transparent_55%)]" />
 
@@ -25,7 +27,7 @@ export default function ThanksPage() {
               Спасибо за обращение
             </h1>
 
-            <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-700 md:text-lg">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
               Мы получили вашу заявку и скоро свяжемся с вами для подтверждения
               маршрута, времени подачи и финальных деталей поездки.
             </p>
@@ -38,7 +40,7 @@ export default function ThanksPage() {
                 <div className="mt-2 text-sm font-bold text-zinc-900">
                   Проверим заявку
                 </div>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
+                <p className="mt-2 text-sm leading-6 text-slate-500">
                   Уточним маршрут, адреса и формат поездки.
                 </p>
               </div>
@@ -50,7 +52,7 @@ export default function ThanksPage() {
                 <div className="mt-2 text-sm font-bold text-zinc-900">
                   Свяжемся с вами
                 </div>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
+                <p className="mt-2 text-sm leading-6 text-slate-500">
                   Подтвердим детали и ответим на вопросы.
                 </p>
               </div>
@@ -62,7 +64,7 @@ export default function ThanksPage() {
                 <div className="mt-2 text-sm font-bold text-zinc-900">
                   Подберём поездку
                 </div>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
+                <p className="mt-2 text-sm leading-6 text-slate-500">
                   Согласуем подачу автомобиля и стоимость заранее.
                 </p>
               </div>
@@ -102,7 +104,7 @@ export default function ThanksPage() {
           </section>
 
           <aside className="rounded-[32px] border border-white/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.10)] backdrop-blur md:p-8">
-            <div className="text-sm font-extrabold uppercase tracking-wide text-zinc-500">
+            <div className="text-sm font-extrabold uppercase tracking-wide text-slate-400">
               Связь
             </div>
 
@@ -110,7 +112,7 @@ export default function ThanksPage() {
               <div className="text-sm font-bold text-zinc-900">
                 Если нужно срочно
               </div>
-              <p className="mt-2 text-sm leading-6 text-zinc-600">
+              <p className="mt-2 text-sm leading-6 text-slate-500">
                 Вы можете связаться с нами напрямую, не дожидаясь обратного звонка.
               </p>
 
@@ -143,19 +145,20 @@ export default function ThanksPage() {
               <div className="text-sm font-bold text-zinc-900">
                 Что можно сделать дальше
               </div>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-700">
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
                 <li>• Вернуться на главную и посмотреть другие услуги</li>
                 <li>• Открыть раздел междугородних поездок</li>
                 <li>• Перейти в контакты для быстрого звонка</li>
               </ul>
             </div>
 
-            <div className="mt-5 text-xs leading-5 text-zinc-500">
+            <div className="mt-5 text-xs leading-5 text-slate-400">
               Обычно мы отвечаем максимально быстро в рабочее время.
             </div>
           </aside>
         </div>
       </div>
     </main>
+    </PageShell>
   );
 }

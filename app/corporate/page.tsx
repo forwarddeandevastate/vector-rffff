@@ -69,7 +69,7 @@ function Wordmark() {
       >
         Вектор РФ
       </div>
-      <div className="text-xs text-zinc-600">Трансферы и поездки по России</div>
+      <div className="text-xs text-slate-500">Трансферы и поездки по России</div>
     </div>
   );
 }
@@ -125,8 +125,8 @@ function Badge({ children }: { children: React.ReactNode }) {
 function SectionTitle({ title, desc }: { title: string; desc: string }) {
   return (
     <div className="mb-5">
-      <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">{title}</h1>
-      <p className="mt-2 text-sm text-zinc-600">{desc}</p>
+      <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{title}</h1>
+      <p className="mt-2 text-sm text-slate-500">{desc}</p>
     </div>
   );
 }
@@ -134,8 +134,8 @@ function SectionTitle({ title, desc }: { title: string; desc: string }) {
 function Card({ title, text }: { title: string; text: string }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-      <div className="text-sm font-extrabold text-zinc-900">{title}</div>
-      <div className="mt-2 text-sm leading-6 text-zinc-600">{text}</div>
+      <div className="text-sm font-bold text-slate-800">{title}</div>
+      <div className="mt-2 text-sm leading-6 text-slate-500">{text}</div>
     </div>
   );
 }
@@ -286,7 +286,7 @@ export default function CorporatePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 md:py-12">
+      <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <div className="flex flex-wrap gap-2">
           <Badge>Договор и безнал</Badge>
           <Badge>Регулярные поездки</Badge>
@@ -322,8 +322,8 @@ export default function CorporatePage() {
             </div>
 
             <div className="mt-6 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-7">
-              <div className="text-sm font-extrabold text-zinc-900">Как начать</div>
-              <div className="mt-3 grid gap-2 text-sm text-zinc-700">
+              <div className="text-sm font-bold text-slate-800">Как начать</div>
+              <div className="mt-3 grid gap-2 text-sm text-slate-600">
                 <div className="flex items-start gap-2">
                   <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
                   <span>Напишите или позвоните — уточним формат поездок и требования.</span>
@@ -362,15 +362,15 @@ export default function CorporatePage() {
                     className="group rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur"
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                      <span className="text-sm font-extrabold text-zinc-900">{it.q}</span>
-                      <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 group-open:hidden">
+                      <span className="text-sm font-bold text-slate-800">{it.q}</span>
+                      <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-slate-600 group-open:hidden">
                         +
                       </span>
-                      <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-zinc-700 hidden group-open:inline">
+                      <span className="select-none rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-sm text-slate-600 hidden group-open:inline">
                         —
                       </span>
                     </summary>
-                    <div className="mt-3 text-sm leading-6 text-zinc-600">{it.a}</div>
+                    <div className="mt-3 text-sm leading-6 text-slate-500">{it.a}</div>
                   </details>
                 ))}
               </div>
@@ -381,10 +381,10 @@ export default function CorporatePage() {
             <div className="rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-xl backdrop-blur md:p-7">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-extrabold text-zinc-900">
+                  <div className="text-sm font-bold text-slate-800">
                     Связаться по корпоративным поездкам
                   </div>
-                  <div className="mt-1 text-sm text-zinc-600">Ответим и предложим условия под ваши задачи.</div>
+                  <div className="mt-1 text-sm text-slate-500">Ответим и предложим условия под ваши задачи.</div>
                 </div>
                 <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-100">
                   быстро
@@ -427,14 +427,14 @@ export default function CorporatePage() {
                 </a>
               </div>
 
-              <div className="mt-4 text-xs text-zinc-500">
+              <div className="mt-4 text-xs text-slate-400">
                 Нажимая “Оставить заявку”, вы соглашаетесь на обработку персональных данных.
               </div>
             </div>
 
             <div className="mt-6 rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-7">
-              <div className="text-sm font-extrabold text-zinc-900">Что можно организовать</div>
-              <div className="mt-3 grid gap-2 text-sm text-zinc-700">
+              <div className="text-sm font-bold text-slate-800">Что можно организовать</div>
+              <div className="mt-3 grid gap-2 text-sm text-slate-600">
                 <div className="flex items-start gap-2">
                   <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-500" />
                   <span>Встречи в аэропорту/на вокзале и трансферы гостей.</span>
@@ -488,7 +488,7 @@ export default function CorporatePage() {
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-zinc-500">
+          <div className="mt-6 text-xs text-slate-400">
             © {new Date().getFullYear()} Вектор РФ. Все права защищены.
           </div>
         </div>
