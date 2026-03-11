@@ -36,7 +36,7 @@ export const revalidate = 86400;
 export const dynamicParams = true;
 
 export function generateStaticParams() {
-  return CITY_LANDINGS.slice(0, 80).map((city) => ({
+  return CITY_LANDINGS.slice(0, 200).map((city) => ({
     city: city.slug,
   }));
 }

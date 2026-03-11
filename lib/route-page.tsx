@@ -17,7 +17,7 @@ import {
 import { buildRouteSeoData } from "@/lib/route-seo";
 import { type RouteVariantKey } from "@/lib/route-variants";
 
-const SITE_PHONE = "+78314233929";
+const SITE_PHONE = "+78002225650";
 
 function normalizeSlug(input: string) {
   const raw = (input ?? "").trim();

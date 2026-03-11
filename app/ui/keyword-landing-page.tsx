@@ -47,13 +47,7 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
             Для каждого маршрута доступны классы авто: стандарт, комфорт, бизнес и минивэн.
             Рассчитываемся наличными или по безналу.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {config.keywords.map((kw) => (
-              <span key={kw} className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-800">
-                {kw}
-              </span>
-            ))}
-          </div>
+
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -75,10 +69,9 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Поддерживающие разделы</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Полезные направления</h2>
             <p className="mt-3 text-sm leading-6 text-slate-700">
-              Эти ссылки помогают усилить кластер вокруг запроса <b>{config.shortLabel.toLowerCase()}</b> и распределяют
-              вес между основными коммерческими страницами.
+              Эти ссылки помогают дополнить  вокруг запроса <b>{config.shortLabel.toLowerCase()}</b> и помогут найти нужную информацию о поездках.
             </p>
             <div className="mt-5 grid gap-2 sm:grid-cols-2">
               {config.supportLinks.map((item) => (
@@ -115,7 +108,7 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
 
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
-          <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-4">Другие разделы сайта</h2>
+          <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-4">Что ещё часто заказывают</h2>
           <div className="flex flex-wrap gap-2">
             {KEYWORD_PAGE_LINKS.map((item) => (
               <a key={item.href} href={item.href}
@@ -129,9 +122,9 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
 
       <section className="mx-auto max-w-6xl px-4 pb-12">
         <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Популярные направления</h2>
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Популярные маршруты</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Подборка маршрутных страниц, которые поддерживают кластер по запросу «{config.shortLabel.toLowerCase()}».
+            Популярные маршруты по данному направлению — выберите нужный и узнайте стоимость.
           </p>
           <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {config.routeLinks.map((item) => (
@@ -149,12 +142,11 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
           </div>
 
           <div className="mt-6 rounded-2xl border border-blue-100/60 bg-white/85 p-5 text-sm leading-6 text-slate-700 shadow-sm">
-            Для усиления коммерческого кластера эта страница также связана с основной услугой:
-            {" "}
+            Также смотрите основную страницу услуги:{" "}
             <Link href={config.relatedServiceHref} className="font-semibold text-sky-700 hover:text-sky-800 hover:underline">
               {config.relatedServiceLabel}
             </Link>
-            . Такая связка помогает одновременно продвигать широкие ключи, сервисные страницы и конкретные маршруты.
+            .
           </div>
         </div>
       </section>
@@ -204,7 +196,7 @@ export default function KeywordLandingPage({ config }: { config: KeywordLandingC
   const routesJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Популярные маршруты: ${config.shortLabel}`,
+    name: `Маршруты: ${config.shortLabel}`,
     itemListElement: config.routeLinks.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
@@ -216,7 +208,7 @@ export default function KeywordLandingPage({ config }: { config: KeywordLandingC
   const supportJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Поддерживающие разделы: ${config.shortLabel}`,
+    name: `Полезные направления: ${config.shortLabel}`,
     itemListElement: config.supportLinks.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
