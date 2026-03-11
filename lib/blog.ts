@@ -446,11 +446,6 @@ export const BLOG_POSTS: BlogPost[] = [
 ## Оформляйте заявку онлайн
 
 Заявка через сайт занимает 2 минуты. Оператор перезванивает и подтверждает стоимость до выезда — никаких сюрпризов в дороге.`,
-    popularRoutes: [
-      { href: "/nizhniy-novgorod/moskva", label: "Нижний Новгород — Москва" },
-      { href: "/kazan/moskva", label: "Казань — Москва" },
-      { href: "/yaroslavl/moskva", label: "Ярославль — Москва" },
-    ],
   },
   {
     slug: "biznes-klass-vs-komfort-chto-vybrat",
@@ -484,11 +479,6 @@ export const BLOG_POSTS: BlogPost[] = [
 ## Разница в цене
 
 В среднем бизнес-класс на 40–60% дороже комфорта на том же маршруте. На 300 км разница — 3 000–5 000 ₽. На 600 км — 6 000–10 000 ₽. Решайте сами: стоит ли это дополнительного комфорта в конкретной поездке.`,
-    popularRoutes: [
-      { href: "/moskva/nizhniy-novgorod", label: "Москва — Нижний Новгород" },
-      { href: "/moskva/kazan", label: "Москва — Казань" },
-      { href: "/spb/moskva", label: "Санкт-Петербург — Москва" },
-    ],
   },
   {
     slug: "kak-vybrat-vremya-vyezda-v-aeroport",
@@ -524,11 +514,6 @@ export const BLOG_POSTS: BlogPost[] = [
 ## Трансфер с отслеживанием рейса
 
 При заказе трансфера из аэропорта водитель автоматически отслеживает ваш рейс. Задержка рейса — водитель скорректирует время подачи. Вам не нужно ничего делать.`,
-    popularRoutes: [
-      { href: "/airport-transfer", label: "Трансфер в аэропорт" },
-      { href: "/transfer-v-aeroport", label: "Заказать трансфер" },
-      { href: "/nizhniy-novgorod/sheremetyevo", label: "Нижний Новгород — Шереметьево" },
-    ],
   },
 ];
 
