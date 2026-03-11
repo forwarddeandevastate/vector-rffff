@@ -403,7 +403,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { href: "/krasnodar/simferopol", label: "Краснодар — Симферополь" },
       { href: "/rostov-na-donu/simferopol", label: "Ростов-на-Дону — Симферополь" },
     ],
-  },,
+  },
   {
     slug: "kak-sygonomit-na-mezhgorode",
     title: "Как сэкономить на межгородской поездке: 7 работающих способов",
