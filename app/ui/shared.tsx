@@ -190,6 +190,8 @@ const FOOTER_SERVICES = [
   { href: "/intercity-taxi", label: "Межгород" },
   { href: "/minivan-transfer", label: "Минивэн" },
   { href: "/corporate", label: "Корпоративным" },
+  { href: "/corporate-taxi", label: "Корпоративное такси" },
+  { href: "/mezhdugorodnee-taksi", label: "Междугороднее такси" },
 ];
 const FOOTER_INFO = [
   { href: "/services", label: "Наш сервис" },
@@ -198,6 +200,9 @@ const FOOTER_INFO = [
   { href: "/faq", label: "Вопросы и ответы" },
   { href: "/contacts", label: "Контакты" },
   { href: "/prices", label: "Цены" },
+  { href: "/about", label: "О компании" },
+  { href: "/city", label: "Все города" },
+  { href: "/sitemap-page", label: "Карта сайта" },
   { href: "/requisites", label: "Реквизиты" },
 ];
 

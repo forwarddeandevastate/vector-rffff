@@ -46,7 +46,11 @@ export const metadata: Metadata = {
     "корпоративное такси",
     "аренда авто с водителем",
   ],
-  openGraph: {
+  verification: {
+    google: process.env.NEXT_PUBLIC_GSC_VERIFICATION ?? "",
+    yandex: "2e7dc3a65216d356",
+  },
+    openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
@@ -291,6 +295,20 @@ ym(${YM_ID}, "init", {
             />
           </div>
         </noscript>
+
+        {/* Google Analytics GA4 */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <>
+            <Script
+              id="ga4-init"
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-config" strategy="afterInteractive">
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}',{anonymize_ip:true});`}
+            </Script>
+          </>
+        )}
 
         <UTMCollector />
         {children}

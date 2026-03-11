@@ -38,13 +38,22 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
-            Как мы работаем
+            {config.shortLabel} — как это работает
           </h2>
           <p className="mt-3 text-base leading-7 text-slate-600">
+            {config.shortLabel} по России: прямые поездки между городами без пересадок.
             Оформите заявку через форму на сайте, по телефону или в Telegram — оператор перезвонит,
-            уточнит маршрут и подтвердит стоимость. В день поездки водитель подаётся к указанному адресу
-            ко времени. Рассчитываемся удобным способом: наличными или по безналу.
+            уточнит маршрут и подтвердит стоимость. В день поездки водитель подаётся к указанному адресу.
+            Для каждого маршрута доступны классы авто: стандарт, комфорт, бизнес и минивэн.
+            Рассчитываемся наличными или по безналу.
           </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {config.keywords.map((kw) => (
+              <span key={kw} className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-800">
+                {kw}
+              </span>
+            ))}
+          </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[

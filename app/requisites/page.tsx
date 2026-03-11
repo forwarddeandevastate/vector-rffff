@@ -19,6 +19,21 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/requisites",
   },
+  openGraph: {
+    type: "website",
+    url: "https://vector-rf.ru/requisites",
+    title: "Реквизиты Вектор РФ",
+    description: "ИНН, ОГРН, расчётный счёт и реквизиты для оплаты услуг «Вектор РФ».",
+    siteName: "Вектор РФ",
+    locale: "ru_RU",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — реквизиты" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Реквизиты Вектор РФ",
+    description: "ИНН, ОГРН, расчётный счёт и реквизиты для оплаты услуг «Вектор РФ».",
+    images: ["/og.jpg"],
+  },
   robots: {
     index: true,
     follow: true,

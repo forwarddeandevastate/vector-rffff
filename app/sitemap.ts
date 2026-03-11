@@ -28,6 +28,7 @@ const STATIC_PATHS = [
   "/corporate-taxi",
   "/corporate",
   "/about",
+  "/sitemap-page",
   "/contacts",
   "/reviews",
   "/faq",
