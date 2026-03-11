@@ -64,7 +64,8 @@ export default async function ReviewsPage() {
   const PHONE_TEL = PHONE_E164;
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  let rows: Awaited<ReturnType<typeof prisma.review.findMany>> = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rows: any[] = [];
   try {
   rows = await prisma.review.findMany({
     where: { isPublic: true },

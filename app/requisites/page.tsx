@@ -33,7 +33,8 @@ function row(label: string, value?: string | null) {
 }
 
 export default async function RequisitesPage() {
-  let settings: Awaited<ReturnType<typeof prisma.siteSettings.findFirst>> = null;
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let settings: any = null;
   try {
   settings = await prisma.siteSettings.findFirst({
     orderBy: { id: "asc" },
