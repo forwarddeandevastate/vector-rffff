@@ -8,7 +8,7 @@ const CANONICAL = `${SITE_URL}/minivan-transfer`;
 const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
-  title: "Минивэн и групповой трансфер — 4–7 мест",
+  title: "Минивэн и групповой трансфер — до 7 мест 24/7",
   description:
     "Минивэн и групповой трансфер: для семьи/компании и большого багажа. В аэропорт, по городу и на межгород. Согласуем стоимость заранее. Онлайн-заявка 24/7.",
   alternates: { canonical: CANONICAL },

@@ -38,6 +38,8 @@ const corsHeaders = (origin: string) => [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["localhost", "127.0.0.1", "10.8.0.127", "[::1]"],
+  compress: true,
+  poweredByHeader: false,
 
   async headers() {
     return [
@@ -67,6 +69,13 @@ const nextConfig: NextConfig = {
 
   async redirects() {
     return [
+      // www → non-www (основной домен без www)
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.vector-rf.ru" }],
+        destination: "https://vector-rf.ru/:path*",
+        permanent: true,
+      },
       { source: "/index.html", destination: "/", permanent: true },
       { source: "/index.htm", destination: "/", permanent: true },
       { source: "/home", destination: "/", permanent: true },

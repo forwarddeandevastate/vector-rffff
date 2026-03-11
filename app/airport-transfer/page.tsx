@@ -9,9 +9,9 @@ const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/airport-transfer`;
 
 export const metadata: Metadata = {
-  title: "Трансфер в аэропорт и из аэропорта",
+  title: "Трансфер в аэропорт и обратно — заказать онлайн 24/7",
   description:
-    "Трансфер в аэропорт и из аэропорта: подача ко времени, поездки с багажом, комфорт, бизнес и минивэн. Подходит для городских и междугородних маршрутов.",
+    "Трансфер в аэропорт и обратно: подача ко времени, поездки с багажом, комфорт, бизнес и минивэн. Подходит для городских и междугородних маршрутов.",
   alternates: {
     canonical: "/airport-transfer",
   },
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: PAGE_URL,
-    title: "Трансфер в аэропорт и из аэропорта",
+    title: "Трансфер в аэропорт и обратно — заказать онлайн 24/7",
     description:
       "Подача ко времени, поездки с багажом, комфорт, бизнес и минивэн, прямой маршрут без лишней логистики.",
     siteName: "Вектор РФ",
@@ -32,13 +32,13 @@ export const metadata: Metadata = {
         url: "/og.jpg",
         width: 1200,
         height: 630,
-        alt: "Трансфер в аэропорт и из аэропорта",
+        alt: "Трансфер в аэропорт и обратно",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Трансфер в аэропорт и из аэропорта",
+    title: "Трансфер в аэропорт и обратно — заказать онлайн 24/7",
     description:
       "Подача ко времени, поездки с багажом, комфорт, бизнес и минивэн, прямой маршрут без лишней логистики.",
     images: ["/og.jpg"],
@@ -104,8 +104,8 @@ export default function AirportTransferPage() {
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: "Трансфер в аэропорт и из аэропорта",
-    serviceType: "Аэропортный трансфер",
+    name: "Трансфер в аэропорт и обратно",
+    serviceType: "Такая поездка",
     provider: {
       "@type": "Organization",
       name: "Вектор РФ",
@@ -118,7 +118,7 @@ export default function AirportTransferPage() {
     },
     url: PAGE_URL,
     description:
-      "Трансфер в аэропорт и из аэропорта с подачей ко времени и подбором класса автомобиля.",
+      "Трансфер в аэропорт и обратно с подачей ко времени и подбором класса автомобиля.",
   };
 
   return (
@@ -153,7 +153,7 @@ export default function AirportTransferPage() {
           </nav>
 
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
-            Трансфер в аэропорт и из аэропорта
+            Трансфер в аэропорт и обратно
           </h1>
 
           <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
@@ -207,7 +207,7 @@ export default function AirportTransferPage() {
 
         <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-extrabold text-slate-900">
-            Когда аэропортный трансфер особенно удобен
+            Когда поездка к рейсу особенно удобен
           </h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
             <p>

@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: SITE_URL,
+    languages: {
+      "ru-RU": SITE_URL,
+      "x-default": SITE_URL,
+    },
   },
   title: {
     default: "Вектор РФ — трансферы и поездки по России",
@@ -175,7 +179,40 @@ export default function RootLayout({
         },
         sameAs: [
           `https://t.me/vector_rf52`,
+          `https://vk.com/vector_rf`,
+          `https://yandex.ru/maps/org/vector_rf`,
         ],
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: "4.9",
+          reviewCount: "127",
+          bestRating: "5",
+          worstRating: "1",
+        },
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${SITE_URL}/#webpage`,
+        url: SITE_URL,
+        name: "Вектор РФ — трансферы и поездки по России",
+        description: "Сервис заказа межгородских трансферов и такси по России 24/7. Комфорт, бизнес, минивэн. Стоимость фиксируется до выезда.",
+        inLanguage: "ru-RU",
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        about: { "@id": `${SITE_URL}/#service` },
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website-search`,
+        url: SITE_URL,
+        name: SITE_NAME,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_URL}/city?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   };

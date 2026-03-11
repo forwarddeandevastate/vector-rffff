@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: "Каталог маршрутов по России — города и направления",
   description:
     "Каталог популярных направлений и городов: междугородние поездки по России. Выберите маршрут и оставьте заявку онлайн — 24/7. Стоимость согласуем заранее.",
-  alternates: { canonical: `${SITE_URL}/city` },
+  alternates: { canonical: "/city" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",

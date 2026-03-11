@@ -217,6 +217,7 @@ export default function HomePage() {
 
         {/* STATS */}
         <section className="mx-auto max-w-6xl px-4 pb-12">
+          <SectionHeading title="Почему нам доверяют" desc="Работаем по всей России: межгород, аэропорт, корпоративные поездки" />
           <div className="grid gap-3 md:grid-cols-3">
             {TRUST_METRICS.map((item) => (
               <div key={item.label} className="rounded-3xl border border-blue-100/60 bg-white/80 p-6 backdrop-blur-sm shadow-sm">

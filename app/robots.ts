@@ -9,6 +9,28 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
+          // Служебные страницы
+          "/admin",
+          "/admin/",
+          "/api",
+          "/api/",
+          // Конверсионные страницы — не индексируем
+          "/thanks",
+          "/thanks/",
+          // Старый хаб маршрутов — только редиректы
+          "/route",
+          "/route/",
+          // Технические redirect-прокси (экономим crawl budget)
+          "/taksi-iz/",
+          "/taksi-v/",
+          "/transfer/",
+        ],
+      },
+      // Яндексбот — отдельно разрешаем всё кроме выше
+      {
+        userAgent: "Yandexbot",
+        allow: "/",
+        disallow: [
           "/admin",
           "/admin/",
           "/api",
@@ -17,6 +39,9 @@ export default function robots(): MetadataRoute.Robots {
           "/thanks/",
           "/route",
           "/route/",
+          "/taksi-iz/",
+          "/taksi-v/",
+          "/transfer/",
         ],
       },
     ],

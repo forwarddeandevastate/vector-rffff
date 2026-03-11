@@ -120,7 +120,42 @@ export default function PricesPage() {
             Цены на поездки и трансферы
           </h1>
 
-          <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
+          {/* Тарифная сетка */}
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-blue-50 text-left">
+                  <th className="px-4 py-3 font-bold text-slate-800 rounded-tl-xl">Маршрут</th>
+                  <th className="px-4 py-3 font-bold text-slate-800 text-center">Стандарт</th>
+                  <th className="px-4 py-3 font-bold text-slate-800 text-center">Комфорт</th>
+                  <th className="px-4 py-3 font-bold text-slate-800 text-center rounded-tr-xl">Минивэн</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { route: "Москва — Нижний Новгород (430 км)", std: "от 7 000 ₽", comfort: "от 9 500 ₽", van: "от 12 000 ₽" },
+                  { route: "Москва — Тула (175 км)", std: "от 3 500 ₽", comfort: "от 4 500 ₽", van: "от 5 500 ₽" },
+                  { route: "Москва — Ярославль (280 км)", std: "от 5 000 ₽", comfort: "от 6 500 ₽", van: "от 8 000 ₽" },
+                  { route: "Москва — Казань (820 км)", std: "от 13 000 ₽", comfort: "от 16 000 ₽", van: "от 20 000 ₽" },
+                  { route: "Н. Новгород — Казань (400 км)", std: "от 6 500 ₽", comfort: "от 8 500 ₽", van: "от 11 000 ₽" },
+                  { route: "Краснодар — Сочи (280 км)", std: "от 5 000 ₽", comfort: "от 6 500 ₽", van: "от 8 000 ₽" },
+                  { route: "В аэропорт (30–60 км)", std: "от 1 500 ₽", comfort: "от 2 000 ₽", van: "от 2 500 ₽" },
+                ].map((row) => (
+                  <tr key={row.route} className="border-b border-blue-50 hover:bg-blue-50/40">
+                    <td className="px-4 py-3 text-slate-700 font-medium">{row.route}</td>
+                    <td className="px-4 py-3 text-center text-slate-600">{row.std}</td>
+                    <td className="px-4 py-3 text-center text-slate-600">{row.comfort}</td>
+                    <td className="px-4 py-3 text-center text-slate-600">{row.van}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-xs text-slate-400">
+              * Цены ориентировочные, точная стоимость подтверждается при оформлении заявки.
+            </p>
+          </div>
+
+          <p className="mt-6 max-w-4xl text-base leading-7 text-slate-600">
             Стоимость поездки зависит от направления, расстояния, класса
             автомобиля и условий маршрута. На сайте можно получить
             предварительный расчёт, а итоговая стоимость подтверждается заранее,
