@@ -60,10 +60,10 @@ function normalizePhoneLive(input: string) {
 }
 
 const PER_KM: Record<CarClass, number> = {
-  standard: 30,
-  comfort: 37,
+  standard: 31,
+  comfort: 41,
   minivan: 55,
-  business: 65,
+  business: 80,
 };
 
 const CITY_BASE_PRICE: Record<CarClass, number> = {
