@@ -186,7 +186,7 @@ export default function RootLayout({
         sameAs: [
           `https://t.me/vector_rf52`,
           `https://vk.com/vector_rf`,
-          `https://yandex.ru/maps/org/vector_rf`,
+          `https://yandex.ru/maps/org/187298057123`,
         ],
         aggregateRating: {
           "@type": "AggregateRating",
