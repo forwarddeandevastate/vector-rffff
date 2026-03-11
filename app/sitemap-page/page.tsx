@@ -107,7 +107,23 @@ export default async function SitemapPage() {
             ))}
           </div>
         </div>
-      </main>
+      
+          <div className="mt-8 rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h2 className="text-lg font-extrabold text-slate-900 mb-3">О сайте Вектор РФ</h2>
+            <p className="text-sm leading-6 text-slate-600 mt-2">
+              Сайт vector-rf.ru — официальный ресурс сервиса межгородских трансферов и такси по России.
+              Здесь можно рассчитать стоимость поездки, оставить заявку и узнать подробности об услугах.
+            </p>
+            <p className="text-sm leading-6 text-slate-600 mt-2">
+              На сайте представлены страницы для 261 города России с информацией о маршрутах, ценах и
+              особенностях поездок. Маршрутные страницы охватывают тысячи направлений между городами.
+            </p>
+            <p className="text-sm leading-6 text-slate-600 mt-2">
+              В блоге — статьи о межгородских поездках, советы пассажирам, сравнения транспорта и
+              разборы популярных маршрутов. Информация обновляется при изменении тарифов и условий.
+            </p>
+          </div>
+        </main>
     </PageShell>
   );
 }
