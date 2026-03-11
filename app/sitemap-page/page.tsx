@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageShell, Breadcrumb } from "@/app/ui/shared";
-import { SITE_URL } from "@/lib/seo";
-import { getAllCities } from "@/lib/city-landings";
+import { CITY_LANDINGS } from "@/lib/city-landings";
 
 export const metadata: Metadata = {
   title: "Карта сайта — Вектор РФ",
@@ -52,7 +51,7 @@ const SECTIONS = [
 ];
 
 export default async function SitemapPage() {
-  const cities = getAllCities().slice(0, 30);
+  const cities = CITY_LANDINGS.slice(0, 30);
 
   return (
     <PageShell>

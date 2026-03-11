@@ -73,6 +73,8 @@ export default function AboutPage() {
                   <div className="text-2xl font-black text-blue-700">{stat.value}</div>
                   <div className="mt-1 text-xs text-slate-500">{stat.label}</div>
                 </div>
+              ))}
+            </div>
 
             <h2 className="mt-8 text-xl font-extrabold text-slate-900">Наши принципы</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -86,8 +88,6 @@ export default function AboutPage() {
                   <div className="text-sm font-extrabold text-slate-900">{item.title}</div>
                   <p className="mt-1 text-sm leading-5 text-slate-600">{item.text}</p>
                 </div>
-              ))}
-            </div>
               ))}
             </div>
 
