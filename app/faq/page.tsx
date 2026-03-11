@@ -140,13 +140,6 @@ export default function FaqPage() {
               </div>
             </div>
           ))}
-                    <div className="mt-2 text-sm leading-6 text-slate-600">{item.answer}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
           <GlassPanel className="mt-8 p-6">
             <div className="text-sm font-bold text-slate-800 mb-3">Остались вопросы?</div>
             <p className="text-sm text-slate-500 mb-4">Напишите нам или оставьте заявку — уточним все детали.</p>
