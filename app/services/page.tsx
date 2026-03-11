@@ -186,7 +186,27 @@ export default function ServicesPage() {
             </p>
           </div>
         </section>
-      </main>
+      
+          <div className="mt-8 rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-4">Вопросы об услугах</h2>
+            <div className="space-y-4">
+              {[
+                { q: "Какую услугу выбрать для межгорода?", a: "Если едете один или вдвоём — стандарт или комфорт. Для группы от 4 человек — минивэн. Для деловой поездки — бизнес-класс." },
+                { q: "Чем отличается трансфер от такси?", a: "Трансфер — заранее согласованная поездка с фиксированной стоимостью, часто в аэропорт. Такси межгород — аналогично, но акцент на дальних маршрутах между городами." },
+                { q: "Можно ли заказать несколько автомобилей?", a: "Да, для корпоративных клиентов и групп организуем несколько машин. Свяжитесь с нами для согласования." },
+                { q: "Как оплатить поездку?", a: "Наличными водителю или по безналу. Для организаций — оплата по счёту после получения документов." },
+              ].map((item) => (
+                <details key={item.q} className="group rounded-2xl border border-blue-100/60 bg-white/80 p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-900 list-none flex justify-between">
+                    {item.q}
+                    <span className="text-blue-400 ml-2">+</span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </main>
     </PageShell>
   );
 }

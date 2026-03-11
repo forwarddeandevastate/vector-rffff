@@ -70,6 +70,26 @@ export default function BlogPage() {
     <>
       <Script id="ld-blog-breadcrumbs" type="application/ld+json" strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Script
+        id="ld-blog-itemlist"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: "Блог Вектор РФ — статьи о трансферах и поездках",
+            url: `${SITE_URL}/blog`,
+            numberOfItems: BLOG_POSTS.length,
+            itemListElement: BLOG_POSTS.map((post, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              url: `${SITE_URL}/blog/${post.slug}`,
+              name: post.title,
+            })),
+          })
+        }}
+      />
       <Script id="ld-blog" type="application/ld+json" strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }} />
 
@@ -104,8 +124,17 @@ export default function BlogPage() {
           </div>
 
           {/* Articles grid */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {BLOG_POSTS.map((post) => (
+          {BLOG_CATEGORIES.map((cat) => {
+            const catPosts = BLOG_POSTS.filter((p) => p.categorySlug === cat.slug);
+            if (!catPosts.length) return null;
+            return (
+              <div key={cat.slug} className="mt-8">
+                <h2 className="text-lg font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+                  <span className="inline-block w-1.5 h-5 rounded-full bg-blue-500" />
+                  {cat.label}
+                </h2>
+                <div className="grid gap-6 md:grid-cols-2">
+            {catPosts.map((post) => (
               <Link key={post.slug} href={`/blog/${post.slug}`}
                 className="group rounded-3xl border border-blue-100/70 bg-white/82 backdrop-blur-md shadow-sm p-6 hover:shadow-md hover:border-blue-200 transition-all">
 
@@ -136,7 +165,10 @@ export default function BlogPage() {
                 </div>
               </Link>
             ))}
-          </div>
+                </div>
+              </div>
+            );
+          })}
 
           {/* SEO links block */}
           <div className="mt-12 rounded-3xl border border-blue-100/70 bg-white/82 backdrop-blur-md shadow-sm p-6 md:p-8">

@@ -265,6 +265,26 @@ export default async function ReviewsPage() {
               <p>Если вы уже пользовались нашими услугами — оставьте отзыв в Яндекс.Картах или Google. Нужен трансфер прямо сейчас? Оформите заявку на сайте или напишите в Telegram — мы на связи 24/7.</p>
             </div>
           </GlassPanel>
+        
+          <div className="mt-8 rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-4">Вопросы о качестве сервиса</h2>
+            <div className="space-y-4">
+              {[
+                { q: "Как проверяются водители?", a: "Все водители работают по договору, имеют категорию B/E, опыт дальних поездок и прошли собеседование." },
+                { q: "Что делать, если возник вопрос в дороге?", a: "Свяжитесь с нами по телефону или Telegram — оператор на связи 24/7 и решит любой вопрос оперативно." },
+                { q: "Можно ли оставить отзыв?", a: "Да, будем рады отзыву в Яндекс.Картах или Google. Ваш опыт помогает другим клиентам сделать выбор." },
+                { q: "Как подтверждается рейтинг 4.9?", a: "Рейтинг формируется из реальных оценок клиентов на картографических сервисах и агрегаторах." },
+              ].map((item) => (
+                <details key={item.q} className="group rounded-2xl border border-blue-100/60 bg-white/80 p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-900 list-none flex justify-between">
+                    {item.q}
+                    <span className="text-blue-400 ml-2">+</span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
         </main>
       </div>
 

@@ -236,6 +236,18 @@ export default function CityTransferPage() {
             ))}
           </div>
         </section>
+      <section className="mx-auto max-w-6xl px-4 pb-12" id="order">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+          <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-2">Оставить заявку</h2>
+          <p className="text-sm text-slate-500 mb-5">Укажите маршрут — мы рассчитаем стоимость и свяжемся с вами</p>
+          <a
+            href="/#order"
+            className="btn-primary inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold"
+          >
+            Рассчитать стоимость
+          </a>
+        </div>
+      </section>
       </main>
     </PageShell>
   );

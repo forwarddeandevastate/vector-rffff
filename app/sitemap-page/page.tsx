@@ -4,10 +4,25 @@ import { PageShell, Breadcrumb } from "@/app/ui/shared";
 import { CITY_LANDINGS } from "@/lib/city-landings";
 
 export const metadata: Metadata = {
-  title: "Карта сайта — Вектор РФ",
-  description: "Все страницы сайта Вектор РФ: услуги, города, маршруты, блог и информационные разделы.",
+  title: "Карта сайта Вектор РФ — все разделы и страницы",
+  description: "Полная карта сайта Вектор РФ: услуги трансфера и такси, города, маршруты по России, блог и информационные разделы. Быстрая навигация по сайту.",
   alternates: { canonical: "/sitemap-page" },
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    url: "https://vector-rf.ru/sitemap-page",
+    title: "Карта сайта Вектор РФ — все разделы",
+    description: "Полная карта сайта: услуги, города, маршруты и блог о трансферах по России.",
+    siteName: "Вектор РФ",
+    locale: "ru_RU",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Вектор РФ — карта сайта" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Карта сайта Вектор РФ",
+    description: "Полная карта сайта: услуги, города, маршруты и блог о трансферах по России.",
+    images: ["/og.jpg"],
+  },
 };
 
 const SECTIONS = [

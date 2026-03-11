@@ -114,6 +114,26 @@ export default function AboutPage() {
               <Link href="/" className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm">Оставить заявку</Link>
             </div>
           </GlassPanel>
+        
+          <div className="mt-8 rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-4">Частые вопросы о компании</h2>
+            <div className="space-y-4">
+              {[
+                { q: "Где находится Вектор РФ?", a: "Головной офис в Нижнем Новгороде. Работаем по всей России — принимаем заявки онлайн и по телефону." },
+                { q: "С какого года работаете?", a: "С 2024 года. За это время выполнили сотни поездок по маршрутам России." },
+                { q: "Есть ли договор для юрлиц?", a: "Да, для организаций заключаем договор, выставляем счёт и предоставляем закрывающие документы (акт, счёт-фактура)." },
+                { q: "Какие классы автомобилей доступны?", a: "Стандарт, комфорт, бизнес и минивэн на 6–7 мест. Класс выбирается при оформлении заявки." },
+              ].map((item) => (
+                <details key={item.q} className="group rounded-2xl border border-blue-100/60 bg-white/80 p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-900 list-none flex justify-between">
+                    {item.q}
+                    <span className="text-blue-400 ml-2">+</span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
         </main>
       </PageShell>
     </>
