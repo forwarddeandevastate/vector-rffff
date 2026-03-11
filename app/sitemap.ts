@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { CITY_LANDINGS } from "@/lib/city-landings";
 import { absoluteUrl } from "@/lib/seo";
 import { buildSeoRoutes } from "@/lib/seo-routes";
+import { BLOG_POSTS } from "@/lib/blog";
 
 // Keyword landing slugs с динамическими городскими страницами
 const KEYWORD_LANDING_SLUGS = [
