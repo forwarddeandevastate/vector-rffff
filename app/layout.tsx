@@ -154,8 +154,6 @@ export default function RootLayout({
         email: "info@vector-rf.ru",
         address: {
           "@type": "PostalAddress",
-          streetAddress: "ул. Большая Покровская, 60",
-          postalCode: "603000",
           addressCountry: "RU",
           addressRegion: "Нижегородская область",
           addressLocality: "Нижний Новгород",
@@ -185,16 +183,9 @@ export default function RootLayout({
         },
         sameAs: [
           `https://t.me/vector_rf52`,
-          `https://vk.com/vector_rf`,
           `https://yandex.ru/maps/org/187298057123`,
         ],
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: "4.9",
-          reviewCount: "127",
-          bestRating: "5",
-          worstRating: "1",
-        },
+
       },
       {
         "@type": "WebPage",

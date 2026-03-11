@@ -9,6 +9,9 @@ import Script from "next/script";
 import RequisitesClient from "./requisites-client";
 import { prisma } from "@/lib/prisma";
 
+// Кэшируем страницу на 6 часов — данные меняются редко
+export const revalidate = 21600;
+
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/requisites`;
 

@@ -4,7 +4,16 @@ import Script from "next/script";
 import { cn } from "@/lib/cn";
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import LeadForm, { type CarClass, type RouteType } from "./lead-form";
+import dynamic from "next/dynamic";
+import type { CarClass, RouteType } from "./lead-form";
+
+// Lazy load: форма заявки — 27KB, не нужна при первой отрисовке
+const LeadForm = dynamic(() => import("./lead-form"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-32 animate-pulse rounded-3xl bg-blue-50/60" />
+  ),
+});
 import {
   CORE_SERVICE_LINKS,
   POPULAR_ROUTE_LINKS,

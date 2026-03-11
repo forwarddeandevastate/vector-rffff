@@ -73,8 +73,10 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/agreement": 0.20,
 };
 
-const MAX_ROUTE_URLS = 45000;
-const ROUTES_PER_SITEMAP = 10000;
+// Контролируемый rollout: начинаем с 10k маршрутов
+// После 2-3 недель индексации: 20000 → 45000
+const MAX_ROUTE_URLS = 10000;
+const ROUTES_PER_SITEMAP = 5000;
 
 function dedupe<T extends { url: string }>(items: T[]) {
   const seen = new Set<string>();

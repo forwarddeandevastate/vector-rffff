@@ -2,11 +2,11 @@ import type { NextConfig } from "next";
 
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://yastatic.net",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org",
+  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://yandex.ru",
   "frame-src https://www.google.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -40,6 +40,17 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["localhost", "127.0.0.1", "10.8.0.127", "[::1]"],
   compress: true,
   poweredByHeader: false,
+  reactStrictMode: true,
+
+  experimental: {
+    // Автоматически tree-shake пакеты — меньше bundle size
+    optimizePackageImports: [
+      "lucide-react",
+      "@prisma/client",
+      "bcryptjs",
+      "jose",
+    ],
+  },
 
   async headers() {
     return [
@@ -47,6 +58,20 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      // Кэш статических ассетов Next.js на 1 год (immutable)
+      {
+        source: "/_next/static/(.*)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      // Кэш публичных файлов (иконки, og.jpg) на 7 дней
+      {
+        source: "/(.*)\.(png|jpg|jpeg|gif|ico|svg|webp|avif|woff2|woff)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
       },
       // CORS на публичных API (в dev без проверки origin)
       ...(process.env.NODE_ENV === "production"
@@ -86,6 +111,8 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 
