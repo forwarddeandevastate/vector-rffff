@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { SOUTH_ROUTE_LINKS } from "@/lib/internal-links";
 import {
   PageShell,
 } from "@/app/ui/shared";
