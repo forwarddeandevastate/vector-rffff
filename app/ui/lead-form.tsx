@@ -19,38 +19,43 @@ export default function LeadForm() {
     setOkMsg(null);
     setLoading(true);
 
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        name,
-        phone,
-        fromText,
-        toText,
-        datetime: datetime || null,
-        comment: comment || null,
-        roundTrip,
-        carClass,
-      }),
-    });
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name,
+          phone,
+          fromText,
+          toText,
+          datetime: datetime || null,
+          comment: comment || null,
+          roundTrip,
+          carClass,
+        }),
+      });
 
-    const data = await res.json().catch(() => ({}));
-    setLoading(false);
+      const data = await res.json().catch(() => ({}));
 
-    if (!res.ok || !data?.ok) {
-      alert(data?.error || "Ошибка отправки");
-      return;
+      if (!res.ok || !data?.ok) {
+        alert(data?.error || "Ошибка отправки");
+        return;
+      }
+
+      setOkMsg(`Заявка отправлена! №${data.lead.id}${data.lead.isDuplicate ? " (дубликат)" : ""}`);
+      setName("");
+      setPhone("");
+      setFromText("");
+      setToText("");
+      setDatetime("");
+      setComment("");
+      setRoundTrip(false);
+      setCarClass("standard");
+    } catch {
+      alert("Ошибка сети. Проверьте соединение и попробуйте снова.");
+    } finally {
+      setLoading(false);
     }
-
-    setOkMsg(`Заявка отправлена! №${data.lead.id}${data.lead.isDuplicate ? " (дубликат)" : ""}`);
-    setName("");
-    setPhone("");
-    setFromText("");
-    setToText("");
-    setDatetime("");
-    setComment("");
-    setRoundTrip(false);
-    setCarClass("standard");
   }
 
   const inputClass =

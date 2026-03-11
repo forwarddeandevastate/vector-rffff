@@ -17,7 +17,7 @@ const PHONE_E164 = "+78002225650";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff",
+  themeColor: "#eef4ff",
 };
 
 export const metadata: Metadata = {
@@ -187,7 +187,7 @@ export default function RootLayout({
         />
       </head>
 
-      <body className={`${manrope.className} bg-slate-50 text-slate-900`}>
+      <body className={`${manrope.className} bg-[#eef4ff] text-slate-900`}>
         <Script
           id="yandex-metrika"
           strategy="afterInteractive"
