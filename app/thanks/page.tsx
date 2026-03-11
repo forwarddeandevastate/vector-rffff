@@ -1,15 +1,19 @@
+import type { Metadata } from "next";
 import {
   PageShell,
 } from "@/app/ui/shared";
 import { cn } from "@/lib/cn";
 import Link from "next/link";
 
+
+export const metadata: Metadata = {
+  title: "Спасибо за заявку",
+  robots: { index: false, follow: false },
+};
+
 const PHONE_DISPLAY = "8 (800) 222-56-50";
 const PHONE_TEL = "+78002225650";
 const TELEGRAM_URL = "https://t.me/vector_rf52";
-
-  return xs.filter(Boolean).join(" ");
-}
 
 export default function ThanksPage() {
   return (

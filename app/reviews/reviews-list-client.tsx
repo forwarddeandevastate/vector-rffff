@@ -15,9 +15,6 @@ type Review = {
   repliedAt: string | null;
 };
 
-  return xs.filter(Boolean).join(" ");
-}
-
 function formatDate(d: string | null | undefined) {
   if (!d) return "";
   try {

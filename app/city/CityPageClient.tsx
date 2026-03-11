@@ -4,9 +4,6 @@ import { useState } from "react";
 import { cn } from "@/lib/cn";
 import LeadForm, { type CarClass, type RouteType } from "../lead-form";
 
-  return xs.filter(Boolean).join(" ");
-}
-
 function LogoMark() {
   return (
     <div

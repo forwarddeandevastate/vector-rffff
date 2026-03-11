@@ -7,9 +7,6 @@ import { CORE_SERVICE_LINKS } from "@/lib/internal-links";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import type { KeywordLandingConfig } from "@/lib/keyword-landings";
 
-  return xs.filter(Boolean).join(" ");
-}
-
 export function buildKeywordLandingMetadata(config: KeywordLandingConfig): Metadata {
   return {
     title: config.metaTitle,

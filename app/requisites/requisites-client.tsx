@@ -3,9 +3,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 
-  return xs.filter(Boolean).join(" ");
-}
-
 export default function RequisitesClient({ plainText }: { plainText: string }) {
   const [copied, setCopied] = useState(false);
 

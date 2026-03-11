@@ -13,9 +13,6 @@ const PHONE_DISPLAY = "8 (800) 222-56-50";
 const PHONE_TEL = "+78002225650";
 const TELEGRAM = "https://t.me/vector_rf52";
 
-  return xs.filter(Boolean).join(" ");
-}
-
 export const metadata: Metadata = {
   title: "Согласие на обработку персональных данных",
   description:

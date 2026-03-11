@@ -17,9 +17,6 @@ type Review = {
   repliedAt?: string | Date | null;
 };
 
-  return xs.filter(Boolean).join(" ");
-}
-
 function ControlBase(className?: string) {
   return cn(
     "h-11 w-full rounded-xl border border-blue-200/60 bg-white/90 px-3 text-sm outline-none",

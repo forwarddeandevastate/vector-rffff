@@ -8,9 +8,6 @@ import GooglePlacesInput from "@/app/ui/google-places-input";
 export type CarClass = "standard" | "comfort" | "business" | "minivan";
 export type RouteType = "city" | "airport" | "intercity";
 
-  return xs.filter(Boolean).join(" ");
-}
-
 function normalize(s: string) {
   return s.trim().toLowerCase();
 }

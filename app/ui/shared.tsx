@@ -9,9 +9,6 @@ export const PHONE_TEL = "+78002225650";
 export const TELEGRAM = "https://t.me/vector_rf52";
 export const WHATSAPP = "https://wa.me/78314233929";
 
-  return xs.filter(Boolean).join(" ");
-}
-
 /* ── Icons ── */
 export function IconPhone({ className }: { className?: string }) {
   return (

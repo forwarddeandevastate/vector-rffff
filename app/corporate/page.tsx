@@ -6,9 +6,6 @@ const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
 const CANONICAL = `${SITE_URL}/corporate`;
 
-  return xs.filter(Boolean).join(" ");
-}
-
 export const metadata: Metadata = {
   title: "Корпоративные перевозки и трансферы — Вектор РФ",
   description:
