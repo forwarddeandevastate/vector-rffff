@@ -64,7 +64,9 @@ export default async function ReviewsPage() {
   const PHONE_TEL = PHONE_E164;
   const TELEGRAM = "https://t.me/vector_rf52";
 
-  const rows = await prisma.review.findMany({
+  let rows: Awaited<ReturnType<typeof prisma.review.findMany>> = [];
+  try {
+  rows = await prisma.review.findMany({
     where: { isPublic: true },
     orderBy: { createdAt: "desc" },
     take: 30,
@@ -80,6 +82,9 @@ export default async function ReviewsPage() {
       repliedAt: true,
     },
   });
+  } catch {
+    // DB unavailable (local dev without .env) — show empty reviews
+  }
 
   const rowsForClient: ReviewForClient[] = rows.map((r) => ({
     id: r.id,

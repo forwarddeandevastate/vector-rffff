@@ -33,9 +33,14 @@ function row(label: string, value?: string | null) {
 }
 
 export default async function RequisitesPage() {
-  const settings = await prisma.siteSettings.findFirst({
+  let settings: Awaited<ReturnType<typeof prisma.siteSettings.findFirst>> = null;
+  try {
+  settings = await prisma.siteSettings.findFirst({
     orderBy: { id: "asc" },
   });
+  } catch {
+    // DB unavailable (local dev) — use default values
+  }
 
   const phone = settings?.phone?.trim() || "8 (800) 222-56-50";
   const telegram = settings?.telegram?.trim() || "https://t.me/vector_rf52";

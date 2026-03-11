@@ -1,1 +1,0 @@
-ALTER TABLE "leads" ADD COLUMN "priceIsManual" BOOLEAN NOT NULL DEFAULT false;
