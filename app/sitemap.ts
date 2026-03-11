@@ -1,22 +1,14 @@
 import type { MetadataRoute } from "next";
 
-// Пересобираем sitemap раз в сутки
-export const revalidate = 86400;
-
 import { CITY_LANDINGS } from "@/lib/city-landings";
 import { absoluteUrl } from "@/lib/seo";
 import { buildSeoRoutes } from "@/lib/seo-routes";
 import { BLOG_POSTS } from "@/lib/blog";
 
-// Индексируемые keyword-лендинги (не noindex)
-const INDEXABLE_KEYWORD_SLUGS = [
-  "taxi-mezhgorod",
-  "mezhdugorodnee-taksi",
-  "transfer-v-aeroport",
-  "transfer-iz-aeroporta",
-] as const;
+// ISR: пересобираем sitemap раз в сутки
+export const revalidate = 86400;
 
-// Статические страницы для индексации (без noindex-страниц)
+// Статические страницы для индексации
 const STATIC_PATHS = [
   "/",
   "/services",
@@ -37,15 +29,10 @@ const STATIC_PATHS = [
   "/privacy",
   "/personal-data",
   "/agreement",
-  // Индексируемые keyword-лендинги (у них index: true)
   "/taxi-mezhgorod",
   "/mezhdugorodnee-taksi",
   "/transfer-v-aeroport",
   "/transfer-iz-aeroporta",
-  // НЕ включаем: /taksi-mezhgorod (noindex → canonical /taxi-mezhgorod)
-  // НЕ включаем: /taxi-v-aeroport (noindex → canonical /transfer-v-aeroport)
-  // НЕ включаем: /route (noindex, redirect → /city)
-  // НЕ включаем: /thanks (noindex)
 ] as const;
 
 const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> = {
@@ -71,20 +58,25 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/privacy": 0.20,
   "/personal-data": 0.20,
   "/agreement": 0.20,
+  "/sitemap-page": 0.30,
 };
 
-// Контролируемый rollout: начинаем с 10k маршрутов
-// После 2-3 недель индексации: 20000 → 45000
+// Контролируемый rollout маршрутов
+// После 2-3 недель индексации поднять до 20000 → 45000
 const MAX_ROUTE_URLS = 10000;
 const ROUTES_PER_SITEMAP = 5000;
 
-function dedupe<T extends { url: string }>(items: T[]) {
+function dedupe<T extends { url: string }>(items: T[]): T[] {
   const seen = new Set<string>();
   return items.filter((item) => {
     if (seen.has(item.url)) return false;
     seen.add(item.url);
     return true;
   });
+}
+
+function getLastModified(): Date {
+  return new Date(process.env.SITE_LAST_MODIFIED ?? "2025-04-15T00:00:00Z");
 }
 
 function buildStaticEntries(lastModified: Date): MetadataRoute.Sitemap {
@@ -97,16 +89,15 @@ function buildStaticEntries(lastModified: Date): MetadataRoute.Sitemap {
 }
 
 function buildBlogEntries(lastModified: Date): MetadataRoute.Sitemap {
-  // /blog страница + каждый пост с реальной датой публикации
   const blogPage = {
     url: absoluteUrl("/blog"),
     lastModified,
     changeFrequency: "weekly" as const,
     priority: 0.75,
   };
-  const posts = BLOG_POSTS.map((post: { slug: string; updatedAt?: string; publishedAt: string }) => ({
+  const posts = BLOG_POSTS.map((post) => ({
     url: absoluteUrl(`/blog/${post.slug}`),
-    lastModified: new Date(post.updatedAt ?? post.publishedAt), // реальная дата, не today
+    lastModified: new Date(post.updatedAt ?? post.publishedAt),
     changeFrequency: "monthly" as const,
     priority: 0.68,
   }));
@@ -131,6 +122,11 @@ function buildRouteEntries(lastModified: Date): MetadataRoute.Sitemap {
   }));
 }
 
+// generateSitemaps → генерирует:
+//   /sitemap/core.xml   — статика + блог + города (~300 URL)
+//   /sitemap/routes-1.xml — маршруты 1–5000
+//   /sitemap/routes-2.xml — маршруты 5001–10000
+// /sitemap.xml — автоматический index от Next.js
 export async function generateSitemaps() {
   const totalRouteSitemaps = Math.max(
     1,
@@ -139,21 +135,18 @@ export async function generateSitemaps() {
 
   return [
     { id: "core" },
-    ...Array.from({ length: totalRouteSitemaps }, (_, index) => ({
-      id: `routes-${index + 1}`,
+    ...Array.from({ length: totalRouteSitemaps }, (_, i) => ({
+      id: `routes-${i + 1}`,
     })),
   ];
 }
 
-export default async function sitemap(props: {
-  id: Promise<string>;
+export default async function sitemap({
+  id,
+}: {
+  id: string;
 }): Promise<MetadataRoute.Sitemap> {
-  const id = await props.id;
-  // Дата релиза из env (SITE_LAST_MODIFIED) — обновляйте при каждом деплое
-  // Если env не задан — fallback на фиксированную дату
-  const lastModified = new Date(
-    process.env.SITE_LAST_MODIFIED ?? "2025-04-15T00:00:00Z"
-  );
+  const lastModified = getLastModified();
 
   if (id === "core") {
     return dedupe([
@@ -164,14 +157,10 @@ export default async function sitemap(props: {
   }
 
   if (id.startsWith("routes-")) {
-    const pageNumber = Number(id.replace("routes-", ""));
-    const pageIndex =
-      Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber - 1 : 0;
-
+    const pageIndex = Number(id.replace("routes-", "")) - 1;
     const allRoutes = buildRouteEntries(lastModified);
     const start = pageIndex * ROUTES_PER_SITEMAP;
     const end = start + ROUTES_PER_SITEMAP;
-
     return dedupe(allRoutes.slice(start, end));
   }
 
