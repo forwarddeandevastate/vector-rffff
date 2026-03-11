@@ -91,11 +91,6 @@ export const BLOG_POSTS: BlogPost[] = [
       { href: "/intercity-taxi", label: "Заказать такси межгород" },
     ],
     relatedPosts: ["kak-sravnit-tseny-taksi-mezhgorod", "transfer-v-aeroport-chto-nuzhno-znat"],
-    relatedRoutes: [
-      { href: "/moskva/nizhniy-novgorod", label: "Москва — Нижний Новгород" },
-      { href: "/moskva/kazan", label: "Москва — Казань" },
-      { href: "/nizhniy-novgorod/moskva", label: "Нижний Новгород — Москва" },
-    ],
   },
   {
     slug: "transfer-v-aeroport-chto-nuzhno-znat",
@@ -173,11 +168,6 @@ export const BLOG_POSTS: BlogPost[] = [
       { href: "/nizhniy-novgorod/sheremetyevo", label: "Нижний Новгород — Шереметьево" },
     ],
     relatedPosts: ["kak-zakazat-mezhdugorodnee-taksi", "mezhdugorodnee-taksi-ili-poezd"],
-    relatedRoutes: [
-      { href: "/airport-transfer", label: "Трансфер в аэропорт" },
-      { href: "/nizhniy-novgorod/moskva", label: "Нижний Новгород — Москва" },
-      { href: "/moskva/nizhniy-novgorod", label: "Москва — Нижний Новгород" },
-    ],
   },
   {
     slug: "mezhdugorodnee-taksi-ili-poezd",
