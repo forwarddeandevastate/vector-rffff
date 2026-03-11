@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import UTMCollector from "./utm";
 
 const manrope = Manrope({
   subsets: ["cyrillic"],
@@ -136,16 +137,45 @@ export default function RootLayout({
         ],
       },
       {
-        "@type": "LocalBusiness",
+        "@type": ["LocalBusiness", "TaxiService"],
         "@id": `${SITE_URL}/#localbusiness`,
         name: SITE_NAME,
+        alternateName: "Вектор РФ трансферы",
         url: SITE_URL,
         telephone: PHONE_E164,
+        email: "info@vector-rf.ru",
         address: {
           "@type": "PostalAddress",
           addressCountry: "RU",
+          addressRegion: "Нижегородская область",
+          addressLocality: "Нижний Новгород",
+        },
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: 56.3269,
+          longitude: 44.0059,
         },
         priceRange: "₽₽",
+        openingHours: "Mo-Su 00:00-23:59",
+        currenciesAccepted: "RUB",
+        paymentAccepted: "Cash, Credit Card",
+        areaServed: {
+          "@type": "Country",
+          name: "Россия",
+        },
+        hasOfferCatalog: {
+          "@type": "OfferCatalog",
+          name: "Услуги трансфера",
+          itemListElement: [
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Междугороднее такси" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Трансфер в аэропорт" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Поездки по городу" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Корпоративные перевозки" } },
+          ],
+        },
+        sameAs: [
+          `https://t.me/vector_rf52`,
+        ],
       },
     ],
   };
@@ -223,6 +253,7 @@ ym(${YM_ID}, "init", {
           </div>
         </noscript>
 
+        <UTMCollector />
         {children}
       </body>
     </html>

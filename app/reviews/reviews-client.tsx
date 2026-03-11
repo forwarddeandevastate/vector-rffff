@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/cn";
 
 type Review = {
   id: number;
@@ -16,7 +17,6 @@ type Review = {
   repliedAt?: string | Date | null;
 };
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 

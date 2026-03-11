@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { cn } from "@/lib/cn";
 import Link from "next/link";
 import Script from "next/script";
-import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
+import {
+  PageShell,
+} from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
@@ -10,7 +13,6 @@ const PHONE_DISPLAY = "8 (800) 222-56-50";
 const PHONE_TEL = "+78002225650";
 const TELEGRAM = "https://t.me/vector_rf52";
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
@@ -49,7 +51,7 @@ export default function PersonalDataConsentPage() {
 
   return (
     <PageShell>
-    <main className="min-h-screen text-zinc-900">
+    <main className="min-h-screen text-slate-900">
       <Script
         id="ld-personaldata-breadcrumbs"
         type="application/ld+json"
@@ -63,7 +65,7 @@ export default function PersonalDataConsentPage() {
       <div className="fixed inset-x-0 top-0 -z-10 h-24 bg-gradient-to-b from-white/70 to-transparent" />
 
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
-        <header className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
+        <header className="rounded-3xl border border-blue-100/60 bg-white/80 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-xs font-semibold text-slate-500">Документы</div>
@@ -85,7 +87,7 @@ export default function PersonalDataConsentPage() {
               </Link>
               <Link
                 href="/"
-                className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+                className="rounded-xl border border-blue-100/60 bg-white px-4 py-3 text-sm font-extrabold text-slate-900 shadow-sm hover:bg-blue-50/50"
               >
                 На главную
               </Link>
@@ -95,10 +97,10 @@ export default function PersonalDataConsentPage() {
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             <a
               href={`tel:${PHONE_TEL}`}
-              className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
+              className={cn("rounded-2xl border border-blue-100/60 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
             >
               <div className="text-xs font-semibold text-slate-500">Телефон</div>
-              <div className="mt-1 text-sm font-extrabold text-zinc-900">{PHONE_DISPLAY}</div>
+              <div className="mt-1 text-sm font-extrabold text-slate-900">{PHONE_DISPLAY}</div>
               <div className="mt-1 text-sm text-slate-500">Нажмите, чтобы позвонить</div>
             </a>
 
@@ -106,17 +108,17 @@ export default function PersonalDataConsentPage() {
               href={TELEGRAM}
               target="_blank"
               rel="noreferrer"
-              className={cn("rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
+              className={cn("rounded-2xl border border-blue-100/60 bg-white/80 p-5 shadow-sm backdrop-blur hover:bg-white")}
             >
               <div className="text-xs font-semibold text-slate-500">Telegram</div>
-              <div className="mt-1 text-sm font-extrabold text-zinc-900">Написать в Telegram</div>
+              <div className="mt-1 text-sm font-extrabold text-slate-900">Написать в Telegram</div>
               <div className="mt-1 text-sm text-slate-500">Ответим быстрее по срочным вопросам</div>
             </a>
           </div>
         </header>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white/75 p-6 shadow-sm backdrop-blur md:p-8">
-          <div className="prose max-w-none prose-zinc">
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white/75 p-6 shadow-sm backdrop-blur md:p-8">
+          <div className="prose max-w-none prose-slate">
             <h2>1. Согласие</h2>
             <p>
               Отправляя заявку на сайте {SITE_URL}, пользователь подтверждает своё согласие сервису «{SITE_NAME}» на
@@ -162,7 +164,7 @@ export default function PersonalDataConsentPage() {
           <div className="mt-6 flex flex-wrap gap-2">
             <Link
               href="/privacy"
-              className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-extrabold text-zinc-900 shadow-sm hover:bg-zinc-50"
+              className="inline-flex items-center justify-center rounded-xl border border-blue-100/60 bg-white px-5 py-3 text-sm font-extrabold text-slate-900 shadow-sm hover:bg-blue-50/50"
             >
               Политика конфиденциальности
             </Link>

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
+import {
+  PageShell,
+} from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/services`;
 
 export const metadata: Metadata = {
-  title: "Услуги",
+  title: "Услуги — такси межгород, трансфер в аэропорт, минивэн",
   description:
     "Услуги Вектор РФ: междугороднее такси, трансфер в аэропорт, городские поездки, корпоративное такси и минивэн. Подбор формата поездки под задачу.",
   alternates: {
@@ -88,7 +90,7 @@ export default function ServicesPage() {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Услуги", item: PAGE_URL },
+      { "@type": "ListItem", position: 2, name: "Услуги — такси межгород, трансфер в аэропорт, минивэн", item: PAGE_URL },
     ],
   };
 
@@ -122,7 +124,7 @@ export default function ServicesPage() {
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
           <nav className="text-sm text-slate-400">
-            <Link href="/" className="hover:text-zinc-900">
+            <Link href="/" className="hover:text-slate-900">
               Главная
             </Link>
             <span className="mx-2">/</span>
@@ -159,7 +161,7 @@ export default function ServicesPage() {
               <p className="mt-3 text-sm leading-6 text-slate-600">{item.text}</p>
               <Link
                 href={item.href}
-                className="mt-5 inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
+                className="mt-5 inline-flex items-center rounded-full border border-blue-100/60 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-blue-50/50"
               >
                 Перейти
               </Link>

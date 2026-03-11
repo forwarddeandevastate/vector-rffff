@@ -1,18 +1,20 @@
-import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
+import {
+  PageShell,
+} from "@/app/ui/shared";
+import { cn } from "@/lib/cn";
 import Link from "next/link";
 
 const PHONE_DISPLAY = "8 (800) 222-56-50";
 const PHONE_TEL = "+78002225650";
 const TELEGRAM_URL = "https://t.me/vector_rf52";
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
 export default function ThanksPage() {
   return (
     <PageShell>
-    <main className="relative min-h-screen overflow-hidden bg-[#f3f7ff] text-zinc-900">
+    <main className="relative min-h-screen overflow-hidden bg-[#f3f7ff] text-slate-900">
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(1100px_520px_at_50%_-10%,rgba(56,189,248,0.30),transparent_60%),radial-gradient(900px_520px_at_12%_18%,rgba(59,130,246,0.14),transparent_55%),radial-gradient(900px_520px_at_88%_20%,rgba(99,102,241,0.12),transparent_55%)]" />
 
       <div className="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-10 md:px-6 md:py-16">
@@ -33,11 +35,11 @@ export default function ThanksPage() {
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-sm">
+              <div className="rounded-2xl border border-blue-100/60 bg-white/90 p-4 shadow-sm">
                 <div className="text-xs font-bold uppercase tracking-wide text-sky-600">
                   Шаг 1
                 </div>
-                <div className="mt-2 text-sm font-bold text-zinc-900">
+                <div className="mt-2 text-sm font-bold text-slate-900">
                   Проверим заявку
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -45,11 +47,11 @@ export default function ThanksPage() {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-sm">
+              <div className="rounded-2xl border border-blue-100/60 bg-white/90 p-4 shadow-sm">
                 <div className="text-xs font-bold uppercase tracking-wide text-sky-600">
                   Шаг 2
                 </div>
-                <div className="mt-2 text-sm font-bold text-zinc-900">
+                <div className="mt-2 text-sm font-bold text-slate-900">
                   Свяжемся с вами
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -57,11 +59,11 @@ export default function ThanksPage() {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-sm">
+              <div className="rounded-2xl border border-blue-100/60 bg-white/90 p-4 shadow-sm">
                 <div className="text-xs font-bold uppercase tracking-wide text-sky-600">
                   Шаг 3
                 </div>
-                <div className="mt-2 text-sm font-bold text-zinc-900">
+                <div className="mt-2 text-sm font-bold text-slate-900">
                   Подберём поездку
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -85,7 +87,7 @@ export default function ThanksPage() {
                 href="/taxi-mezhgorod"
                 className={cn(
                   "inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-extrabold",
-                  "border border-zinc-200 bg-white/90 text-zinc-900 shadow-sm hover:bg-white"
+                  "border border-blue-100/60 bg-white/90 text-slate-900 shadow-sm hover:bg-white"
                 )}
               >
                 Междугороднее такси
@@ -95,7 +97,7 @@ export default function ThanksPage() {
                 href="/contacts"
                 className={cn(
                   "inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-extrabold",
-                  "border border-zinc-200 bg-white/90 text-zinc-900 shadow-sm hover:bg-white"
+                  "border border-blue-100/60 bg-white/90 text-slate-900 shadow-sm hover:bg-white"
                 )}
               >
                 Контакты
@@ -108,8 +110,8 @@ export default function ThanksPage() {
               Связь
             </div>
 
-            <div className="mt-4 rounded-3xl border border-zinc-200 bg-white/90 p-5 shadow-sm">
-              <div className="text-sm font-bold text-zinc-900">
+            <div className="mt-4 rounded-3xl border border-blue-100/60 bg-white/90 p-5 shadow-sm">
+              <div className="text-sm font-bold text-slate-900">
                 Если нужно срочно
               </div>
               <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -121,7 +123,7 @@ export default function ThanksPage() {
                   href={`tel:${PHONE_TEL}`}
                   className={cn(
                     "inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-extrabold",
-                    "border border-zinc-200 bg-white text-zinc-900 shadow-sm hover:bg-zinc-50"
+                    "border border-blue-100/60 bg-white text-slate-900 shadow-sm hover:bg-blue-50/50"
                   )}
                 >
                   Позвонить: {PHONE_DISPLAY}
@@ -133,7 +135,7 @@ export default function ThanksPage() {
                   rel="noreferrer"
                   className={cn(
                     "inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-extrabold",
-                    "border border-zinc-200 bg-white text-zinc-900 shadow-sm hover:bg-zinc-50"
+                    "border border-blue-100/60 bg-white text-slate-900 shadow-sm hover:bg-blue-50/50"
                   )}
                 >
                   Написать в Telegram
@@ -141,8 +143,8 @@ export default function ThanksPage() {
               </div>
             </div>
 
-            <div className="mt-5 rounded-3xl border border-zinc-200 bg-gradient-to-br from-sky-50 to-indigo-50 p-5">
-              <div className="text-sm font-bold text-zinc-900">
+            <div className="mt-5 rounded-3xl border border-blue-100/60 bg-gradient-to-br from-sky-50 to-indigo-50 p-5">
+              <div className="text-sm font-bold text-slate-900">
                 Что можно сделать дальше
               </div>
               <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">

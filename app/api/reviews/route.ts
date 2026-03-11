@@ -64,7 +64,7 @@ export async function POST(req: Request) {
   try {
     // ── Rate limit: 3 отзыва с одного IP за 3 минуты ──────────────────────
     const ip = await getRequestIp();
-    const rl = checkRateLimit(`reviews:${ip}`, { limit: 3, windowMs: 3 * 60 * 1000 });
+    const rl = await checkRateLimit(`reviews:${ip}`, { limit: 3, windowMs: 3 * 60 * 1000 });
     if (!rl.allowed) {
       return NextResponse.json(
         { ok: false, error: "Слишком много запросов. Попробуйте через несколько минут." },

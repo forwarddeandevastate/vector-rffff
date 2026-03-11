@@ -8,8 +8,8 @@ const PAGE_URL = `${SITE_URL}/contacts`;
 const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
-  title: "Контакты",
-  description: "Контакты Вектор РФ: телефон, Telegram, WhatsApp и страницы для заявок на поездки.",
+  title: "Контакты — заказать трансфер, такси межгород 24/7",
+  description: "Контакты сервиса Вектор РФ: телефон, Telegram, WhatsApp для заказа такси и трансферов по России. Принимаем заявки 24/7, отвечаем быстро.",
   alternates: { canonical: "/contacts" },
   robots: { index: true, follow: true },
   openGraph: { type: "website", url: PAGE_URL, title: "Контакты Вектор РФ", description: "Телефон, Telegram, WhatsApp для заявок.", siteName: "Вектор РФ", locale: "ru_RU", images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Контакты Вектор РФ" }] },
@@ -21,7 +21,7 @@ export default function ContactsPage() {
     "@context": "https://schema.org", "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Контакты", item: PAGE_URL },
+      { "@type": "ListItem", position: 2, name: "Контакты — заказать трансфер, такси межгород 24/7", item: PAGE_URL },
     ],
   };
   const contactJsonLd = {
@@ -44,7 +44,7 @@ export default function ContactsPage() {
       <Script id="ld-contacts-org" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }} />
       <PageShell>
         <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
-          <Breadcrumb items={[{ name: "Главная", href: "/" }, { name: "Контакты", href: "/contacts" }]} />
+          <Breadcrumb items={[{ name: "Главная", href: "/" }, { name: "Контакты — заказать трансфер, такси межгород 24/7", href: "/contacts" }]} />
 
           <div className="mt-6">
             <Tag>Работаем 24/7</Tag>

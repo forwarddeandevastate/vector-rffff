@@ -7,7 +7,7 @@ const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/faq`;
 
 export const metadata: Metadata = {
-  title: "FAQ",
+  title: "Вопросы и ответы — такси и трансферы по России",
   description:
     "Часто задаваемые вопросы о междугороднем такси, трансфере в аэропорт, стоимости поездок, классах автомобилей и порядке оформления заявки.",
   alternates: {
@@ -81,7 +81,7 @@ export default function FaqPage() {
     "@context": "https://schema.org", "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "FAQ", item: PAGE_URL },
+      { "@type": "ListItem", position: 2, name: "Вопросы и ответы — такси и трансферы по России", item: PAGE_URL },
     ],
   };
   const faqJsonLd = {
@@ -98,7 +98,7 @@ export default function FaqPage() {
       <Script id="ld-faq-page" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <PageShell>
         <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
-          <Breadcrumb items={[{ name: "Главная", href: "/" }, { name: "FAQ", href: "/faq" }]} />
+          <Breadcrumb items={[{ name: "Главная", href: "/" }, { name: "Вопросы и ответы — такси и трансферы по России", href: "/faq" }]} />
 
           <div className="mt-6">
             <Tag>Частые вопросы</Tag>

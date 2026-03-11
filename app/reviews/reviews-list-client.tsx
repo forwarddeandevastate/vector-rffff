@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/cn";
 
 type Review = {
   id: number;
@@ -14,7 +15,6 @@ type Review = {
   repliedAt: string | null;
 };
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
@@ -46,11 +46,11 @@ export default function ReviewsListClient({ reviews }: { reviews: Review[] }) {
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-sm font-bold text-slate-800">{r.name}</div>
                 {r.city ? <div className="text-sm text-slate-500">• {r.city}</div> : null}
-                <div className="text-xs text-zinc-400">• {formatDate(r.createdAt)}</div>
+                <div className="text-xs text-slate-400">• {formatDate(r.createdAt)}</div>
               </div>
 
               <div className="mt-1 text-sm text-slate-600">
-                {"★".repeat(stars)} <span className="text-zinc-400">({stars}/5)</span>
+                {"★".repeat(stars)} <span className="text-slate-400">({stars}/5)</span>
               </div>
 
               <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">{r.text}</div>
@@ -59,7 +59,7 @@ export default function ReviewsListClient({ reviews }: { reviews: Review[] }) {
                 <div className="mt-4 rounded-2xl border border-blue-200/60 bg-slate-50 p-4">
                   <div className="text-xs font-semibold text-slate-700">
                     Ответ {r.replyAuthor ? `— ${r.replyAuthor}` : "администрации"}
-                    {r.repliedAt ? <span className="text-zinc-400"> • {formatDate(r.repliedAt)}</span> : null}
+                    {r.repliedAt ? <span className="text-slate-400"> • {formatDate(r.repliedAt)}</span> : null}
                   </div>
                   <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{r.replyText}</div>
                 </div>

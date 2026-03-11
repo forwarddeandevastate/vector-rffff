@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cn } from "@/lib/cn";
 import Link from "next/link";
 import Script from "next/script";
 import ServicePage from "@/app/ui/service-page";
@@ -6,7 +7,6 @@ import { CORE_SERVICE_LINKS } from "@/lib/internal-links";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import type { KeywordLandingConfig } from "@/lib/keyword-landings";
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
@@ -39,7 +39,7 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
   return (
     <>
       <section className="mx-auto max-w-6xl px-4 pb-8">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <div className="flex flex-wrap gap-2">
             {config.keywords.map((item) => (
               <span
@@ -52,23 +52,23 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
           </div>
 
           <div className="mt-6 grid gap-5 md:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm">
-              <h2 className="text-lg font-extrabold text-zinc-900">Коммерческий трафик под ключ</h2>
-              <p className="mt-3 text-sm leading-6 text-zinc-700">
+            <div className="rounded-2xl border border-blue-100/60 bg-white/85 p-5 shadow-sm">
+              <h2 className="text-lg font-extrabold text-slate-900">Коммерческий трафик под ключ</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-700">
                 Эта страница усилена под конкретный коммерческий интент и помогает продвигаться по широким запросам без
                 жёсткой привязки к одному городу или одному маршруту.
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm">
-              <h2 className="text-lg font-extrabold text-zinc-900">Связка с основными услугами</h2>
-              <p className="mt-3 text-sm leading-6 text-zinc-700">
+            <div className="rounded-2xl border border-blue-100/60 bg-white/85 p-5 shadow-sm">
+              <h2 className="text-lg font-extrabold text-slate-900">Связка с основными услугами</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-700">
                 Страница связана с основной услугой, маршрутными страницами и соседними кластерами, чтобы усиливать
                 индексируемость и внутреннюю перелинковку сайта.
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white/85 p-5 shadow-sm">
-              <h2 className="text-lg font-extrabold text-zinc-900">Форма заявки прямо на странице</h2>
-              <p className="mt-3 text-sm leading-6 text-zinc-700">
+            <div className="rounded-2xl border border-blue-100/60 bg-white/85 p-5 shadow-sm">
+              <h2 className="text-lg font-extrabold text-slate-900">Форма заявки прямо на странице</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-700">
                 Пользователь может сразу оставить заявку на поездку, не уходя на другую страницу. Это полезно и для SEO,
                 и для конверсии в лиды.
               </p>
@@ -79,9 +79,9 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
 
       <section className="mx-auto max-w-6xl px-4 pb-8">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
-            <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">Поддерживающие разделы</h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-700">
+          <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Поддерживающие разделы</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-700">
               Эти ссылки помогают усилить кластер вокруг запроса <b>{config.shortLabel.toLowerCase()}</b> и распределяют
               вес между основными коммерческими страницами.
             </p>
@@ -91,7 +91,7 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "rounded-2xl border border-zinc-200 bg-white/85 px-4 py-3 text-sm font-semibold text-zinc-800 shadow-sm",
+                    "rounded-2xl border border-blue-100/60 bg-white/85 px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm",
                     "hover:border-sky-200 hover:bg-white"
                   )}
                 >
@@ -101,14 +101,14 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur">
-            <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">Полезные разделы сайта</h2>
+          <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Полезные разделы сайта</h2>
             <div className="mt-5 flex flex-wrap gap-2">
               {CORE_SERVICE_LINKS.slice(0, 8).map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50"
+                  className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm hover:bg-blue-50/50"
                 >
                   {item.label}
                 </Link>
@@ -119,9 +119,9 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-12">
-        <div className="rounded-3xl border border-zinc-200 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
-          <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900">Популярные направления</h2>
-          <p className="mt-2 text-sm text-zinc-600">
+        <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Популярные направления</h2>
+          <p className="mt-2 text-sm text-slate-600">
             Подборка маршрутных страниц, которые поддерживают кластер по запросу «{config.shortLabel.toLowerCase()}».
           </p>
           <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -130,7 +130,7 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-2xl border border-zinc-200 bg-white/80 px-4 py-3 text-sm font-semibold text-zinc-800 shadow-sm",
+                  "rounded-2xl border border-blue-100/60 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm",
                   "hover:border-sky-200/80 hover:bg-white"
                 )}
               >
@@ -139,7 +139,7 @@ function LandingBody({ config }: { config: KeywordLandingConfig }) {
             ))}
           </div>
 
-          <div className="mt-6 rounded-2xl border border-zinc-200 bg-white/85 p-5 text-sm leading-6 text-zinc-700 shadow-sm">
+          <div className="mt-6 rounded-2xl border border-blue-100/60 bg-white/85 p-5 text-sm leading-6 text-slate-700 shadow-sm">
             Для усиления коммерческого кластера эта страница также связана с основной услугой:
             {" "}
             <Link href={config.relatedServiceHref} className="font-semibold text-sky-700 hover:text-sky-800 hover:underline">

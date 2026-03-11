@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/cn";
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
@@ -68,6 +68,12 @@ export default function ReviewForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      if (res.status === 429) {
+        const retryAfter = res.headers.get("Retry-After");
+        const mins = retryAfter ? Math.ceil(Number(retryAfter) / 60) : 3;
+        throw new Error(`Слишком много отзывов. Попробуйте через ${mins} мин.`);
+      }
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка отправки");

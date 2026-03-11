@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { cn } from "@/lib/cn";
 import { useState } from "react";
 
 export const PHONE_DISPLAY = "8 (800) 222-56-50";
@@ -8,7 +9,6 @@ export const PHONE_TEL = "+78002225650";
 export const TELEGRAM = "https://t.me/vector_rf52";
 export const WHATSAPP = "https://wa.me/78314233929";
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
@@ -197,7 +197,8 @@ const FOOTER_SERVICES = [
 const FOOTER_INFO = [
   { href: "/services", label: "Наш сервис" },
   { href: "/reviews", label: "Отзывы" },
-  { href: "/faq", label: "Вопросы" },
+  { href: "/blog", label: "Блог" },
+  { href: "/faq", label: "Вопросы и ответы" },
   { href: "/contacts", label: "Контакты" },
   { href: "/prices", label: "Цены" },
   { href: "/requisites", label: "Реквизиты" },

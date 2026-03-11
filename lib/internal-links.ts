@@ -83,3 +83,28 @@ export const KEYWORD_PAGE_LINKS = [
   { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
   { href: "/transfer-iz-aeroporta", label: "Трансфер из аэропорта" },
 ];
+
+export const BLOG_LINKS = [
+  { href: "/blog/kak-zakazat-mezhdugorodnee-taksi", label: "Как заказать такси межгород" },
+  { href: "/blog/transfer-v-aeroport-chto-nuzhno-znat", label: "Трансфер в аэропорт — советы" },
+  { href: "/blog/mezhdugorodnee-taksi-ili-poezd", label: "Такси или поезд: что выгоднее?" },
+  { href: "/blog/taksi-iz-moskvy-v-regiony", label: "Такси из Москвы в регионы" },
+  { href: "/blog/taksi-v-novye-regiony-rf", label: "Трансферы в новые регионы РФ" },
+  { href: "/blog", label: "Все статьи блога" },
+];
+
+export const SOUTH_ROUTE_LINKS = [
+  { href: "/krasnodar/sochi", label: "Краснодар — Сочи" },
+  { href: "/krasnodar/simferopol", label: "Краснодар — Симферополь" },
+  { href: "/rostov-na-donu/sochi", label: "Ростов-на-Дону — Сочи" },
+  { href: "/rostov-na-donu/krasnodar", label: "Ростов-на-Дону — Краснодар" },
+  { href: "/rostov-na-donu/simferopol", label: "Ростов-на-Дону — Симферополь" },
+];
+
+export const NEW_TERRITORIES_LINKS = [
+  { href: "/donetsk", label: "Такси из Донецка" },
+  { href: "/lugansk", label: "Такси из Луганска" },
+  { href: "/simferopol", label: "Такси из Симферополя" },
+  { href: "/sevastopol", label: "Такси из Севастополя" },
+  { href: "/mariupol", label: "Такси из Мариуполя" },
+];

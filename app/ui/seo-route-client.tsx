@@ -9,6 +9,7 @@ import {
   POPULAR_ROUTE_LINKS,
   REGIONAL_ROUTE_GROUPS,
   TRUST_FACTS,
+  BLOG_LINKS,
 } from "@/lib/internal-links";
 import {
   PageBackground, Header, Footer,
@@ -249,6 +250,19 @@ export default function SeoRouteClient(props: {
               </div>
             </GlassPanel>
           </div>
+
+          {/* Blog links */}
+          <GlassPanel className="mt-6 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm font-bold text-slate-800">Полезные статьи о поездках</div>
+              <Link href="/blog" className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">Весь блог →</Link>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {BLOG_LINKS.slice(0, 5).map((item) => (
+                <Link key={item.href} href={item.href} className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">{item.label}</Link>
+              ))}
+            </div>
+          </GlassPanel>
         </main>
       </div>
 

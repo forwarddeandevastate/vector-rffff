@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
+import {
+  PageShell,
+} from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/corporate-taxi`;
 
 export const metadata: Metadata = {
-  title: "Корпоративное такси",
+  title: "Корпоративное такси и трансферы по России",
   description:
     "Корпоративное такси для бизнеса: поездки сотрудников, встречи клиентов и партнёров, аэропортные и междугородние маршруты. Подтверждение условий заранее.",
   alternates: {
@@ -20,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: PAGE_URL,
-    title: "Корпоративное такси",
+    title: "Корпоративное такси и трансферы по России",
     description:
       "Поездки сотрудников, встречи клиентов, командировки, аэропортные и междугородние маршруты для бизнеса.",
     siteName: "Вектор РФ",
@@ -30,13 +32,13 @@ export const metadata: Metadata = {
         url: "/og.jpg",
         width: 1200,
         height: 630,
-        alt: "Корпоративное такси",
+        alt: "Корпоративное такси и трансферы по России",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Корпоративное такси",
+    title: "Корпоративное такси и трансферы по России",
     description:
       "Поездки сотрудников, встречи клиентов, командировки, аэропортные и междугородние маршруты для бизнеса.",
     images: ["/og.jpg"],
@@ -75,7 +77,7 @@ export default function CorporateTaxiPage() {
       {
         "@type": "ListItem",
         position: 2,
-        name: "Корпоративное такси",
+        name: "Корпоративное такси и трансферы по России",
         item: PAGE_URL,
       },
     ],
@@ -97,7 +99,7 @@ export default function CorporateTaxiPage() {
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: "Корпоративное такси",
+    name: "Корпоративное такси и трансферы по России",
     serviceType: "Корпоративный трансфер и поездки для бизнеса",
     provider: {
       "@type": "Organization",
@@ -138,7 +140,7 @@ export default function CorporateTaxiPage() {
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
           <nav className="text-sm text-slate-400">
-            <Link href="/" className="hover:text-zinc-900">
+            <Link href="/" className="hover:text-slate-900">
               Главная
             </Link>
             <span className="mx-2">/</span>
@@ -192,13 +194,13 @@ export default function CorporateTaxiPage() {
               key={item}
               className="rounded-3xl border border-blue-100/60 bg-white/80 p-5 shadow-sm backdrop-blur-sm"
             >
-              <div className="text-sm font-semibold text-zinc-800">{item}</div>
+              <div className="text-sm font-semibold text-slate-800">{item}</div>
             </div>
           ))}
         </section>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-zinc-900">
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-slate-900">
             Где корпоративный формат особенно полезен
           </h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
@@ -217,13 +219,13 @@ export default function CorporateTaxiPage() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-zinc-900">FAQ</h2>
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-slate-900">FAQ</h2>
           <div className="mt-4 space-y-4">
             {faq.map((item) => (
               <div
                 key={item.question}
-                className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                className="rounded-2xl border border-blue-100/60 bg-blue-50/50 p-4"
               >
                 <div className="text-sm font-bold text-slate-800">
                   {item.question}

@@ -6,8 +6,11 @@ import ReviewsListClient from "./reviews-list-client";
 import { PageBackground, Header, Footer, GlassPanel, Tag, PHONE_TEL, PHONE_DISPLAY, TELEGRAM, IconPhone, IconTelegram } from "@/app/ui/shared";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Перегенерируем страницу раз в 60 секунд (ISR) — новые отзывы появятся с небольшой задержкой
+// Если нужно мгновенное появление — раскомментируйте строки ниже:
+// export const dynamic = "force-dynamic";
+// export const revalidate = 0;
+export const revalidate = 60;
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
@@ -15,15 +18,15 @@ const CANONICAL = `${SITE_URL}/reviews`;
 const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
-  title: "Отзывы клиентов",
+  title: "Отзывы клиентов о Вектор РФ — трансферы и такси",
   description:
-    "Отзывы клиентов о «Вектор РФ»: трансферы по городу, в аэропорт и межгород. Посмотрите отзывы и оставьте свой.",
+    "Отзывы клиентов Вектор РФ о трансферах и такси по России: межгород, аэропорт, поездки по городу. Читайте реальные отзывы и оставьте свой.",
   alternates: { canonical: CANONICAL },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     url: CANONICAL,
-    title: "Отзывы клиентов",
+    title: "Отзывы клиентов о Вектор РФ — трансферы и такси",
     description:
       "Отзывы клиентов о «Вектор РФ»: посмотрите реальные отзывы и оставьте свой.",
     siteName: SITE_NAME,
@@ -32,14 +35,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Отзывы клиентов",
+    title: "Отзывы клиентов о Вектор РФ — трансферы и такси",
     description: "Отзывы клиентов о «Вектор РФ». Посмотрите отзывы и оставьте свой — 24/7.",
     images: ["/og.jpg"],
   },
 };
-
-
-
 
 
 type ReviewForClient = {

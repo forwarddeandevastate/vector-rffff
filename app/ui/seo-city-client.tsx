@@ -10,6 +10,8 @@ import {
   REGIONAL_ROUTE_GROUPS,
   TRUST_FACTS,
   TRUST_METRICS,
+  BLOG_LINKS,
+  NEW_TERRITORIES_LINKS,
 } from "@/lib/internal-links";
 import {
   PageBackground, Header, Footer,
@@ -54,10 +56,10 @@ export default function SeoCityClient(props: {
               </div>
 
               <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
-                Такси из {props.fromGenitive} — трансферы и межгород
+                Междугороднее такси из {props.fromGenitive} — трансфер 24/7
               </h1>
               <p className="mt-3 text-base leading-7 text-slate-600">
-                Заявки на поездки из {props.fromGenitive}: межгород, аэропорты, поездки по городу. Стоимость подтверждается заранее.
+                Заказать такси из {props.fromGenitive}: межгород, трансфер в аэропорт, поездки по городу. Стоимость подтверждаем заранее до выезда.
               </p>
 
               <div className="mt-5 flex flex-wrap gap-2">
@@ -205,6 +207,29 @@ export default function SeoCityClient(props: {
               </div>
             </GlassPanel>
           </div>
+
+          {/* Blog links */}
+          <GlassPanel className="mt-6 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm font-bold text-slate-800">Полезные статьи о поездках</div>
+              <Link href="/blog" className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">Все статьи →</Link>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {BLOG_LINKS.slice(0, 5).map((item) => (
+                <Link key={item.href} href={item.href} className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">{item.label}</Link>
+              ))}
+            </div>
+          </GlassPanel>
+
+          {/* New territories */}
+          <GlassPanel className="mt-4 p-5">
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-3">Новые регионы РФ</div>
+            <div className="flex flex-wrap gap-2">
+              {NEW_TERRITORIES_LINKS.map((item) => (
+                <Link key={item.href} href={item.href} className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">{item.label}</Link>
+              ))}
+            </div>
+          </GlassPanel>
         </main>
       </div>
 

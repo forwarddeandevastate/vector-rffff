@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/cn";
 import { useRouter } from "next/navigation";
 import GooglePlacesInput from "@/app/ui/google-places-input";
 
 export type CarClass = "standard" | "comfort" | "business" | "minivan";
 export type RouteType = "city" | "airport" | "intercity";
 
-function cn(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(" ");
 }
 
@@ -230,7 +230,7 @@ function TypeTab({
         "flex h-10 items-center justify-center gap-1 rounded-2xl px-2 text-[12px] font-extrabold transition sm:text-[13px]",
         active
           ? "bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-[0_10px_22px_rgba(37,99,235,0.22)]"
-          : "text-zinc-800"
+          : "text-slate-800"
       )}
     >
       {icon}
@@ -267,7 +267,7 @@ function CarClassCard({
       <div
         className={cn(
           "mt-1 text-[11px] font-extrabold",
-          active ? "text-blue-700" : "text-zinc-800"
+          active ? "text-blue-700" : "text-slate-800"
         )}
       >
         {price}
@@ -589,7 +589,7 @@ export default function LeadForm({
                   <IconPin />
                 </div>
                 <GooglePlacesInput
-                  className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white pl-10 pr-3 text-[14px] text-slate-800 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                  className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white pl-10 pr-3 text-[14px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                   value={fromText}
                   onValueChange={(v) => {
                     setFromText(v);
@@ -624,7 +624,7 @@ export default function LeadForm({
                     <IconPin />
                   </div>
                   <GooglePlacesInput
-                    className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white pl-10 pr-3 text-[14px] text-slate-800 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                    className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white pl-10 pr-3 text-[14px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                     value={toText}
                     onValueChange={(v) => {
                       setToText(v);
@@ -679,10 +679,10 @@ export default function LeadForm({
               </div>
 
               <div className="text-left sm:text-right">
-                <div className="text-[12px] font-semibold uppercase tracking-wide text-zinc-400">
+                <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
                   цена
                 </div>
-                <div className="text-[16px] font-black text-zinc-950">
+                <div className="text-[16px] font-black text-slate-900">
                   {finalPrice != null
                     ? formatRub(finalPrice)
                     : routeType === "city"
@@ -802,7 +802,7 @@ export default function LeadForm({
                 Ваше имя
               </label>
               <input
-                className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white px-3 text-[14px] text-slate-800 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white px-3 text-[14px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Как к вам обращаться"
@@ -815,7 +815,7 @@ export default function LeadForm({
                 Телефон
               </label>
               <input
-                className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white px-3 text-[14px] text-slate-800 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+                className="h-10 w-full rounded-[16px] border border-blue-200/60 bg-white px-3 text-[14px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
                 value={phone}
                 onChange={(e) => setPhone(normalizePhoneLive(e.target.value))}
                 placeholder="+7 (___) ___-__-__"
@@ -830,7 +830,7 @@ export default function LeadForm({
               Комментарий
             </label>
             <textarea
-              className="min-h-[68px] w-full rounded-[16px] border border-blue-200/60 bg-white px-3 py-2.5 text-[14px] text-slate-800 outline-none transition placeholder:text-zinc-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+              className="min-h-[68px] w-full rounded-[16px] border border-blue-200/60 bg-white px-3 py-2.5 text-[14px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Детское кресло, багаж, рейс..."
@@ -838,12 +838,12 @@ export default function LeadForm({
           </div>
 
           <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-2 text-[14px] font-bold text-zinc-800">
+            <label className="inline-flex items-center gap-2 text-[14px] font-bold text-slate-800">
               <input
                 type="checkbox"
                 checked={roundTrip}
                 onChange={(e) => setRoundTrip(e.target.checked)}
-                className="h-5 w-5 rounded-md border-zinc-300 accent-blue-600"
+                className="h-5 w-5 rounded-md border-blue-200/60 accent-blue-600"
               />
               Туда-обратно
             </label>
@@ -865,11 +865,11 @@ export default function LeadForm({
 
           <div className="text-[10px] leading-4 text-slate-400">
             Нажимая «Оформить заказ», вы соглашаетесь с{" "}
-            <a href="/privacy" className="underline decoration-zinc-300">
+            <a href="/privacy" className="underline decoration-slate-300">
               политикой конфиденциальности
             </a>{" "}
             и{" "}
-            <a href="/personal-data" className="underline decoration-zinc-300">
+            <a href="/personal-data" className="underline decoration-slate-300">
               обработкой персональных данных
             </a>.
           </div>

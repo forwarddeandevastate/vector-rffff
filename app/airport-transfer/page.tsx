@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
+import {
+  PageShell,
+} from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/airport-transfer`;
@@ -143,7 +145,7 @@ export default function AirportTransferPage() {
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
           <nav className="text-sm text-slate-400">
-            <Link href="/" className="hover:text-zinc-900">
+            <Link href="/" className="hover:text-slate-900">
               Главная
             </Link>
             <span className="mx-2">/</span>
@@ -198,13 +200,13 @@ export default function AirportTransferPage() {
               key={item}
               className="rounded-3xl border border-blue-100/60 bg-white/80 p-5 shadow-sm backdrop-blur-sm"
             >
-              <div className="text-sm font-semibold text-zinc-800">{item}</div>
+              <div className="text-sm font-semibold text-slate-800">{item}</div>
             </div>
           ))}
         </section>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-zinc-900">
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-slate-900">
             Когда аэропортный трансфер особенно удобен
           </h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
@@ -228,43 +230,43 @@ export default function AirportTransferPage() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-zinc-900">Полезные разделы</h2>
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-slate-900">Полезные разделы</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               href="/transfer-v-aeroport"
-              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-50"
+              className="rounded-full border border-blue-100/60 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-blue-50/50"
             >
               Трансфер в аэропорт
             </Link>
             <Link
               href="/transfer-iz-aeroporta"
-              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-50"
+              className="rounded-full border border-blue-100/60 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-blue-50/50"
             >
               Трансфер из аэропорта
             </Link>
             <Link
               href="/prices"
-              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-50"
+              className="rounded-full border border-blue-100/60 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-blue-50/50"
             >
               Цены
             </Link>
             <Link
               href="/services"
-              className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-50"
+              className="rounded-full border border-blue-100/60 bg-white px-4 py-2 text-sm text-slate-800 hover:bg-blue-50/50"
             >
               Все услуги
             </Link>
           </div>
         </section>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-zinc-900">FAQ</h2>
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-slate-900">FAQ</h2>
           <div className="mt-4 space-y-4">
             {faq.map((item) => (
               <div
                 key={item.question}
-                className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                className="rounded-2xl border border-blue-100/60 bg-blue-50/50 p-4"
               >
                 <div className="text-sm font-bold text-slate-800">
                   {item.question}

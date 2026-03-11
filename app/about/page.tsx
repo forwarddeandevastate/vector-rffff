@@ -7,8 +7,8 @@ const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/about`;
 
 export const metadata: Metadata = {
-  title: "О компании",
-  description: "Вектор РФ — сервис поездок и трансферов по России: междугородние маршруты, аэропортные поездки, городские и корпоративные заказы.",
+  title: "О сервисе — трансферы и поездки по России",
+  description: "«Вектор РФ» — сервис трансферов и поездок по России. Заказать такси межгород, трансфер в аэропорт или корпоративную поездку онлайн 24/7.",
   alternates: { canonical: "/about" },
   robots: { index: true, follow: true },
   openGraph: { type: "website", url: PAGE_URL, title: "О компании Вектор РФ", description: "Сервис поездок и трансферов по России.", siteName: "Вектор РФ", locale: "ru_RU", images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "О компании Вектор РФ" }] },
@@ -20,7 +20,7 @@ export default function AboutPage() {
     "@context": "https://schema.org", "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "О компании", item: PAGE_URL },
+      { "@type": "ListItem", position: 2, name: "О сервисе — трансферы и поездки по России", item: PAGE_URL },
     ],
   };
 
@@ -29,7 +29,7 @@ export default function AboutPage() {
       <Script id="ld-about-breadcrumbs" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <PageShell>
         <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
-          <Breadcrumb items={[{ name: "Главная", href: "/" }, { name: "О компании", href: "/about" }]} />
+          <Breadcrumb items={[{ name: "Главная", href: "/" }, { name: "О сервисе — трансферы и поездки по России", href: "/about" }]} />
 
           <div className="mt-6">
             <div className="flex flex-wrap gap-2 mb-5">

@@ -118,7 +118,7 @@ export async function POST(req: Request) {
   try {
     // ── Rate limit: 5 заявок с одного IP за 3 минуты ──────────────────────
     const ip = await getRequestIp();
-    const rl = checkRateLimit(`leads:${ip}`, { limit: 5, windowMs: 3 * 60 * 1000 });
+    const rl = await checkRateLimit(`leads:${ip}`, { limit: 5, windowMs: 3 * 60 * 1000 });
     if (!rl.allowed) {
       return NextResponse.json(
         { ok: false, error: "Слишком много заявок. Попробуйте через несколько минут." },

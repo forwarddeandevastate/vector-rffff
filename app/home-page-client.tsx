@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { cn } from "@/lib/cn";
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import LeadForm, { type CarClass, type RouteType } from "./lead-form";
@@ -26,7 +27,6 @@ import {
   TELEGRAM,
 } from "@/app/ui/shared";
 
-function cn(...xs: Array<string | false | null | undefined>) { return xs.filter(Boolean).join(" "); }
 
 function RouteTypeCard({ title, desc, active, onClick }: { title: string; desc: string; active: boolean; onClick: () => void }) {
   return (
@@ -148,13 +148,13 @@ export default function HomePage() {
                 <Tag>Стоимость заранее</Tag>
               </div>
               <h1 className="mt-5 text-4xl font-extrabold leading-[1.12] tracking-tight text-slate-900 md:text-5xl lg:text-[52px]">
-                Трансфер,{" "}
+                Такси и трансферы{" "}
                 <span className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-800 bg-clip-text text-transparent">
-                  которому доверяют
+                  по России 24/7
                 </span>
               </h1>
               <p className="mt-4 max-w-lg text-base leading-7 text-slate-600">
-                Оставьте заявку за 1 минуту. Уточним детали, подтвердим стоимость и организуем подачу автомобиля к нужному времени.
+                Заказать междугороднее такси, трансфер в аэропорт или поездку по городу — оставьте заявку за 1 минуту. Уточним детали, подтвердим стоимость и организуем подачу автомобиля к нужному времени.
               </p>
               <div className="mt-6 grid grid-cols-3 gap-3">
                 <RouteTypeCard title="Межгород" desc="Трансферы между городами" active={selectedRouteType === "intercity"} onClick={() => pickRouteType("intercity")} />

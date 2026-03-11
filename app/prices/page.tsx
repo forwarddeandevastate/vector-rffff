@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { PageShell, Breadcrumb, GlassPanel, Tag } from "@/app/ui/shared";
+import {
+  PageShell,
+} from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/prices`;
 
 export const metadata: Metadata = {
-  title: "Цены",
+  title: "Цены на такси межгород и трансферы по России",
   description:
     "Цены на междугороднее такси и трансферы: стоимость зависит от маршрута, класса автомобиля и условий поездки. Финальная цена подтверждается заранее.",
   alternates: {
@@ -72,7 +74,7 @@ export default function PricesPage() {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Цены", item: PAGE_URL },
+      { "@type": "ListItem", position: 2, name: "Цены на такси межгород и трансферы по России", item: PAGE_URL },
     ],
   };
 
@@ -107,7 +109,7 @@ export default function PricesPage() {
       <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
         <div className="rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md p-6 shadow-sm md:p-8">
           <nav className="text-sm text-slate-400">
-            <Link href="/" className="hover:text-zinc-900">
+            <Link href="/" className="hover:text-slate-900">
               Главная
             </Link>
             <span className="mx-2">/</span>
@@ -136,16 +138,16 @@ export default function PricesPage() {
             {["Стандарт", "Комфорт", "Бизнес / минивэн"].map((item) => (
               <div
                 key={item}
-                className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5"
+                className="rounded-3xl border border-blue-100/60 bg-blue-50/50 p-5"
               >
-                <div className="text-sm font-semibold text-zinc-800">{item}</div>
+                <div className="text-sm font-semibold text-slate-800">{item}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-zinc-900">
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-slate-900">
             Что влияет на стоимость
           </h2>
           <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
@@ -184,13 +186,13 @@ export default function PricesPage() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold text-zinc-900">FAQ</h2>
+        <section className="mt-8 rounded-3xl border border-blue-100/60 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold text-slate-900">FAQ</h2>
           <div className="mt-4 space-y-4">
             {faq.map((item) => (
               <div
                 key={item.question}
-                className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                className="rounded-2xl border border-blue-100/60 bg-blue-50/50 p-4"
               >
                 <div className="text-sm font-bold text-slate-800">
                   {item.question}
