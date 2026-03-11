@@ -58,7 +58,6 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/transfer-iz-aeroporta": 0.88,
   "/city": 0.78,
   "/prices": 0.75,
-  "/blog": 0.75,
   "/city-transfer": 0.74,
   "/corporate-taxi": 0.74,
   "/minivan-transfer": 0.72,
