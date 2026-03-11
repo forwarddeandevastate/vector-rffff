@@ -7,8 +7,6 @@ import { useState } from "react";
 export const PHONE_DISPLAY = "8 (800) 222-56-50";
 export const PHONE_TEL = "+78002225650";
 export const TELEGRAM = "https://t.me/vector_rf52";
-export const WHATSAPP = "https://wa.me/78314233929";
-
 /* ── Icons ── */
 export function IconPhone({ className }: { className?: string }) {
   return (
@@ -235,14 +233,6 @@ export function Footer() {
               <IconTelegram className="h-4 w-4" />
               Telegram
             </a>
-            <a
-              href={WHATSAPP}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-blue-100 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-blue-50 transition-colors"
-            >
-              WhatsApp
-            </a>
           </div>
         </div>
 
@@ -273,7 +263,6 @@ export function Footer() {
             <div className="mt-3 grid gap-2 text-xs text-slate-500">
               <a href={`tel:${PHONE_TEL}`} className="hover:text-blue-700 transition-colors">{PHONE_DISPLAY}</a>
               <a href={TELEGRAM} target="_blank" rel="noreferrer" className="hover:text-blue-700 transition-colors">Telegram @vector_rf52</a>
-              <a href={WHATSAPP} target="_blank" rel="noreferrer" className="hover:text-blue-700 transition-colors">WhatsApp</a>
             </div>
             <div className="mt-4 grid gap-1 text-xs text-slate-400">
               <a href="/privacy" className="hover:text-blue-600 transition-colors">Политика конфиденциальности</a>

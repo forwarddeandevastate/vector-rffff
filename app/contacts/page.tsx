@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { PageShell, Breadcrumb, GlassPanel, Tag, IconPhone, IconTelegram, PHONE_DISPLAY, PHONE_TEL, TELEGRAM, WHATSAPP } from "@/app/ui/shared";
+import { PageShell, Breadcrumb, GlassPanel, Tag, IconPhone, IconTelegram, PHONE_DISPLAY, PHONE_TEL, TELEGRAM } from "@/app/ui/shared";
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/contacts`;
@@ -9,11 +9,11 @@ const PHONE_E164 = "+78002225650";
 
 export const metadata: Metadata = {
   title: "Контакты — заказать трансфер, такси межгород 24/7",
-  description: "Контакты сервиса Вектор РФ: телефон, Telegram, WhatsApp для заказа такси и трансферов по России. Принимаем заявки 24/7, отвечаем быстро.",
+  description: "Контакты сервиса Вектор РФ: телефон, Telegram для заказа такси и трансферов по России. Принимаем заявки 24/7, отвечаем быстро.",
   alternates: { canonical: "/contacts" },
   robots: { index: true, follow: true },
-  openGraph: { type: "website", url: PAGE_URL, title: "Контакты Вектор РФ", description: "Телефон, Telegram, WhatsApp для заявок.", siteName: "Вектор РФ", locale: "ru_RU", images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Контакты Вектор РФ" }] },
-  twitter: { card: "summary_large_image", title: "Контакты Вектор РФ", description: "Телефон, Telegram, WhatsApp.", images: ["/og.jpg"] },
+  openGraph: { type: "website", url: PAGE_URL, title: "Контакты Вектор РФ", description: "Телефон, Telegram для заявок.", siteName: "Вектор РФ", locale: "ru_RU", images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Контакты Вектор РФ" }] },
+  twitter: { card: "summary_large_image", title: "Контакты Вектор РФ", description: "Телефон, Telegram.", images: ["/og.jpg"] },
 };
 
 export default function ContactsPage() {
@@ -34,7 +34,6 @@ export default function ContactsPage() {
   const contacts = [
     { type: "Телефон", value: PHONE_DISPLAY, href: `tel:${PHONE_TEL}`, icon: <IconPhone className="h-5 w-5 text-blue-500" />, desc: "Звоните 24/7" },
     { type: "Telegram", value: "@vector_rf52", href: TELEGRAM, ext: true, icon: <IconTelegram className="h-5 w-5 text-blue-500" />, desc: "Напишите в мессенджер" },
-    { type: "WhatsApp", value: "Написать в WhatsApp", href: WHATSAPP, ext: true, desc: "Мессенджер WhatsApp" },
     { type: "Заявка на сайте", value: "Перейти к форме", href: "/", desc: "Форма на главной" },
   ];
 
@@ -50,7 +49,7 @@ export default function ContactsPage() {
             <Tag>Работаем 24/7</Tag>
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Контакты</h1>
             <p className="mt-3 max-w-xl text-base leading-7 text-slate-600">
-              Для заявок на поездки, трансферы в аэропорт и корпоративные маршруты — используйте телефон, Telegram, WhatsApp или форму на сайте.
+              Для заявок на поездки, трансферы в аэропорт и корпоративные маршруты — используйте телефон, Telegram или форму на сайте.
             </p>
           </div>
 
@@ -107,11 +106,20 @@ export default function ContactsPage() {
             <h2 className="text-lg font-extrabold text-slate-900 mb-3">Часто задаваемые вопросы</h2>
             <div className="space-y-3 text-sm leading-6 text-slate-600">
               <p><strong>Как быстро перезванивают?</strong> Обычно в течение нескольких минут. В ночное время — в зависимости от загрузки, но заявки принимаем круглосуточно.</p>
-              <p><strong>Можно ли написать, а не звонить?</strong> Да, пишите в Telegram или WhatsApp — отвечаем в мессенджерах так же оперативно.</p>
+              <p><strong>Можно ли написать, а не звонить?</strong> Да, пишите в Telegram — отвечаем в мессенджерах так же оперативно.</p>
               <p><strong>Как оставить заявку для юрлица?</strong> Напишите на email или позвоните — обсудим условия договора, схему оплаты и документооборот. Выставляем счёт и предоставляем закрывающие документы.</p>
               <p><strong>Работаете ли в праздники?</strong> Да, принимаем заявки и выполняем поездки круглосуточно, без выходных и праздников.</p>
             </div>
           </GlassPanel>
+        
+          <div className="mt-8 rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-3">Как мы принимаем заявки</h2>
+            <div className="space-y-3 text-sm leading-6 text-slate-600">
+              <p>Заявку можно оставить удобным способом: через форму на сайте, по телефону или в Telegram. Оператор перезванивает в течение 15–30 минут, уточняет маршрут, время и класс автомобиля, затем подтверждает стоимость до выезда.</p>
+              <p>Для корпоративных клиентов работаем по договору — выставляем счёт, предоставляем акт выполненных работ и счёт-фактуру. Для заключения договора обращайтесь по телефону или Telegram.</p>
+              <p>Срочные заявки рассматриваем в режиме реального времени. Для поездок в аэропорт рекомендуем бронировать за 3–6 часов, для межгорода — за 1–2 дня.</p>
+            </div>
+          </div>
         </main>
       </PageShell>
     </>
