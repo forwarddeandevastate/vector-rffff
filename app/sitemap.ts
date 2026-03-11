@@ -144,11 +144,12 @@ export async function generateSitemaps() {
 export default async function sitemap({
   id,
 }: {
-  id: string;
+  id: Promise<string>;
 }): Promise<MetadataRoute.Sitemap> {
+  const resolvedId = await id;
   const lastModified = getLastModified();
 
-  if (id === "core") {
+  if (resolvedId === "core") {
     return dedupe([
       ...buildStaticEntries(lastModified),
       ...buildBlogEntries(lastModified),
@@ -156,8 +157,8 @@ export default async function sitemap({
     ]);
   }
 
-  if (id.startsWith("routes-")) {
-    const pageIndex = Number(id.replace("routes-", "")) - 1;
+  if (resolvedId.startsWith("routes-")) {
+    const pageIndex = Number(resolvedId.replace("routes-", "")) - 1;
     const allRoutes = buildRouteEntries(lastModified);
     const start = pageIndex * ROUTES_PER_SITEMAP;
     const end = start + ROUTES_PER_SITEMAP;
