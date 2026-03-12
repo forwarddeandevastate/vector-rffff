@@ -1,6 +1,7 @@
 import type { FAQItem } from "@/lib/city-faq";
 import { CITY_CONTENT } from "@/lib/city-content";
 import { CITY_REGION_BY_SLUG } from "@/lib/city-landings";
+import { isPriorityRoute } from "@/lib/priority-routes";
 
 function hashRoute(input: string) {
   let h = 0;
