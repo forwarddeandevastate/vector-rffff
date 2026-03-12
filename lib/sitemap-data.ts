@@ -63,8 +63,8 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/sitemap-page": 0.3,
 };
 
-export const MAX_ROUTE_URLS = 25000;
-export const ROUTES_PER_SITEMAP = 5000;
+export const MAX_ROUTE_URLS = 15000;
+export const ROUTES_PER_SITEMAP = 3000;
 
 function dedupe<T extends { url: string }>(items: T[]): T[] {
   const seen = new Set<string>();
@@ -75,15 +75,37 @@ function dedupe<T extends { url: string }>(items: T[]): T[] {
   });
 }
 
-const CORE_LAST_MODIFIED = new Date(process.env.SITE_CORE_LAST_MODIFIED ?? process.env.SITE_LAST_MODIFIED ?? "2026-03-12T00:00:00.000Z");
-const CITY_LAST_MODIFIED = new Date(process.env.SITE_CITY_LAST_MODIFIED ?? process.env.SITE_LAST_MODIFIED ?? "2026-03-12T00:00:00.000Z");
-const ROUTES_LAST_MODIFIED = new Date(process.env.SITE_ROUTES_LAST_MODIFIED ?? process.env.SITE_LAST_MODIFIED ?? "2026-03-12T00:00:00.000Z");
+const CORE_LAST_MODIFIED = new Date(
+  process.env.SITE_CORE_LAST_MODIFIED ??
+    process.env.SITE_LAST_MODIFIED ??
+    "2026-03-12T00:00:00.000Z"
+);
+
+const CITY_LAST_MODIFIED = new Date(
+  process.env.SITE_CITY_LAST_MODIFIED ??
+    process.env.SITE_LAST_MODIFIED ??
+    "2026-03-12T00:00:00.000Z"
+);
+
+const ROUTES_LAST_MODIFIED = new Date(
+  process.env.SITE_ROUTES_LAST_MODIFIED ??
+    process.env.SITE_LAST_MODIFIED ??
+    "2026-03-12T00:00:00.000Z"
+);
 
 export function getLastModified(kind: "core" | "city" | "routes" = "core"): Date {
   if (kind === "city") return CITY_LAST_MODIFIED;
   if (kind === "routes") return ROUTES_LAST_MODIFIED;
   return CORE_LAST_MODIFIED;
 }
+
+/**
+ * Считаем маршруты ОДИН РАЗ на уровне модуля,
+ * чтобы:
+ * - не пересобирать их на каждый sitemap route
+ * - корректно понимать реальное число route-файлов
+ */
+const SEO_ROUTES = buildSeoRoutes(MAX_ROUTE_URLS);
 
 export function getCoreSitemapItems(): SitemapItem[] {
   const coreLastModified = getLastModified("core");
@@ -122,8 +144,11 @@ export function getCoreSitemapItems(): SitemapItem[] {
 }
 
 export function getRouteSitemapItems(pageNumber: number): SitemapItem[] {
+  if (pageNumber < 1) return [];
+
   const lastModified = getLastModified("routes");
-  const routes = buildSeoRoutes(MAX_ROUTE_URLS).map((route) => ({
+
+  const routes = SEO_ROUTES.map((route) => ({
     url: absoluteUrl(`/${route.from}/${route.to}`),
     lastModified,
     changeFrequency: "weekly" as const,
@@ -137,13 +162,13 @@ export function getRouteSitemapItems(pageNumber: number): SitemapItem[] {
 }
 
 export function getSitemapIndexEntries() {
-  const totalRouteSitemaps = Math.max(1, Math.ceil(MAX_ROUTE_URLS / ROUTES_PER_SITEMAP));
+  const totalRouteSitemaps = Math.ceil(SEO_ROUTES.length / ROUTES_PER_SITEMAP);
 
   return [
-    { loc: absoluteUrl("/sitemap/core.xml"), lastmod: getLastModified() },
+    { loc: absoluteUrl("/sitemap/core.xml"), lastmod: getLastModified("core") },
     ...Array.from({ length: totalRouteSitemaps }, (_, index) => ({
       loc: absoluteUrl(`/sitemap/routes-${index + 1}.xml`),
-      lastmod: getLastModified(),
+      lastmod: getLastModified("routes"),
     })),
   ];
 }
@@ -165,7 +190,9 @@ export function renderUrlSet(items: SitemapItem[]) {
         `<loc>${escapeXml(item.url)}</loc>`,
         item.lastModified ? `<lastmod>${item.lastModified.toISOString()}</lastmod>` : "",
         item.changeFrequency ? `<changefreq>${item.changeFrequency}</changefreq>` : "",
-        typeof item.priority === "number" ? `<priority>${item.priority.toFixed(2)}</priority>` : "",
+        typeof item.priority === "number"
+          ? `<priority>${item.priority.toFixed(2)}</priority>`
+          : "",
         `</url>`,
       ]
         .filter(Boolean)
@@ -175,8 +202,10 @@ export function renderUrlSet(items: SitemapItem[]) {
     })
     .join("");
 
-  return `<?xml version="1.0" encoding="UTF-8"?>` +
-    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`;
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`
+  );
 }
 
 export function renderSitemapIndex(entries: Array<{ loc: string; lastmod?: Date }>) {
@@ -195,8 +224,10 @@ export function renderSitemapIndex(entries: Array<{ loc: string; lastmod?: Date 
     })
     .join("");
 
-  return `<?xml version="1.0" encoding="UTF-8"?>` +
-    `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</sitemapindex>`;
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</sitemapindex>`
+  );
 }
 
 export function buildXmlResponse(xml: string) {
