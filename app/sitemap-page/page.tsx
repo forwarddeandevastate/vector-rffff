@@ -29,8 +29,8 @@ const SECTIONS = [
   {
     title: "Услуги",
     links: [
-      { href: "/intercity-taxi", label: "Междугороднее такси" },
-      { href: "/airport-transfer", label: "Трансфер в аэропорт" },
+      { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
+      { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
       { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт 24/7" },
       { href: "/transfer-iz-aeroporta", label: "Трансфер из аэропорта" },
       { href: "/city-transfer", label: "Городские поездки" },
@@ -43,7 +43,7 @@ const SECTIONS = [
     title: "Ключевые разделы",
     links: [
       { href: "/taxi-mezhgorod", label: "Такси межгород" },
-      { href: "/mezhdugorodnee-taksi", label: "Междугороднее такси" },
+      { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
       { href: "/prices", label: "Цены и тарифы" },
       { href: "/faq", label: "Вопросы и ответы" },
       { href: "/reviews", label: "Отзывы клиентов" },

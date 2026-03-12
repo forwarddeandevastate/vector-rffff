@@ -215,7 +215,7 @@ export default function PricesPage() {
               Рассчитать поездку
             </Link>
             <Link
-              href="/intercity-taxi"
+              href="/taxi-mezhgorod"
               className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm"
             >
               Междугороднее такси

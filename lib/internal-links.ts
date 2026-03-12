@@ -1,6 +1,6 @@
 export const CORE_SERVICE_LINKS = [
-  { href: "/intercity-taxi", label: "Междугороднее такси" },
-  { href: "/airport-transfer", label: "Трансфер в аэропорт" },
+  { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
+  { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
   { href: "/city-transfer", label: "Поездки по городу" },
   { href: "/minivan-transfer", label: "Минивэн / групповые поездки" },
   { href: "/corporate", label: "Корпоративные перевозки" },
@@ -83,7 +83,7 @@ export const TRUST_METRICS = [
 
 export const KEYWORD_PAGE_LINKS = [
   { href: "/taxi-mezhgorod", label: "Такси межгород" },
-  { href: "/mezhdugorodnee-taksi", label: "Междугороднее такси" },
+  { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
   { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
   { href: "/transfer-iz-aeroporta", label: "Трансфер из аэропорта" },
 ];

@@ -142,9 +142,9 @@ export default function SeoRouteClient(props: {
           {/* Context cards */}
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {[
-              { title: `Такси ${props.fromName} — ${props.toName}`, text: `Маршрут без пересадок. Удобно для командировок, семейных выездов и поездок с багажом.`, href: "/intercity-taxi", label: "Межгород" },
+              { title: `Такси ${props.fromName} — ${props.toName}`, text: `Маршрут без пересадок. Удобно для командировок, семейных выездов и поездок с багажом.`, href: "/taxi-mezhgorod", label: "Межгород" },
               { title: `Маршруты из ${props.fromName}`, text: `Все направления из города ${props.fromName} с подбором класса авто и согласованием стоимости.`, href: props.cityBackHref, label: `Все маршруты из ${props.fromName}` },
-              { title: "Трансфер в аэропорт", text: "Отдельная услуга — трансфер в аэропорт или из него. Встреча с табличкой, учёт рейса.", href: "/airport-transfer", label: "Аэропорт" },
+              { title: "Трансфер в аэропорт", text: "Отдельная услуга — трансфер в аэропорт или из него. Встреча с табличкой, учёт рейса.", href: "/transfer-v-aeroport", label: "Аэропорт" },
             ].map((c) => (
               <div key={c.title} className="rounded-2xl border border-blue-100/60 bg-white/80 p-5 backdrop-blur-sm shadow-sm">
                 <div className="text-sm font-bold text-slate-800 mb-2">{c.title}</div>
@@ -176,7 +176,7 @@ export default function SeoRouteClient(props: {
                   { href: props.reverseRoute.href, label: props.reverseRoute.label },
                   { href: `/${props.fromSlug}`, label: `Все маршруты из ${props.fromName}` },
                   { href: `/${props.toSlug}`, label: `Все маршруты в ${props.toName}` },
-                  { href: "/intercity-taxi", label: "Междугороднее такси" },
+                  { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
                 ].map((l) => (
                   <Link key={l.href} href={l.href} className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">{l.label}</Link>
                 ))}

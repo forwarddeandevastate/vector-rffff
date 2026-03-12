@@ -187,8 +187,8 @@ export default function BlogPage() {
                 { href: "/krasnodar/sochi", label: "Краснодар — Сочи" },
                 { href: "/rostov-na-donu/krasnodar", label: "Ростов-на-Дону — Краснодар" },
                 { href: "/yekaterinburg/tyumen", label: "Екатеринбург — Тюмень" },
-                { href: "/intercity-taxi", label: "Междугороднее такси" },
-                { href: "/airport-transfer", label: "Трансфер в аэропорт" },
+                { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
+                { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
               ].map((l) => (
                 <Link key={l.href} href={l.href}
                   className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">

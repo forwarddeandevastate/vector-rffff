@@ -184,12 +184,12 @@ export function Header() {
 /* ── Footer ── */
 const FOOTER_SERVICES = [
   { href: "/city-transfer", label: "Поездки по городу" },
-  { href: "/airport-transfer", label: "Трансфер в аэропорт" },
-  { href: "/intercity-taxi", label: "Межгород" },
+  { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
+  { href: "/taxi-mezhgorod", label: "Межгород" },
   { href: "/minivan-transfer", label: "Минивэн" },
   { href: "/corporate", label: "Корпоративным" },
   { href: "/corporate-taxi", label: "Корпоративное такси" },
-  { href: "/mezhdugorodnee-taksi", label: "Междугороднее такси" },
+  { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
 ];
 const FOOTER_INFO = [
   { href: "/services", label: "Наш сервис" },

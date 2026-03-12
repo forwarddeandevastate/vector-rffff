@@ -88,7 +88,7 @@ export const BLOG_POSTS: BlogPost[] = [
 **Что если я опоздал к назначенному времени?** — Как правило, водитель ждёт 10–15 минут бесплатно. Более долгое ожидание обсуждается отдельно.`,
     relatedRoutes: [
       { href: "/nizhniy-novgorod/moskva", label: "Нижний Новгород — Москва" },
-      { href: "/intercity-taxi", label: "Заказать такси межгород" },
+      { href: "/taxi-mezhgorod", label: "Заказать такси межгород" },
     ],
     relatedPosts: ["kak-sravnit-tseny-taksi-mezhgorod", "transfer-v-aeroport-chto-nuzhno-znat"],
   },
@@ -164,7 +164,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 Оставьте заявку на сайте или позвоните. Укажите адрес подачи, время вылета или прилёта, количество пассажиров. Оператор рассчитает время выезда и подтвердит стоимость. Для московских аэропортов рекомендуем бронировать за 1–2 дня.`,
     relatedRoutes: [
-      { href: "/airport-transfer", label: "Трансфер в аэропорт" },
+      { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
       { href: "/nizhniy-novgorod/sheremetyevo", label: "Нижний Новгород — Шереметьево" },
     ],
     relatedPosts: ["kak-zakazat-mezhdugorodnee-taksi", "mezhdugorodnee-taksi-ili-poezd"],
@@ -240,7 +240,7 @@ export const BLOG_POSTS: BlogPost[] = [
 Чтобы принять решение, запросите стоимость трансфера на нашем сайте — это бесплатно и займёт 2 минуты. Сравните с ценой билетов на поезд и выберите оптимальный вариант.`,
     relatedPosts: ["kak-zakazat-mezhdugorodnee-taksi", "transfer-v-aeroport-chto-nuzhno-znat"],
     relatedRoutes: [
-      { href: "/intercity-taxi", label: "Междугороднее такси" },
+      { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
       { href: "/moskva/nizhniy-novgorod", label: "Москва — Нижний Новгород" },
       { href: "/nizhniy-novgorod/kazan", label: "Нижний Новгород — Казань" },
       { href: "/krasnodar/sochi", label: "Краснодар — Сочи" },
@@ -462,7 +462,7 @@ export const BLOG_POSTS: BlogPost[] = [
 При звонке оператору сразу уточните: точный адрес подачи, время выезда, пункт назначения, количество пассажиров, есть ли багаж сверх нормы (велосипед, большие чемоданы, спортинвентарь). Это ускорит подтверждение и исключит доплаты на месте.`,
     relatedRoutes: [
       { href: "/prices", label: "Тарифы и цены" },
-      { href: "/intercity-taxi", label: "Такси межгород" },
+      { href: "/taxi-mezhgorod", label: "Такси межгород" },
     ],
   },
   {
@@ -575,7 +575,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 Если по пути возникли непредвиденные задержки — сразу сообщите водителю, чтобы он выбрал альтернативный маршрут или увеличил темп там, где это возможно. Авиакомпании открывают регистрацию за 24 часа онлайн — регистрируйтесь заранее и сдавайте багаж первым в очереди.`,
     relatedRoutes: [
-      { href: "/airport-transfer", label: "Трансфер в аэропорт" },
+      { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
     ],
   },
   {
@@ -630,7 +630,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 Убедитесь, что телефон заряжен, у вас есть номер водителя и вы знаете точное время подачи. Отправьте маршрут кому-нибудь из близких. Ещё раз проверьте документы — особенно если едете в аэропорт.`,
     relatedRoutes: [
-      { href: "/intercity-taxi", label: "Такси межгород" },
+      { href: "/taxi-mezhgorod", label: "Такси межгород" },
       { href: "/minivan-transfer", label: "Минивэн трансфер" },
     ],
   },
@@ -683,7 +683,7 @@ export const BLOG_POSTS: BlogPost[] = [
 Детям от трёх лет стоит заранее рассказать о предстоящей дороге: сколько часов едем, где остановимся, что интересного увидим по пути. Это снижает тревожность и делает поездку проще для всех.`,
     relatedRoutes: [
       { href: "/minivan-transfer", label: "Минивэн для семьи" },
-      { href: "/intercity-taxi", label: "Такси межгород" },
+      { href: "/taxi-mezhgorod", label: "Такси межгород" },
     ],
   },
   {
@@ -799,7 +799,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 При оформлении заявки укажите номер рейса, терминал и время вылета или прилёта. Это позволит водителю точно рассчитать время подачи и отслеживать статус рейса. При изменении рейса — сообщите оператору как можно раньше.`,
     relatedRoutes: [
-      { href: "/airport-transfer", label: "Трансфер в аэропорт" },
+      { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
       { href: "/nizhniy-novgorod/sheremetyevo", label: "Нижний Новгород — Шереметьево" },
       { href: "/kazan/moskva", label: "Казань — Москва" },
     ],
@@ -856,7 +856,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 Автобус — для одного человека без багажа с гибким расписанием. Такси — для семьи, с багажом, в конкретное время, с комфортом. Оба варианта хороши, но для разных ситуаций.`,
     relatedRoutes: [
-      { href: "/intercity-taxi", label: "Такси межгород" },
+      { href: "/taxi-mezhgorod", label: "Такси межгород" },
       { href: "/prices", label: "Тарифы" },
     ],
   },
@@ -913,7 +913,7 @@ export const BLOG_POSTS: BlogPost[] = [
 Наличными водителю по приезду или безналичным переводом по реквизитам до поездки. Для корпоративных клиентов — оплата по счёту. Стоимость фиксируется при бронировании и не меняется независимо от ситуации на дороге.`,
     relatedRoutes: [
       { href: "/nizhniy-novgorod/spb", label: "Нижний Новгород — СПб" },
-      { href: "/intercity-taxi", label: "Такси межгород" },
+      { href: "/taxi-mezhgorod", label: "Такси межгород" },
       { href: "/biznes-klass-vs-komfort-chto-vybrat", label: "Выбор класса авто" },
     ],
   },
@@ -965,8 +965,8 @@ export const BLOG_POSTS: BlogPost[] = [
 
 Тарифы на ночные поездки не отличаются от дневных — никакой наценки за ночное время. Стоимость рассчитывается по маршруту и классу автомобиля так же, как и днём. Ночная поездка в Шереметьево из Нижнего Новгорода обойдётся столько же, сколько дневная.`,
     relatedRoutes: [
-      { href: "/airport-transfer", label: "Трансфер в аэропорт" },
-      { href: "/intercity-taxi", label: "Такси межгород" },
+      { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
+      { href: "/taxi-mezhgorod", label: "Такси межгород" },
     ],
   },
 ];

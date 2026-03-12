@@ -21,8 +21,6 @@ const STATIC_PATHS = [
   "/",
   "/services",
   "/city",
-  "/intercity-taxi",
-  "/airport-transfer",
   "/city-transfer",
   "/minivan-transfer",
   "/corporate-taxi",
@@ -38,7 +36,6 @@ const STATIC_PATHS = [
   "/personal-data",
   "/agreement",
   "/taxi-mezhgorod",
-  "/mezhdugorodnee-taksi",
   "/transfer-v-aeroport",
   "/transfer-iz-aeroporta",
 ] as const;
@@ -46,10 +43,7 @@ const STATIC_PATHS = [
 const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> = {
   "/": 1.0,
   "/services": 0.82,
-  "/intercity-taxi": 0.92,
-  "/airport-transfer": 0.9,
   "/taxi-mezhgorod": 0.88,
-  "/mezhdugorodnee-taksi": 0.88,
   "/transfer-v-aeroport": 0.88,
   "/transfer-iz-aeroporta": 0.88,
   "/city": 0.78,
@@ -81,24 +75,23 @@ function dedupe<T extends { url: string }>(items: T[]): T[] {
   });
 }
 
-const FALLBACK_LAST_MODIFIED = new Date();
+const CORE_LAST_MODIFIED = new Date(process.env.SITE_CORE_LAST_MODIFIED ?? process.env.SITE_LAST_MODIFIED ?? "2026-03-12T00:00:00.000Z");
+const CITY_LAST_MODIFIED = new Date(process.env.SITE_CITY_LAST_MODIFIED ?? process.env.SITE_LAST_MODIFIED ?? "2026-03-12T00:00:00.000Z");
+const ROUTES_LAST_MODIFIED = new Date(process.env.SITE_ROUTES_LAST_MODIFIED ?? process.env.SITE_LAST_MODIFIED ?? "2026-03-12T00:00:00.000Z");
 
-export function getLastModified(): Date {
-  const raw = process.env.SITE_LAST_MODIFIED || process.env.VERCEL_GIT_COMMIT_SHA || process.env.VERCEL_DEPLOYMENT_ID;
-
-  if (raw && /^\d{4}-\d{2}-\d{2}/.test(raw)) {
-    return new Date(raw);
-  }
-
-  return FALLBACK_LAST_MODIFIED;
+export function getLastModified(kind: "core" | "city" | "routes" = "core"): Date {
+  if (kind === "city") return CITY_LAST_MODIFIED;
+  if (kind === "routes") return ROUTES_LAST_MODIFIED;
+  return CORE_LAST_MODIFIED;
 }
 
 export function getCoreSitemapItems(): SitemapItem[] {
-  const lastModified = getLastModified();
+  const coreLastModified = getLastModified("core");
+  const cityLastModified = getLastModified("city");
 
   const staticEntries: SitemapItem[] = STATIC_PATHS.map((path) => ({
     url: absoluteUrl(path),
-    lastModified,
+    lastModified: coreLastModified,
     changeFrequency: "weekly",
     priority: STATIC_PRIORITIES[path] ?? 0.5,
   }));
@@ -106,7 +99,7 @@ export function getCoreSitemapItems(): SitemapItem[] {
   const blogEntries: SitemapItem[] = [
     {
       url: absoluteUrl("/blog"),
-      lastModified,
+      lastModified: coreLastModified,
       changeFrequency: "weekly",
       priority: 0.75,
     },
@@ -120,7 +113,7 @@ export function getCoreSitemapItems(): SitemapItem[] {
 
   const cityEntries: SitemapItem[] = CITY_LANDINGS.map((city) => ({
     url: absoluteUrl(`/${city.slug}`),
-    lastModified,
+    lastModified: cityLastModified,
     changeFrequency: "monthly",
     priority: 0.72,
   }));
@@ -129,7 +122,7 @@ export function getCoreSitemapItems(): SitemapItem[] {
 }
 
 export function getRouteSitemapItems(pageNumber: number): SitemapItem[] {
-  const lastModified = getLastModified();
+  const lastModified = getLastModified("routes");
   const routes = buildSeoRoutes(MAX_ROUTE_URLS).map((route) => ({
     url: absoluteUrl(`/${route.from}/${route.to}`),
     lastModified,

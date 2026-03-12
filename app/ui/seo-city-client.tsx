@@ -141,8 +141,8 @@ export default function SeoCityClient(props: {
           {/* Service type cards */}
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {[
-              { title: `Межгород из ${props.cityName}`, text: "Прямые поездки до нужного города без пересадок. Согласуем маршрут и класс авто.", href: "/intercity-taxi", label: "Межгород" },
-              { title: "Трансфер в аэропорт", text: "Встреча с табличкой, учёт времени рейса, помощь с багажом.", href: "/airport-transfer", label: "Аэропорт" },
+              { title: `Межгород из ${props.cityName}`, text: "Прямые поездки до нужного города без пересадок. Согласуем маршрут и класс авто.", href: "/taxi-mezhgorod", label: "Межгород" },
+              { title: "Трансфер в аэропорт", text: "Встреча с табличкой, учёт времени рейса, помощь с багажом.", href: "/transfer-v-aeroport", label: "Аэропорт" },
               { title: "Корпоративным", text: "Поездки сотрудников и гостей по договору, безнал, закрывающие документы.", href: "/corporate", label: "Для бизнеса" },
             ].map((c) => (
               <div key={c.title} className="rounded-2xl border border-blue-100/60 bg-white/80 p-5 backdrop-blur-sm shadow-sm">

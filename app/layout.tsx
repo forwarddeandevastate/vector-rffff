@@ -1,17 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import UTMCollector from "./utm";
-
-const manrope = Manrope({
-  subsets: ["cyrillic", "latin"],
-  weight: ["500", "600", "700", "800"],
-  display: "swap",
-  preload: true,
-  fallback: ["system-ui", "-apple-system", "sans-serif"],
-  adjustFontFallback: true, // уменьшает CLS от смены шрифта
-});
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
@@ -258,7 +248,7 @@ export default function RootLayout({
         />
       </head>
 
-      <body className={`${manrope.className} bg-[#eef4ff] text-slate-900`}>
+      <body className="bg-[#eef4ff] text-slate-900">
 
 
         {/* Google Analytics GA4 */}

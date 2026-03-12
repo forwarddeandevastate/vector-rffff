@@ -107,7 +107,7 @@ export default function Page() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Link href="/intercity-taxi" className="rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95">Межгород (услуга)</Link>
+              <Link href="/taxi-mezhgorod" className="rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm hover:opacity-95">Межгород (услуга)</Link>
               <Link href="/#order" className="rounded-xl border border-blue-100/60 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-blue-50/50">Оставить заявку</Link>
             </div>
           </div>
