@@ -69,7 +69,7 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/sitemap-page": 0.3,
 };
 
-export const MAX_ROUTE_URLS = 10000;
+export const MAX_ROUTE_URLS = 25000;
 export const ROUTES_PER_SITEMAP = 5000;
 
 function dedupe<T extends { url: string }>(items: T[]): T[] {
@@ -81,8 +81,16 @@ function dedupe<T extends { url: string }>(items: T[]): T[] {
   });
 }
 
+const FALLBACK_LAST_MODIFIED = new Date();
+
 export function getLastModified(): Date {
-  return new Date(process.env.SITE_LAST_MODIFIED ?? "2025-04-15T00:00:00Z");
+  const raw = process.env.SITE_LAST_MODIFIED || process.env.VERCEL_GIT_COMMIT_SHA || process.env.VERCEL_DEPLOYMENT_ID;
+
+  if (raw && /^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    return new Date(raw);
+  }
+
+  return FALLBACK_LAST_MODIFIED;
 }
 
 export function getCoreSitemapItems(): SitemapItem[] {
