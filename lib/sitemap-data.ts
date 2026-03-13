@@ -63,8 +63,8 @@ const STATIC_PRIORITIES: Partial<Record<(typeof STATIC_PATHS)[number], number>> 
   "/sitemap-page": 0.3,
 };
 
-export const MAX_ROUTE_URLS = 15000;
-export const ROUTES_PER_SITEMAP = 3000;
+export const MAX_ROUTE_URLS = 10000;
+export const ROUTES_PER_SITEMAP = 2000;
 
 function dedupe<T extends { url: string }>(items: T[]): T[] {
   const seen = new Set<string>();
