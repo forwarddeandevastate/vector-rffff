@@ -2,15 +2,17 @@ import type { NextConfig } from "next";
 
 const cspDirectives = [
   "default-src 'self'",
+  // Скрипты:
   // Яндекс.Метрика: mc.yandex.ru + mc.yandex.com + yastatic.net
   // Google Maps: maps.googleapis.com + maps.gstatic.com
   // Google Tag Manager / GA4: googletagmanager.com + google-analytics.com
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://mc.yandex.com https://yastatic.net https://www.googletagmanager.com https://www.google-analytics.com",
+  // Untarget: cdn.untarget.ai
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://mc.yandex.com https://yastatic.net https://www.googletagmanager.com https://www.google-analytics.com https://cdn.untarget.ai",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  // connect-src: все внешние fetch/XHR запросы
-  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://mc.yandex.com https://yandex.ru https://www.google-analytics.com https://www.googletagmanager.com https://region.metrica.yandex.com",
+  // connect-src: все внешние fetch/XHR/WebSocket запросы
+  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://mc.yandex.com https://yandex.ru https://www.google-analytics.com https://www.googletagmanager.com https://region.metrica.yandex.com https://cdn.untarget.ai wss://mc.yandex.com wss://mc.yandex.ru",
   "worker-src 'self' blob:",
   "frame-src https://www.google.com https://www.googletagmanager.com",
   "frame-ancestors 'self'",
@@ -59,9 +61,10 @@ const nextConfig: NextConfig = {
 
   compiler: {
     // Убираем console.log в продакшене
-    removeConsole: process.env.NODE_ENV === "production"
-      ? { exclude: ["error", "warn"] }
-      : false,
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
   },
 
   async headers() {
@@ -80,14 +83,17 @@ const nextConfig: NextConfig = {
       },
       // Кэш публичных файлов (иконки, og.jpg) на 7 дней
       {
-        source: "/(.*)\.(png|jpg|jpeg|gif|ico|svg|webp|avif|woff2|woff)",
+        source: "/(.*)\\.(png|jpg|jpeg|gif|ico|svg|webp|avif|woff2|woff)",
         headers: [
-          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+          {
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=86400",
+          },
         ],
       },
       // Кэш шрифтов через next/font — на 1 год
       {
-        source: "/_next/static/media/(.*)\.woff2",
+        source: "/_next/static/media/(.*)\\.woff2",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
@@ -125,6 +131,7 @@ const nextConfig: NextConfig = {
       { source: "/home", destination: "/", permanent: true },
     ];
   },
+
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
