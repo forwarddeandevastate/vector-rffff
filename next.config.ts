@@ -2,22 +2,23 @@ import type { NextConfig } from "next";
 
 const cspDirectives = [
   "default-src 'self'",
-  // Скрипты:
-  // Яндекс.Метрика: mc.yandex.ru + mc.yandex.com + yastatic.net
-  // Google Maps: maps.googleapis.com + maps.gstatic.com
-  // Google Tag Manager / GA4: googletagmanager.com + google-analytics.com
-  // Untarget: cdn.untarget.ai
+  // Скрипты
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://mc.yandex.com https://yastatic.net https://www.googletagmanager.com https://www.google-analytics.com https://cdn.untarget.ai",
+  // Стили / шрифты
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
   "font-src 'self' data: https://fonts.gstatic.com",
+  // Картинки
   "img-src 'self' data: blob: https:",
-  // connect-src: все внешние fetch/XHR/WebSocket запросы
-  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://mc.yandex.com https://yandex.ru https://www.google-analytics.com https://www.googletagmanager.com https://region.metrica.yandex.com https://cdn.untarget.ai wss://mc.yandex.com wss://mc.yandex.ru",
+  // Внешние запросы / fetch / XHR / websocket
+  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://mc.yandex.com https://yandex.ru https://www.yandex.ru https://region.metrica.yandex.com https://www.google-analytics.com https://www.googletagmanager.com https://cdn.untarget.ai https://functions.yandexcloud.net wss://mc.yandex.com wss://mc.yandex.ru",
+  // Воркеры / iframe
   "worker-src 'self' blob:",
-  "frame-src https://www.google.com https://www.googletagmanager.com",
+  "frame-src 'self' https://www.google.com https://www.googletagmanager.com",
   "frame-ancestors 'self'",
+  // База / формы / объекты
   "base-uri 'self'",
   "form-action 'self'",
+  "object-src 'none'",
 ].join("; ");
 
 const securityHeaders = [
@@ -30,11 +31,8 @@ const securityHeaders = [
   { key: "Content-Security-Policy", value: cspDirectives },
 ];
 
-// CORS — разрешаем только свой домен на публичных API
-const ALLOWED_ORIGINS = [
-  "https://vector-rf.ru",
-  "https://www.vector-rf.ru",
-];
+// CORS — только свой домен для публичных API в проде
+const ALLOWED_ORIGINS = ["https://vector-rf.ru", "https://www.vector-rf.ru"];
 
 const corsHeaders = (origin: string) => [
   { key: "Access-Control-Allow-Origin", value: origin },
@@ -50,17 +48,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   experimental: {
-    // Автоматически tree-shake пакеты — меньше bundle size
-    optimizePackageImports: [
-      "lucide-react",
-      "@prisma/client",
-      "bcryptjs",
-      "jose",
-    ],
+    optimizePackageImports: ["lucide-react", "@prisma/client", "bcryptjs", "jose"],
   },
 
   compiler: {
-    // Убираем console.log в продакшене
     removeConsole:
       process.env.NODE_ENV === "production"
         ? { exclude: ["error", "warn"] }
@@ -69,19 +60,19 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
-      // Security headers на всех маршрутах
+      // Security headers на все страницы
       {
         source: "/(.*)",
         headers: securityHeaders,
       },
-      // Кэш статических ассетов Next.js на 1 год (immutable)
+
+      // Статика Next.js — 1 год
       {
         source: "/_next/static/(.*)",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
-      // Кэш публичных файлов (иконки, og.jpg) на 7 дней
+
+      // Публичные изображения/иконки — 7 дней
       {
         source: "/(.*)\\.(png|jpg|jpeg|gif|ico|svg|webp|avif|woff2|woff)",
         headers: [
@@ -91,14 +82,14 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Кэш шрифтов через next/font — на 1 год
+
+      // Шрифты next/font — 1 год
       {
         source: "/_next/static/media/(.*)\\.woff2",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
-      // CORS на публичных API (в dev без проверки origin)
+
+      // CORS на публичные API
       ...(process.env.NODE_ENV === "production"
         ? ALLOWED_ORIGINS.map((origin) => ({
             source: "/api/(leads|reviews|distance|place)(.*)",
@@ -119,7 +110,7 @@ const nextConfig: NextConfig = {
 
   async redirects() {
     return [
-      // www → non-www (основной домен без www)
+      // www -> non-www
       {
         source: "/:path*",
         has: [{ type: "host", value: "www.vector-rf.ru" }],
@@ -134,7 +125,7 @@ const nextConfig: NextConfig = {
 
   images: {
     formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 дней
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     dangerouslyAllowSVG: false,
