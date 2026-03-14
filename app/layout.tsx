@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION ?? "",
     yandex: "2e7dc3a65216d356",
   },
-    openGraph: {
+  openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
@@ -157,7 +157,8 @@ export default function RootLayout({
           latitude: 56.3269,
           longitude: 44.0059,
         },
-        description: "Федеральный сервис заказа межгородских трансферов и такси. Диспетчеры работают из Нижнего Новгорода, поездки выполняются по всей России.",
+        description:
+          "Федеральный сервис заказа межгородских трансферов и такси. Диспетчеры работают из Нижнего Новгорода, поездки выполняются по всей России.",
         priceRange: "₽₽",
         openingHours: "Mo-Su 00:00-23:59",
         currenciesAccepted: "RUB",
@@ -177,22 +178,21 @@ export default function RootLayout({
           ],
         },
         sameAs: [
-          `https://t.me/vector_rf52`,
-          `https://yandex.ru/maps/org/187298057123`,
+          "https://t.me/vector_rf52",
+          "https://yandex.ru/maps/org/187298057123",
         ],
-
       },
       {
         "@type": "WebPage",
         "@id": `${SITE_URL}/#webpage`,
         url: SITE_URL,
         name: "Вектор РФ — трансферы и поездки по России",
-        description: "Сервис заказа межгородских трансферов и такси по России 24/7. Комфорт, бизнес, минивэн. Стоимость фиксируется до выезда.",
+        description:
+          "Сервис заказа межгородских трансферов и такси по России 24/7. Комфорт, бизнес, минивэн. Стоимость фиксируется до выезда.",
         inLanguage: "ru-RU",
         isPartOf: { "@id": `${SITE_URL}/#website` },
         about: { "@id": `${SITE_URL}/#service` },
       },
-
     ],
   };
 
@@ -200,6 +200,7 @@ export default function RootLayout({
     <html lang="ru">
       <head>
         <meta name="theme-color" content="#2563eb" />
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -228,17 +229,24 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://mc.yandex.ru" />
         <link rel="preconnect" href="https://mc.yandex.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://mc.yandex.com" />
+
         {/* Яндекс.Метрика preconnect */}
         <link rel="preconnect" href="https://mc.yandex.ru" crossOrigin="" />
         <link rel="dns-prefetch" href="https://mc.yandex.ru" />
         <link rel="dns-prefetch" href="https://mc.yandex.com" />
+
         {/* Google Tag Manager / GA4 */}
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
         {/* Google Maps — lazy, только DNS */}
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />
         <link rel="dns-prefetch" href="https://maps.gstatic.com" />
+
+        {/* Untarget */}
+        <link rel="preconnect" href="https://cdn.untarget.ai" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://cdn.untarget.ai" />
 
         <script
           type="application/ld+json"
@@ -246,11 +254,30 @@ export default function RootLayout({
             __html: JSON.stringify(schemaOrg),
           }}
         />
+
+        {/* Untarget init */}
+        <Script id="untarget-init" strategy="afterInteractive">
+          {`
+            (function(s,o){
+              s[o]=s[o]||function(){
+                (s[o].d=s[o].d||[]).push(arguments);
+              };
+            })(window,"UntargetJS");
+            UntargetJS('ts', 1*new Date());
+            UntargetJS('id', '5df10');
+          `}
+        </Script>
+
+        {/* Untarget loader */}
+        <Script
+          id="untarget-loader"
+          src="https://cdn.untarget.ai/untarget.min.o.js"
+          strategy="afterInteractive"
+          async
+        />
       </head>
 
       <body className="bg-[#eef4ff] text-slate-900">
-
-
         {/* Google Analytics GA4 */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
@@ -275,11 +302,27 @@ export default function RootLayout({
             m[i].l=1*new Date();
             for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
             k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-          })(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=106629239','ym');
-          ym(106629239,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:"dataLayer",referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
+          })(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=${YM_ID}','ym');
+          ym(${YM_ID},'init',{
+            ssr:true,
+            webvisor:true,
+            clickmap:true,
+            ecommerce:"dataLayer",
+            referrer:document.referrer,
+            url:location.href,
+            accurateTrackBounce:true,
+            trackLinks:true
+          });
         `}</Script>
+
         <noscript>
-          <div><img src="https://mc.yandex.ru/watch/106629239" style={{position:"absolute",left:"-9999px"}} alt="" /></div>
+          <div>
+            <img
+              src={`https://mc.yandex.ru/watch/${YM_ID}`}
+              style={{ position: "absolute", left: "-9999px" }}
+              alt=""
+            />
+          </div>
         </noscript>
       </body>
     </html>
