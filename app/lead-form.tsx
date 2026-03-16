@@ -73,6 +73,23 @@ const CITY_BASE_PRICE: Record<CarClass, number> = {
   minivan: 3500,
 };
 
+const NEW_TERRITORIES_PER_KM: Record<CarClass, number> = {
+  standard: 80,
+  comfort: 80,
+  business: 80,
+  minivan: 100,
+};
+
+function calcDistancePrice(klass: CarClass, totalKm: number, newTerritoriesKm: number) {
+  const safeTotalKm = Math.max(0, totalKm || 0);
+  const safeNewTerritoriesKm = Math.min(safeTotalKm, Math.max(0, newTerritoriesKm || 0));
+  const regularKm = Math.max(0, safeTotalKm - safeNewTerritoriesKm);
+
+  return Math.round(
+    safeNewTerritoriesKm * NEW_TERRITORIES_PER_KM[klass] + regularKm * PER_KM[klass]
+  );
+}
+
 function looksLikeAirport(s: string) {
   const v = normalize(s);
   if (!v) return false;
@@ -303,6 +320,7 @@ export default function LeadForm({
   const [error, setError] = useState<string | null>(null);
   const [km, setKm] = useState<number | null>(null);
   const [travelSeconds, setTravelSeconds] = useState<number | null>(null);
+  const [newTerritoriesKm, setNewTerritoriesKm] = useState<number>(0);
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
 
@@ -313,7 +331,7 @@ export default function LeadForm({
       if (routeType === "city") return CITY_BASE_PRICE[klass];
       if (!km) return null;
 
-      let total = Math.round(km * PER_KM[klass]);
+      let total = calcDistancePrice(klass, km, newTerritoriesKm);
 
       if (routeType === "airport") total = Math.round(total * 1.1);
       if (roundTrip) total *= 2;
@@ -327,7 +345,7 @@ export default function LeadForm({
       business: calcFor("business"),
       minivan: calcFor("minivan"),
     };
-  }, [routeType, km, roundTrip]);
+  }, [routeType, km, newTerritoriesKm, roundTrip]);
 
   const finalPrice = pricesByClass[carClass];
 
@@ -395,6 +413,7 @@ export default function LeadForm({
     return {
       km: Number(data.km) || null,
       seconds: Number(data.seconds) || null,
+      newTerritoriesKm: Number(data.newTerritoriesKm) || 0,
     };
   }
 
@@ -409,6 +428,8 @@ export default function LeadForm({
       setCalcError("Введите точки маршрута");
       setKm(null);
       setTravelSeconds(null);
+      setNewTerritoriesKm(0);
+      setNewTerritoriesKm(0);
       return;
     }
 
@@ -429,6 +450,7 @@ export default function LeadForm({
       const data = await requestDistance(from, to, { fromPlaceId, toPlaceId });
       setKm(data.km);
       setTravelSeconds(data.seconds);
+      setNewTerritoriesKm(data.newTerritoriesKm);
     } catch (e: unknown) {
       setKm(null);
       setTravelSeconds(null);
@@ -480,12 +502,14 @@ export default function LeadForm({
 
         setKm(data.km);
         setTravelSeconds(data.seconds);
+        setNewTerritoriesKm(data.newTerritoriesKm);
       } catch (e: unknown) {
         if (cancelled) return;
         if (e instanceof Error && e.name === "AbortError") return;
 
         setKm(null);
         setTravelSeconds(null);
+        setNewTerritoriesKm(0);
         setCalcError(e instanceof Error ? e.message : "Не удалось рассчитать расстояние");
       } finally {
         if (!cancelled) setCalcLoading(false);

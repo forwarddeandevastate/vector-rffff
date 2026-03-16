@@ -10,7 +10,7 @@ type ReqBody = {
 };
 
 type Coords = { lat: number; lon: number };
-type DistanceResult = { km: number; seconds: number; source: "google" | "osrm" };
+type DistanceResult = { km: number; seconds: number; source: "google" | "osrm"; newTerritoriesKm?: number };
 type CacheEntry<T> = { value: T; expiresAt: number };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -43,6 +43,119 @@ const geoCache = new Map<string, CacheEntry<Coords>>();
 const routeCache = new Map<string, CacheEntry<DistanceResult>>();
 const inflightGeocode = new Map<string, Promise<Coords | null>>();
 const inflightRoute = new Map<string, Promise<DistanceResult | null>>();
+
+
+type LonLat = [number, number];
+
+const NEW_TERRITORIES_POLYGONS: LonLat[][] = [
+  [
+    [36.55, 48.65],
+    [40.55, 48.65],
+    [40.55, 46.45],
+    [39.2, 46.45],
+    [38.1, 46.55],
+    [37.1, 47.0],
+    [36.55, 47.7],
+  ],
+  [
+    [37.4, 49.95],
+    [40.2, 49.95],
+    [40.2, 47.8],
+    [39.55, 47.8],
+    [38.4, 48.15],
+    [37.7, 48.65],
+    [37.4, 49.25],
+  ],
+  [
+    [34.2, 47.9],
+    [37.35, 47.9],
+    [37.35, 45.85],
+    [35.25, 45.85],
+    [34.65, 46.35],
+    [34.2, 47.15],
+  ],
+  [
+    [32.1, 47.15],
+    [35.15, 47.15],
+    [35.15, 45.15],
+    [33.0, 45.15],
+    [32.1, 45.55],
+  ],
+];
+
+function pointInPolygon(point: LonLat, polygon: LonLat[]) {
+  const [x, y] = point;
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [xi, yi] = polygon[i];
+    const [xj, yj] = polygon[j];
+
+    const intersect =
+      yi > y !== yj > y &&
+      x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi;
+
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+function isInNewTerritories(lon: number, lat: number) {
+  return NEW_TERRITORIES_POLYGONS.some((polygon) => pointInPolygon([lon, lat], polygon));
+}
+
+function haversineKm(aLon: number, aLat: number, bLon: number, bLat: number) {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(bLat - aLat);
+  const dLon = toRad(bLon - aLon);
+  const lat1 = toRad(aLat);
+  const lat2 = toRad(bLat);
+
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+async function estimateNewTerritoriesKmOSRM(from: string, to: string): Promise<number> {
+  const [a, b] = await Promise.all([geocodeNominatim(from), geocodeNominatim(to)]);
+  if (!a || !b) return 0;
+
+  const url =
+    `https://router.project-osrm.org/route/v1/driving/` +
+    `${a.lon},${a.lat};${b.lon},${b.lat}?overview=full&geometries=geojson`;
+
+  const data = (await fetchJson(url, {
+    headers: { "User-Agent": UA },
+    next: { revalidate: 60 * 60 * 12 },
+  })) as {
+    routes?: Array<{ geometry?: { coordinates?: Array<[number, number]> } }>;
+  } | null;
+
+  const coords = data?.routes?.[0]?.geometry?.coordinates;
+  if (!coords || coords.length < 2) return 0;
+
+  let total = 0;
+
+  for (let i = 1; i < coords.length; i++) {
+    const [lon1, lat1] = coords[i - 1];
+    const [lon2, lat2] = coords[i];
+
+    if (![lon1, lat1, lon2, lat2].every(Number.isFinite)) continue;
+
+    const midLon = (lon1 + lon2) / 2;
+    const midLat = (lat1 + lat2) / 2;
+
+    if (isInNewTerritories(midLon, midLat)) {
+      total += haversineKm(lon1, lat1, lon2, lat2);
+    }
+  }
+
+  return total;
+}
 
 function now() {
   return Date.now();
@@ -254,9 +367,17 @@ async function getDistance(body: ReqBody) {
   if (!from || !to) return null;
 
   const google = await routeKmSecondsGoogle(body);
-  if (google) return google;
+  const distance = google ?? (await routeKmSecondsOSRM(from, to));
+  if (!distance) return null;
 
-  return routeKmSecondsOSRM(from, to);
+  try {
+    const newTerritoriesKm = await estimateNewTerritoriesKmOSRM(from, to);
+    distance.newTerritoriesKm = Math.min(distance.km, Math.max(0, newTerritoriesKm));
+  } catch {
+    distance.newTerritoriesKm = 0;
+  }
+
+  return distance;
 }
 
 async function handleDistance(body: ReqBody) {
@@ -279,6 +400,7 @@ async function handleDistance(body: ReqBody) {
       km: Math.round(distance.km),
       seconds: Math.max(0, Math.round(distance.seconds)),
       source: distance.source,
+      newTerritoriesKm: Math.max(0, Math.round(distance.newTerritoriesKm ?? 0)),
     },
     distance.source === "google" ? 12 * 60 * 60 : 60 * 60
   );
