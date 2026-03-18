@@ -144,7 +144,7 @@ export default function RootLayout({
         alternateName: "Вектор РФ трансферы",
         url: SITE_URL,
         telephone: PHONE_E164,
-        email: "info@vector-rf.ru",
+        email: "lisov.enduro@yandex.ru",
         address: {
           "@type": "PostalAddress",
           addressCountry: "RU",

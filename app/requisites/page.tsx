@@ -16,9 +16,9 @@ const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/requisites`;
 
 export const metadata: Metadata = {
-  title: "Реквизиты компании Вектор РФ — ИНН, ОГРН, адрес",
+  title: "Реквизиты ИП Нартов — ИНН 526320552640, ОГРН 326237500025657",
   description:
-    "Реквизиты компании «Вектор РФ»: полное наименование, ИНН, ОГРН, юридический и фактический адрес, банковские реквизиты и контактная информация.",
+    "Реквизиты Вектор РФ: ИП Нартов Алексей Алексеевич, ИНН 526320552640, ОГРН 326237500025657. Режим работы — круглосуточно 24/7.",
   alternates: {
     canonical: "/requisites",
   },
@@ -63,16 +63,16 @@ export default async function RequisitesPage() {
 
   const phone = settings?.phone?.trim() || "8 (800) 222-56-50";
   const telegram = settings?.telegram?.trim() || "https://t.me/vector_rf52";
-  const email = settings?.email?.trim() || "Уточняйте у менеджера";
+  const email = settings?.email?.trim() || "lisov.enduro@yandex.ru";
 
   const rows = [
-    row("Наименование", settings?.companyName || settings?.brandName || "Вектор РФ"),
-    row("ИНН", settings?.inn),
-    row("ОГРН", settings?.ogrn),
+    row("Наименование", settings?.companyName || settings?.brandName || "ИП Нартов Алексей Алексеевич"),
+    row("ИНН", settings?.inn || "526320552640"),
+    row("ОГРН", settings?.ogrn || "326237500025657"),
     row("Адрес", settings?.address),
     row("Телефон", phone),
     row("Email", email),
-    row("Режим работы", settings?.workHours),
+    row("Режим работы", settings?.workHours || "Круглосуточно, 24/7"),
     row("Дополнительно", settings?.notes),
   ];
 

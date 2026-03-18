@@ -26,12 +26,21 @@ export async function GET() {
 }
 
 export async function POST() {
-  const data = await tg("setWebhook", {
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
+
+  const body: Record<string, any> = {
     url: WEBHOOK_URL,
     allowed_updates: ["callback_query", "message"],
     drop_pending_updates: true,
-  });
+  };
 
+  // Передаём secret_token — Telegram будет слать его в заголовке
+  // x-telegram-bot-api-secret-token, а наш webhook его проверяет
+  if (secret) {
+    body.secret_token = secret;
+  }
+
+  const data = await tg("setWebhook", body);
   return NextResponse.json(data);
 }
 

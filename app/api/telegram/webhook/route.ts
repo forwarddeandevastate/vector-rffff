@@ -18,14 +18,17 @@ function env(name: string) {
 
 function isValidSecret(req: Request) {
   const expected = env("TELEGRAM_WEBHOOK_SECRET");
-  // Секрет обязателен в продакшне — без него отклоняем запрос
+
+  // Если секрет не задан — пропускаем запросы (менее безопасно, но webhook работает)
+  // Для полной защиты задайте TELEGRAM_WEBHOOK_SECRET в Vercel env и
+  // перерегистрируйте webhook через /api/admin/telegram/webhook (POST)
   if (!expected) {
     if (process.env.NODE_ENV === "production") {
-      console.warn("[telegram-webhook] TELEGRAM_WEBHOOK_SECRET не задан — все запросы отклонены");
-      return false;
+      console.warn("[telegram-webhook] TELEGRAM_WEBHOOK_SECRET не задан — webhook работает без проверки секрета");
     }
-    return true; // в dev пропускаем
+    return true;
   }
+
   const got = req.headers.get("x-telegram-bot-api-secret-token");
   return !!got && got === expected;
 }
@@ -85,11 +88,18 @@ export async function GET() {
 
 export async function POST(req: Request) {
   if (!isValidSecret(req)) {
+    console.warn("[telegram-webhook] Rejected: bad secret token");
     return NextResponse.json({ ok: false, error: "bad secret" }, { status: 401 });
   }
 
   const update = await req.json().catch(() => null);
   if (!update) return NextResponse.json({ ok: true });
+
+  // Диагностика: логируем тип входящего обновления
+  const updateType = update.callback_query ? "callback_query"
+    : update.message ? "message"
+    : "unknown";
+  console.log(`[telegram-webhook] update type=${updateType} keys=${Object.keys(update).join(",")}`);
 
   // ===== 1) Inline кнопки =====
   if (update.callback_query) {

@@ -90,23 +90,54 @@ function calcDistancePrice(klass: CarClass, totalKm: number, newTerritoriesKm: n
   );
 }
 
+// Аэропорты Москвы (+1000₽ за посадку)
+const MOSCOW_AIRPORTS = [
+  "шереметьево", "шерем",
+  "домодедово", "домод",
+  "внуково", "внук",
+  "жуковский", "раменское",
+];
+
+// Аэропорты Санкт-Петербурга (+1000₽ за посадку)
+const SPB_AIRPORTS = [
+  "пулково",
+];
+
 function looksLikeAirport(s: string) {
   const v = normalize(s);
   if (!v) return false;
   if (v.includes("аэроп")) return true;
 
   return [
-    "шереметьево",
-    "домодедово",
-    "внуково",
+    "шереметьево", "шерем",
+    "домодедово", "домод",
+    "внуково", "внук",
+    "жуковский",
     "пулково",
     "храброво",
-    "кольцово",
-    "толмач",
+    "кольцово", "толмач",
     "курумоч",
     "пашков",
     "аэропорт",
+    "раменское",
   ].some((t) => v.includes(t));
+}
+
+// Возвращает доплату за посадку в аэропорту
+// Москва/СПб: +1000₽, остальные: +600₽, не аэропорт: 0
+function airportSurcharge(from: string, to: string): number {
+  const a = normalize(from);
+  const b = normalize(to);
+  const isAirport = looksLikeAirport(from) || looksLikeAirport(to);
+  if (!isAirport) return 0;
+
+  const isMoscowAirport =
+    MOSCOW_AIRPORTS.some((t) => a.includes(t) || b.includes(t));
+  const isSpbAirport =
+    SPB_AIRPORTS.some((t) => a.includes(t) || b.includes(t));
+
+  if (isMoscowAirport || isSpbAirport) return 1000;
+  return 600;
 }
 
 function sameCity(a: string, b: string) {
@@ -326,6 +357,13 @@ export default function LeadForm({
 
   const canSubmit = Boolean(name.trim() && phone.trim() && fromText.trim() && toText.trim());
 
+  // Фиксированная доплата за посадку в аэропорту
+  // Москва/СПб: +1000₽, остальные: +600₽
+  const airportFee = useMemo(() => {
+    if (routeType !== "airport") return 0;
+    return airportSurcharge(fromText, toText);
+  }, [routeType, fromText, toText]);
+
   const pricesByClass = useMemo(() => {
     const calcFor = (klass: CarClass) => {
       if (routeType === "city") return CITY_BASE_PRICE[klass];
@@ -333,7 +371,8 @@ export default function LeadForm({
 
       let total = calcDistancePrice(klass, km, newTerritoriesKm);
 
-      if (routeType === "airport") total = Math.round(total * 1.1);
+      // Доплата за аэропорт: фиксированная посадочная
+      if (routeType === "airport") total += airportFee;
       if (roundTrip) total *= 2;
 
       return total;
@@ -345,7 +384,7 @@ export default function LeadForm({
       business: calcFor("business"),
       minivan: calcFor("minivan"),
     };
-  }, [routeType, km, newTerritoriesKm, roundTrip]);
+  }, [routeType, km, newTerritoriesKm, roundTrip, airportFee]);
 
   const finalPrice = pricesByClass[carClass];
 
