@@ -63,7 +63,7 @@ export default async function RequisitesPage() {
 
   const phone = settings?.phone?.trim() || "8 (800) 222-56-50";
   const telegram = settings?.telegram?.trim() || "https://t.me/vector_rf52";
-  const email = settings?.email?.trim() || "lisov.enduro@yandex.ru";
+  const email = settings?.email?.trim() || "info@vector-rf.ru";
 
   const rows = [
     row("Наименование", settings?.companyName || settings?.brandName || "ИП Нартов Алексей Алексеевич"),

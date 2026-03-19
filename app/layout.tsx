@@ -97,6 +97,10 @@ export default function RootLayout({
         "@type": "Organization",
         "@id": `${SITE_URL}/#organization`,
         name: SITE_NAME,
+        legalName: "ИП Нартов Алексей Алексеевич",
+        taxID: "526320552640",
+        foundingDate: "2024",
+        description: "Федеральный сервис заказа межгородских трансферов и такси по России. Диспетчеры работают круглосуточно 24/7.",
         url: SITE_URL,
         logo: `${SITE_URL}/logo.png`,
         contactPoint: [
@@ -105,6 +109,13 @@ export default function RootLayout({
             telephone: PHONE_E164,
             contactType: "customer service",
             availableLanguage: ["Russian"],
+            contactOption: "TollFree",
+            hoursAvailable: {
+              "@type": "OpeningHoursSpecification",
+              dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+              opens: "00:00",
+              closes: "23:59",
+            },
           },
         ],
       },
@@ -144,21 +155,14 @@ export default function RootLayout({
         alternateName: "Вектор РФ трансферы",
         url: SITE_URL,
         telephone: PHONE_E164,
-        email: "lisov.enduro@yandex.ru",
+        email: "info@vector-rf.ru",
         address: {
           "@type": "PostalAddress",
           addressCountry: "RU",
           addressRegion: "Нижегородская область",
           addressLocality: "Нижний Новгород",
         },
-        // Координаты головного офиса (Нижний Новгород) — федеральный сервис по всей России
-        geo: {
-          "@type": "GeoCoordinates",
-          latitude: 56.3269,
-          longitude: 44.0059,
-        },
-        description:
-          "Федеральный сервис заказа межгородских трансферов и такси. Диспетчеры работают из Нижнего Новгорода, поездки выполняются по всей России.",
+        description: "Федеральный сервис заказа межгородских трансферов и такси по России. Диспетчеры работают круглосуточно 24/7.", поездки выполняются по всей России.",
         priceRange: "₽₽",
         openingHours: "Mo-Su 00:00-23:59",
         currenciesAccepted: "RUB",
@@ -230,10 +234,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://mc.yandex.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://mc.yandex.com" />
 
-        {/* Яндекс.Метрика preconnect */}
-        <link rel="preconnect" href="https://mc.yandex.ru" crossOrigin="" />
-        <link rel="dns-prefetch" href="https://mc.yandex.ru" />
-        <link rel="dns-prefetch" href="https://mc.yandex.com" />
 
         {/* Google Tag Manager / GA4 */}
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
@@ -244,10 +244,6 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://maps.googleapis.com" />
         <link rel="dns-prefetch" href="https://maps.gstatic.com" />
 
-        {/* Untarget */}
-        <link rel="preconnect" href="https://cdn.untarget.ai" crossOrigin="" />
-        <link rel="dns-prefetch" href="https://cdn.untarget.ai" />
-
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -255,26 +251,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* Untarget init */}
-        <Script id="untarget-init" strategy="afterInteractive">
-          {`
-            (function(s,o){
-              s[o]=s[o]||function(){
-                (s[o].d=s[o].d||[]).push(arguments);
-              };
-            })(window,"UntargetJS");
-            UntargetJS('ts', 1*new Date());
-            UntargetJS('id', '5df10');
-          `}
-        </Script>
-
-        {/* Untarget loader */}
-        <Script
-          id="untarget-loader"
-          src="https://cdn.untarget.ai/untarget.min.o.js"
-          strategy="afterInteractive"
-          async
-        />
       </head>
 
       <body className="bg-[#eef4ff] text-slate-900">

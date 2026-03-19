@@ -3,14 +3,14 @@ import type { NextConfig } from "next";
 const cspDirectives = [
   "default-src 'self'",
   // Скрипты
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://mc.yandex.com https://yastatic.net https://www.googletagmanager.com https://www.google-analytics.com https://cdn.untarget.ai",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com https://mc.yandex.ru https://mc.yandex.com https://yastatic.net https://www.googletagmanager.com https://www.google-analytics.com",
   // Стили / шрифты
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   // Картинки
   "img-src 'self' data: blob: https:",
   // Внешние запросы / fetch / XHR / websocket
-  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://mc.yandex.com https://yandex.ru https://www.yandex.ru https://region.metrica.yandex.com https://www.google-analytics.com https://www.googletagmanager.com https://cdn.untarget.ai https://functions.yandexcloud.net wss://mc.yandex.com wss://mc.yandex.ru",
+  "connect-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://api.telegram.org https://mc.yandex.ru https://mc.yandex.com https://yandex.ru https://www.yandex.ru https://region.metrica.yandex.com https://www.google-analytics.com https://www.googletagmanager.com https://functions.yandexcloud.net wss://mc.yandex.com wss://mc.yandex.ru",
   // Воркеры / iframe
   "worker-src 'self' blob:",
   "frame-src 'self' https://www.google.com https://www.googletagmanager.com",

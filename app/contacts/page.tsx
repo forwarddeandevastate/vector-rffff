@@ -34,6 +34,7 @@ export default function ContactsPage() {
   const contacts = [
     { type: "Телефон", value: PHONE_DISPLAY, href: `tel:${PHONE_TEL}`, icon: <IconPhone className="h-5 w-5 text-blue-500" />, desc: "Звоните 24/7" },
     { type: "Telegram", value: "@vector_rf52", href: TELEGRAM, ext: true, icon: <IconTelegram className="h-5 w-5 text-blue-500" />, desc: "Напишите в мессенджер" },
+    { type: "Email", value: "info@vector-rf.ru", href: "mailto:info@vector-rf.ru", icon: <IconPhone className="h-5 w-5 text-blue-500" />, desc: "Для деловых вопросов" },
     { type: "Заявка на сайте", value: "Перейти к форме", href: "/", desc: "Форма на главной" },
   ];
 

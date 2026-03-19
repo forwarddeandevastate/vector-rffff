@@ -8,24 +8,7 @@ const PAGE_URL = `${SITE_URL}/about`;
 
 export const metadata: Metadata = {
   title: "О сервисе — трансферы и поездки по России",
-  description: "«Вектор РФ» — сервис трансферов и поездок по России. Заказать такси межгород, трансфер в аэропорт или корпоративную поездку онлайн 24/7.",
-  alternates: { canonical: "/about" },
-  robots: { index: true, follow: true },
-  openGraph: { type: "website", url: PAGE_URL, title: "О компании Вектор РФ", description: "Сервис поездок и трансферов по России.", siteName: "Вектор РФ", locale: "ru_RU", images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "О компании Вектор РФ" }] },
-  twitter: { card: "summary_large_image", title: "О компании Вектор РФ", description: "Сервис поездок и трансферов по России.", images: ["/og.jpg"] },
-};
-
-export default function AboutPage() {
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org", "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "О сервисе — трансферы и поездки по России", item: PAGE_URL },
-    ],
-  };
-
-  return (
-    <>
+  description: "«Вектор РФ» — сервис заказа межгородских трансферов и такси по России. Работаем с 2024 года. Зарегистрированы как ИП Нартов Алексей Алексеевич (ИНН 526320552640, ОГРН 326237500025657). Диспетчеры принимают заявки круглосуточно 24/7.<>
       <Script id="ld-about-breadcrumbs" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <PageShell>
         <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
