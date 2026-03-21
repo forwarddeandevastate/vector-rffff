@@ -305,6 +305,9 @@ export function buildRouteSeoData({
   const subtitlePool = VARIANT_SUBTITLES[variantKey] ?? SUBTITLE_VARIANTS;
   const subtitle = pick(subtitlePool, hash, 7);
 
+  // Уникальный контент для топ-маршрутов — подставляем вместо шаблонного intro
+  const priorityContent = getPriorityRouteContent(fromSlug, toSlug);
+
   const routeFacts = [
     `Формат поездки: ${metrics.routeLengthLabel}`,
     `Планирование маршрута: ${metrics.planningLabel}`,
@@ -322,9 +325,6 @@ export function buildRouteSeoData({
   ];
 
   const variantLead = pick(VARIANT_INTRO_LEADS[variantKey] ?? VARIANT_INTRO_LEADS.main, hash, 12);
-
-  // Уникальный контент для топ-маршрутов — подставляем вместо шаблонного intro
-  const priorityContent = getPriorityRouteContent(fromSlug, toSlug);
 
   const contentParagraphs = [
   // Первый параграф: уникальный для топ-маршрута или шаблонный
