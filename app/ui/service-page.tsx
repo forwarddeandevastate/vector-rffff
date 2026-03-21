@@ -4,7 +4,6 @@
  * Форма — отдельный lazy client-компонент.
  */
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {
   PageBackground, Header, Footer,
   GlassPanel, Tag, SectionHeading, Breadcrumb,
@@ -13,25 +12,7 @@ import {
 } from "@/app/ui/shared";
 import { CORE_SERVICE_LINKS, POPULAR_ROUTE_LINKS } from "@/lib/internal-links";
 
-// Форма — единственный client-компонент на странице
-const ServiceFormClient = dynamic(() => import("./service-form-client"), {
-  ssr: false,
-  loading: () => (
-    <div className="rounded-2xl border border-blue-100/60 bg-white/80 p-5">
-      <div className="text-sm font-bold text-slate-800 mb-2">Оставить заявку</div>
-      <div className="grid gap-2">
-        <a href={`tel:${PHONE_TEL}`}
-          className="btn-primary inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm">
-          Позвонить
-        </a>
-        <a href={TELEGRAM} target="_blank" rel="noreferrer"
-          className="btn-ghost inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm">
-          Telegram
-        </a>
-      </div>
-    </div>
-  ),
-});
+import ServiceFormClient from "./service-form-client";
 
 type BreadcrumbItem = { name: string; href: string };
 type FAQItem = { q: string; a: string };

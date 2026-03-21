@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import dynamic from "next/dynamic";
 import {
   PageBackground, Header, Footer,
   GlassPanel, Tag, SectionHeading,
@@ -9,18 +8,11 @@ import {
   PHONE_DISPLAY, PHONE_TEL, TELEGRAM,
 } from "@/app/ui/shared";
 import {
+import ServiceFormClient from "@/app/ui/service-form-client";
   POPULAR_ROUTE_LINKS, CORE_SERVICE_LINKS, BLOG_COMMERCIAL_LINKS,
 } from "@/lib/internal-links";
 
-const ServiceFormClient = dynamic(() => import("@/app/ui/service-form-client"), {
-  ssr: false,
-  loading: () => (
-    <div className="rounded-2xl border border-blue-100/60 bg-white/80 p-5 space-y-2">
-      <div className="h-4 w-32 bg-blue-50 rounded animate-pulse" />
-      <div className="h-10 bg-blue-50 rounded-xl animate-pulse" />
-    </div>
-  ),
-});
+
 
 const SITE_URL = "https://vector-rf.ru";
 const PAGE_URL = `${SITE_URL}/taxi-mezhgorod`;
