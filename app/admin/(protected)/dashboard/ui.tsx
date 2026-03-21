@@ -117,7 +117,7 @@ export default function DashboardClient() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard label="Всего лидов" value={stats?.total ?? "—"} sub="за всё время" />
         <StatCard label="Сегодня" value={stats?.today ?? "—"} sub="новых заявок" accent="sky" />
-        <StatCard label="За 7 дней" value={stats?.week ?? "—"} sub="новых заявок" accent="violet" />
+        <StatCard label="За 7 дней" value={stats?.week ?? "—"} sub="новых заявок" accent="amber" />
         <StatCard label="Конверсия" value={stats ? `${convRate}%` : "—"} sub="завершённых к общим" accent="emerald" />
       </div>
 
