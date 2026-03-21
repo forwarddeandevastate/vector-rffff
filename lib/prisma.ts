@@ -7,17 +7,18 @@ const globalForPrisma = globalThis as unknown as {
   pool?: Pool;
 };
 
-// создаём pg pool (один на всё приложение)
+// pg Pool — один на всё приложение
 const pool =
   globalForPrisma.pool ??
   new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 10,                // максимум 10 соединений (Vercel serverless)
+    max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
   });
 
-const adapter = new PrismaPg(pool);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const adapter = new PrismaPg(pool as any);
 
 export const prisma =
   globalForPrisma.prisma ??
@@ -26,7 +27,6 @@ export const prisma =
     log: ["error", "warn"],
   });
 
-// сохраняем в global в dev, чтобы не плодить коннекты
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
   globalForPrisma.pool = pool;
