@@ -109,6 +109,33 @@ export default function SettingsClient() {
     loadTg();
   }
 
+  async function openDebug() {
+    window.open("/api/telegram/debug", "_blank");
+  }
+
+  async function simulateButton() {
+    // Найдём последний лид из БД через быстрый fetch
+    const leadsRes = await fetch("/api/admin/leads?status=all&limit=1", { cache: "no-store" });
+    const leadsData = await leadsRes.json().catch(() => ({}));
+    const lastLead = leadsData?.leads?.[0];
+    const leadId = lastLead?.id ?? 1;
+
+    setTgLoading(true);
+    const res = await fetch("/api/telegram/debug", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ leadId, action: "in_progress" }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setTgLoading(false);
+
+    if (data.status === 200) {
+      toast.success(`Симуляция кнопки успешна`, `Лид #${leadId} → in_progress. Ответ: ${data.response}`);
+    } else {
+      toast.error("Симуляция не прошла", JSON.stringify(data));
+    }
+  }
+
   async function testButtons() {
     setTgLoading(true);
     const res = await fetch("/api/admin/telegram/buttons-test", { method: "POST" });
@@ -303,6 +330,12 @@ export default function SettingsClient() {
             </Btn>
             <Btn variant="ghost" onClick={testButtons} loading={tgLoading} size="sm">
               Тест кнопок
+            </Btn>
+            <Btn variant="ghost" onClick={simulateButton} loading={tgLoading} size="sm">
+              Симуляция нажатия
+            </Btn>
+            <Btn variant="ghost" onClick={openDebug} size="sm">
+              Диагностика JSON ↗
             </Btn>
             <Btn variant="danger" onClick={deleteTgWebhook} loading={tgLoading} size="sm">
               Удалить webhook

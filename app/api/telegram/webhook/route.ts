@@ -136,6 +136,10 @@ export async function POST(req: Request) {
 
       // ── Статусы: in_progress / done / new ───────────────────────────────
       if (["in_progress", "done", "new"].includes(action)) {
+        // ВАЖНО: отвечаем на callback_query ДО тяжёлых операций
+        // Иначе Vercel может таймаутить и кнопка зависнет
+        if (cqId) await answerCallbackQuery(cqId, "Готово ✅").catch(() => null);
+
         const updateData = action === "new"
           ? { status: action, priceIsManual: false }
           : { status: action };
@@ -161,17 +165,19 @@ export async function POST(req: Request) {
           });
 
           for (const mm of allMsgs) {
-            if (mm.chatId === chatId && mm.messageId === msgId) continue; // уже обновили
+            if (mm.chatId === chatId && mm.messageId === msgId) continue;
             await editTelegramMessage(mm.chatId, mm.messageId, msg, kb).catch(() => null);
           }
         }
 
-        if (cqId) await answerCallbackQuery(cqId, "Готово ✅");
         return NextResponse.json({ ok: true });
       }
 
       // ── Отмена (убрать из TG) ────────────────────────────────────────────
       if (action === "canceled") {
+        // Отвечаем сразу
+        if (cqId) await answerCallbackQuery(cqId, "Убрано ❌").catch(() => null);
+
         await prisma.lead.update({
           where: { id: leadId },
           data: { status: "canceled" },
@@ -188,7 +194,6 @@ export async function POST(req: Request) {
 
         await prisma.telegramMessage.deleteMany({ where: { kind: "lead", leadId } });
 
-        if (cqId) await answerCallbackQuery(cqId, "Убрано ❌");
         return NextResponse.json({ ok: true });
       }
 
