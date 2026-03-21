@@ -7,8 +7,8 @@ import {
   IconPhone, IconTelegram,
   PHONE_DISPLAY, PHONE_TEL, TELEGRAM,
 } from "@/app/ui/shared";
-import {
 import ServiceFormClient from "@/app/ui/service-form-client";
+import {
   POPULAR_ROUTE_LINKS, CORE_SERVICE_LINKS, BLOG_COMMERCIAL_LINKS,
 } from "@/lib/internal-links";
 
