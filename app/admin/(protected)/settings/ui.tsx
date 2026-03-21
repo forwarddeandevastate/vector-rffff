@@ -109,6 +109,52 @@ export default function SettingsClient() {
     loadTg();
   }
 
+  async function testButtons() {
+    setTgLoading(true);
+    const res = await fetch("/api/admin/telegram/buttons-test", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    setTgLoading(false);
+    if (!res.ok || !data.ok) {
+      toast.error("Ошибка", data?.error || "Не удалось отправить тест кнопок");
+      return;
+    }
+    toast.success("Тест кнопок отправлен", "Нажми кнопку в Telegram — если ответит, кнопки работают");
+  }
+
+  async function sendTestMessage() {
+    setTgLoading(true);
+    const res = await fetch("/api/admin/telegram/test", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    setTgLoading(false);
+    if (!res.ok || !data.ok) { toast.error("Ошибка отправки теста", JSON.stringify(data?.result || data?.error)); return; }
+    toast.success("Тестовое сообщение отправлено", "Проверьте Telegram-чат");
+  }
+
+  async function runDiagnostics() {
+    setTgLoading(true);
+    const res = await fetch("/api/admin/telegram/test");
+    const data = await res.json().catch(() => ({}));
+    setTgLoading(false);
+    if (data?.diag) {
+      setTg((prev) => ({
+        ...prev,
+        webhookInfo: data.diag.webhook ? {
+          url: data.diag.webhook.current_url === "(не установлен)" ? "" : data.diag.webhook.current_url,
+          pending_update_count: data.diag.webhook.pending_updates,
+          last_error_message: data.diag.webhook.last_error,
+          last_error_date: undefined,
+          allowed_updates: data.diag.webhook.allowed_updates,
+        } : undefined,
+        webhookUrlExpected: data.diag.webhook?.expected_url,
+        secretExpected: !!data.diag.env?.TELEGRAM_WEBHOOK_SECRET?.startsWith("✓"),
+      }));
+      // Показываем итог диагностики
+      const summary = data.diag.summary || "Диагностика завершена";
+      if (summary.includes("✅")) toast.success("Диагностика", summary);
+      else toast.error("Проблемы найдены", data.diag.webhook?.url_match_status || summary);
+    }
+  }
+
   async function deleteTgWebhook() {
     if (!window.confirm("Удалить webhook? Кнопки в Telegram перестанут работать.")) return;
     setTgLoading(true);
@@ -246,11 +292,20 @@ export default function SettingsClient() {
             <Btn variant="ghost" onClick={loadTg} loading={tgLoading} size="sm">
               Проверить
             </Btn>
+            <Btn variant="ghost" onClick={runDiagnostics} loading={tgLoading} size="sm">
+              Диагностика
+            </Btn>
             <Btn variant="primary" onClick={setTgWebhook} loading={tgLoading} size="sm">
               Установить webhook
             </Btn>
+            <Btn variant="success" onClick={sendTestMessage} loading={tgLoading} size="sm">
+              Тест сообщения
+            </Btn>
+            <Btn variant="ghost" onClick={testButtons} loading={tgLoading} size="sm">
+              Тест кнопок
+            </Btn>
             <Btn variant="danger" onClick={deleteTgWebhook} loading={tgLoading} size="sm">
-              Удалить
+              Удалить webhook
             </Btn>
           </div>
 

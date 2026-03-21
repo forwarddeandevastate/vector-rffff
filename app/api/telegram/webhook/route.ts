@@ -16,233 +16,243 @@ function env(name: string) {
   return v && v.trim() ? v.trim() : null;
 }
 
-function isValidSecret(req: Request) {
+/**
+ * Проверка секрета.
+ * ВАЖНО: если TELEGRAM_WEBHOOK_SECRET задан при установке webhook —
+ * он ДОЛЖЕН совпадать. Если не задан — пропускаем всё.
+ */
+function isValidSecret(req: Request): boolean {
   const expected = env("TELEGRAM_WEBHOOK_SECRET");
 
-  // Если секрет не задан — пропускаем запросы (менее безопасно, но webhook работает)
-  // Для полной защиты задайте TELEGRAM_WEBHOOK_SECRET в Vercel env и
-  // перерегистрируйте webhook через /api/admin/telegram/webhook (POST)
-  if (!expected) {
-    if (process.env.NODE_ENV === "production") {
-      console.warn("[telegram-webhook] TELEGRAM_WEBHOOK_SECRET не задан — webhook работает без проверки секрета");
-    }
-    return true;
+  // Секрет не задан — разрешаем всё
+  if (!expected) return true;
+
+  const got = req.headers.get("x-telegram-bot-api-secret-token") ?? "";
+
+  // Заголовок пришёл и совпадает — отлично
+  if (got && got === expected) return true;
+
+  // Заголовок НЕ пришёл — webhook мог быть установлен без secret_token
+  // Пропускаем с предупреждением (нужно переустановить webhook в настройках)
+  if (!got) {
+    console.warn("[tg-webhook] WARNING: TELEGRAM_WEBHOOK_SECRET задан, но заголовок не пришёл. " +
+      "Вероятно webhook установлен без secret_token. Переустановите webhook в Настройках админки.");
+    return true; // пропускаем чтобы кнопки работали
   }
 
-  const got = req.headers.get("x-telegram-bot-api-secret-token");
-  return !!got && got === expected;
+  // Заголовок пришёл но НЕ совпадает — отклоняем
+  console.error("[tg-webhook] REJECTED: secret mismatch. got=%s", got.slice(0, 8));
+  return false;
 }
 
 function parseMoney(text: string): number | null {
   const digits = (text || "").replace(/[^0-9]/g, "");
   if (!digits) return null;
   const n = Number(digits);
-  if (!Number.isFinite(n) || n < 0) return null;
-  return Math.round(n);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
 }
 
 async function getLead(leadId: number) {
   return prisma.lead.findUnique({
     where: { id: leadId },
     select: {
-      id: true,
-      name: true,
-      phone: true,
-      fromText: true,
-      toText: true,
-      datetime: true,
-      carClass: true,
-      roundTrip: true,
-      comment: true,
-      price: true,
-      priceIsManual: true, // ✅ добавили
-      commission: true,
-      status: true,
+      id: true, name: true, phone: true,
+      fromText: true, toText: true, datetime: true,
+      carClass: true, roundTrip: true, comment: true,
+      price: true, priceIsManual: true, commission: true, status: true,
     },
   });
 }
 
-function shortErr(e: any) {
-  const msg = String(e?.message || e || "error");
-  return msg.length > 120 ? msg.slice(0, 120) + "…" : msg;
-}
-
-async function setPendingInput(tgUserId: string, kind: "lead_price" | "lead_commission", leadId: number) {
-  await prisma.pendingInput.upsert({
-    where: { tgUserId },
-    update: { kind, entityId: String(leadId), createdAt: new Date() },
-    create: { tgUserId, kind, entityId: String(leadId) },
-  });
-}
-
-async function consumePendingInput(tgUserId: string) {
-  const pending = await prisma.pendingInput.findUnique({ where: { tgUserId } });
-  if (!pending) return null;
-  await prisma.pendingInput.delete({ where: { tgUserId } }).catch(() => null);
-  return pending;
-}
-
+// ── GET: Telegram проверяет webhook при установке ──────────────────────────
 export async function GET() {
   return NextResponse.json({ ok: true });
 }
 
+// ── POST: все входящие обновления от Telegram ──────────────────────────────
 export async function POST(req: Request) {
+
+  // 1. Проверка секрета
   if (!isValidSecret(req)) {
-    console.warn("[telegram-webhook] Rejected: bad secret token");
-    return NextResponse.json({ ok: false, error: "bad secret" }, { status: 401 });
+    console.error("[tg-webhook] REJECTED: bad secret token");
+    // Возвращаем 200 чтобы Telegram не повторял — но не обрабатываем
+    return NextResponse.json({ ok: true });
   }
 
-  const update = await req.json().catch(() => null);
-  if (!update) return NextResponse.json({ ok: true });
+  // 2. Парсим тело
+  let update: any;
+  try {
+    update = await req.json();
+  } catch {
+    console.error("[tg-webhook] Failed to parse JSON");
+    return NextResponse.json({ ok: true });
+  }
 
-  // Диагностика: логируем тип входящего обновления
-  const updateType = update.callback_query ? "callback_query"
-    : update.message ? "message"
-    : "unknown";
-  console.log(`[telegram-webhook] update type=${updateType} keys=${Object.keys(update).join(",")}`);
+  if (!update || typeof update !== "object") {
+    return NextResponse.json({ ok: true });
+  }
 
-  // ===== 1) Inline кнопки =====
+  // 3. Логируем ВСЁ входящее для диагностики
+  console.log("[tg-webhook] incoming:", JSON.stringify({
+    update_id: update.update_id,
+    type: update.callback_query ? "callback_query" : update.message ? "message" : "other",
+    callback_data: update.callback_query?.data,
+    message_text: update.message?.text?.slice(0, 50),
+  }));
+
+  // ── CALLBACK QUERY (нажатие кнопки) ─────────────────────────────────────
   if (update.callback_query) {
     const cq = update.callback_query;
-    const cqId: string | undefined = cq.id;
-    const data: string | undefined = cq.data;
-
+    const cqId: string = cq.id ?? "";
+    const cbData: string = cq.data ?? "";
     const tgUserId = String(cq?.from?.id ?? "");
     const chatId = String(cq?.message?.chat?.id ?? "");
     const msgId = Number(cq?.message?.message_id ?? 0);
 
+    console.log("[tg-webhook] callback_query: data=%s chatId=%s msgId=%d", cbData, chatId, msgId);
+
     try {
-      if (!data) {
-        if (cqId) await answerCallbackQuery(cqId, "Ок");
+      // Тестовая кнопка
+      if (cbData === "TEST:ping") {
+        if (cqId) await answerCallbackQuery(cqId, "Кнопки работают ✅");
         return NextResponse.json({ ok: true });
       }
 
-      const m = data.match(/^L:(\d+):([a-z_]+)$/i);
+      // Парсим формат L:{leadId}:{action}
+      const m = cbData.match(/^L:(\d+):([a-z_]+)$/i);
       if (!m) {
-        if (cqId) await answerCallbackQuery(cqId, "Не понял команду");
+        console.warn("[tg-webhook] Unknown callback_data: %s", cbData);
+        if (cqId) await answerCallbackQuery(cqId, "Неизвестная команда");
         return NextResponse.json({ ok: true });
       }
 
       const leadId = Number(m[1]);
       const action = String(m[2]);
 
-      if (!Number.isFinite(leadId)) {
-        if (cqId) await answerCallbackQuery(cqId, "Некорректный ID");
+      if (!Number.isFinite(leadId) || leadId <= 0) {
+        if (cqId) await answerCallbackQuery(cqId, "Некорректный ID лида");
         return NextResponse.json({ ok: true });
       }
 
-      // --- Статусы ---
-      if (action === "in_progress" || action === "done" || action === "new") {
-        // ✅ если возвращаем в NEW — логично снова считать цену авторасчётом (если она была ручной)
-        const dataToUpdate =
-          action === "new"
-            ? ({ status: action, priceIsManual: false } as const)
-            : ({ status: action } as const);
+      // ── Статусы: in_progress / done / new ───────────────────────────────
+      if (["in_progress", "done", "new"].includes(action)) {
+        const updateData = action === "new"
+          ? { status: action, priceIsManual: false }
+          : { status: action };
 
-        await prisma.lead.update({ where: { id: leadId }, data: dataToUpdate });
-
+        await prisma.lead.update({ where: { id: leadId }, data: updateData });
         const lead = await getLead(leadId);
 
-        // редактируем сообщение, где нажали
-        if (lead && chatId && msgId) {
-          await editTelegramMessage(chatId, msgId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
-        }
-
-        // и обновим везде, где есть маппинг
-        const msgs = await prisma.telegramMessage.findMany({
-          where: { kind: "lead", leadId },
-          select: { chatId: true, messageId: true },
-        });
-
         if (lead) {
-          for (const mm of msgs) {
-            await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(
-              () => null
+          const msg = leadMessage(lead);
+          const kb  = leadKeyboard(lead.id);
+
+          // Редактируем сообщение где нажали кнопку
+          if (chatId && msgId) {
+            await editTelegramMessage(chatId, msgId, msg, kb).catch((e: any) =>
+              console.error("[tg-webhook] editMessage error:", e?.message)
             );
+          }
+
+          // Обновляем во всех чатах где есть маппинг
+          const allMsgs = await prisma.telegramMessage.findMany({
+            where: { kind: "lead", leadId },
+            select: { chatId: true, messageId: true },
+          });
+
+          for (const mm of allMsgs) {
+            if (mm.chatId === chatId && mm.messageId === msgId) continue; // уже обновили
+            await editTelegramMessage(mm.chatId, mm.messageId, msg, kb).catch(() => null);
           }
         }
 
-        if (cqId) await answerCallbackQuery(cqId, "Готово");
+        if (cqId) await answerCallbackQuery(cqId, "Готово ✅");
         return NextResponse.json({ ok: true });
       }
 
-      // --- Отмена = убрать из Telegram (в БД оставить) ---
+      // ── Отмена (убрать из TG) ────────────────────────────────────────────
       if (action === "canceled") {
-        await prisma.lead.update({ where: { id: leadId }, data: { status: "canceled" } }).catch(() => null);
+        await prisma.lead.update({
+          where: { id: leadId },
+          data: { status: "canceled" },
+        }).catch(() => null);
 
-        const msgs = await prisma.telegramMessage.findMany({
+        const allMsgs = await prisma.telegramMessage.findMany({
           where: { kind: "lead", leadId },
           select: { chatId: true, messageId: true },
         });
 
-        for (const mm of msgs) {
+        for (const mm of allMsgs) {
           await deleteTelegramMessage(mm.chatId, mm.messageId).catch(() => null);
         }
 
         await prisma.telegramMessage.deleteMany({ where: { kind: "lead", leadId } });
 
-        if (cqId) await answerCallbackQuery(cqId, "Убрано");
+        if (cqId) await answerCallbackQuery(cqId, "Убрано ❌");
         return NextResponse.json({ ok: true });
       }
 
-      // --- Цена/Комиссия: просим число и НЕ оставляем служебные сообщения ---
-      const forceReply = {
-        force_reply: true,
-        input_field_placeholder: "Например: 40000",
-        selective: false,
-      };
-
-      if (action === "set_price") {
+      // ── Установить цену ──────────────────────────────────────────────────
+      if (action === "set_price" || action === "set_commission") {
         if (!tgUserId || !chatId) {
           if (cqId) await answerCallbackQuery(cqId, "Нет данных чата");
           return NextResponse.json({ ok: true });
         }
-        await setPendingInput(tgUserId, "lead_price", leadId);
 
-        await sendTelegramText(chatId, `Введите новую цену для заявки <b>#${leadId}</b> (только число).`, forceReply);
+        const kind = action === "set_price" ? "lead_price" : "lead_commission";
+        const label = action === "set_price" ? "цену" : "комиссию";
 
-        if (cqId) await answerCallbackQuery(cqId, "Жду цену");
+        await prisma.pendingInput.upsert({
+          where: { tgUserId },
+          update: { kind, entityId: String(leadId), createdAt: new Date() },
+          create: { tgUserId, kind, entityId: String(leadId) },
+        });
+
+        await sendTelegramText(
+          chatId,
+          `Введите ${label} для заявки <b>#${leadId}</b> (только цифры, например: 4500).`,
+          { force_reply: true, input_field_placeholder: "Например: 4500", selective: false }
+        );
+
+        if (cqId) await answerCallbackQuery(cqId, `Жду ${label}...`);
         return NextResponse.json({ ok: true });
       }
 
-      if (action === "set_commission") {
-        if (!tgUserId || !chatId) {
-          if (cqId) await answerCallbackQuery(cqId, "Нет данных чата");
-          return NextResponse.json({ ok: true });
-        }
-        await setPendingInput(tgUserId, "lead_commission", leadId);
-
-        await sendTelegramText(chatId, `Введите комиссию для заявки <b>#${leadId}</b> (только число).`, forceReply);
-
-        if (cqId) await answerCallbackQuery(cqId, "Жду комиссию");
-        return NextResponse.json({ ok: true });
-      }
-
+      // Неизвестное действие
+      console.warn("[tg-webhook] Unhandled action: %s", action);
       if (cqId) await answerCallbackQuery(cqId, "Неизвестное действие");
       return NextResponse.json({ ok: true });
+
     } catch (e: any) {
-      console.error("telegram webhook callback_query error:", e);
-      if (cqId) await answerCallbackQuery(cqId, `Ошибка: ${shortErr(e)}`).catch(() => null);
+      console.error("[tg-webhook] callback_query error:", e?.message ?? e);
+      if (cqId) {
+        await answerCallbackQuery(cqId, "Ошибка сервера").catch(() => null);
+      }
       return NextResponse.json({ ok: true });
     }
   }
 
-  // ===== 2) Сообщения (ввод суммы) =====
+  // ── TEXT MESSAGE (ввод суммы через force_reply) ──────────────────────────
   if (update.message) {
     const msg = update.message;
     const tgUserId = String(msg?.from?.id ?? "");
     const chatId = String(msg?.chat?.id ?? "");
-    const text: string = String(msg?.text ?? "").trim();
+    const text = String(msg?.text ?? "").trim();
+
+    console.log("[tg-webhook] message: tgUserId=%s text=%s", tgUserId, text.slice(0, 30));
 
     try {
       if (!tgUserId || !chatId) return NextResponse.json({ ok: true });
       if (text.startsWith("/")) return NextResponse.json({ ok: true });
 
-      const pending = await consumePendingInput(tgUserId);
+      const pending = await prisma.pendingInput.findUnique({ where: { tgUserId } });
       if (!pending) return NextResponse.json({ ok: true });
+
+      await prisma.pendingInput.delete({ where: { tgUserId } }).catch(() => null);
 
       const amount = parseMoney(text);
       if (amount === null) {
+        // Возвращаем ожидание
         await prisma.pendingInput.upsert({
           where: { tgUserId },
           update: { kind: pending.kind, entityId: pending.entityId, createdAt: new Date() },
@@ -254,45 +264,37 @@ export async function POST(req: Request) {
       const leadId = Number(pending.entityId);
       if (!Number.isFinite(leadId)) return NextResponse.json({ ok: true });
 
-      // ✅ обновляем БД
       if (pending.kind === "lead_price") {
-        // ВАЖНО: если поставили цену вручную — ставим флаг
-        await prisma.lead.update({
-          where: { id: leadId },
-          data: { price: amount, priceIsManual: true },
-        });
+        await prisma.lead.update({ where: { id: leadId }, data: { price: amount, priceIsManual: true } });
       } else if (pending.kind === "lead_commission") {
         await prisma.lead.update({ where: { id: leadId }, data: { commission: amount } });
       }
 
-      // обновляем карточки в TG (где они есть)
       const lead = await getLead(leadId);
       if (lead) {
-        const msgs = await prisma.telegramMessage.findMany({
+        const allMsgs = await prisma.telegramMessage.findMany({
           where: { kind: "lead", leadId },
           select: { chatId: true, messageId: true },
         });
-
-        for (const mm of msgs) {
-          await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(
-            () => null
-          );
+        for (const mm of allMsgs) {
+          await editTelegramMessage(mm.chatId, mm.messageId, leadMessage(lead), leadKeyboard(lead.id)).catch(() => null);
         }
       }
 
-      // ✅ чистим чат: удаляем сообщение пользователя + "Введите ..."
+      // Удаляем служебные сообщения
       const userMsgId = Number(msg?.message_id ?? 0);
-      const promptMsgId = Number(msg?.reply_to_message?.message_id ?? 0);
-
+      const replyMsgId = Number(msg?.reply_to_message?.message_id ?? 0);
       if (userMsgId) await deleteTelegramMessage(chatId, userMsgId).catch(() => null);
-      if (promptMsgId) await deleteTelegramMessage(chatId, promptMsgId).catch(() => null);
+      if (replyMsgId) await deleteTelegramMessage(chatId, replyMsgId).catch(() => null);
 
-      return NextResponse.json({ ok: true });
     } catch (e: any) {
-      console.error("telegram webhook message error:", e);
-      return NextResponse.json({ ok: true });
+      console.error("[tg-webhook] message error:", e?.message ?? e);
     }
+
+    return NextResponse.json({ ok: true });
   }
 
+  // Всё остальное игнорируем
+  console.log("[tg-webhook] ignored update type, keys:", Object.keys(update).join(","));
   return NextResponse.json({ ok: true });
 }

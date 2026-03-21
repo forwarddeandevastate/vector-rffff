@@ -25,12 +25,15 @@ export async function POST() {
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: "✅ Кнопка 1", callback_data: "TEST:1" }],
-        [{ text: "✅ Кнопка 2", callback_data: "TEST:2" }],
+        [{ text: "✅ Нажми меня (тест кнопок)", callback_data: "TEST:ping" }],
       ],
     };
 
-    const r = await sendTelegramText(chatId, "<b>Тест кнопок</b>\nЕсли видишь кнопки — всё ок ✅", keyboard);
+    const r = await sendTelegramText(
+      chatId,
+      "<b>Тест кнопок Вектор РФ</b>\n\nНажми кнопку ниже. Если получишь ответ — кнопки работают ✅\n\nЕсли нет — webhook не настроен или неверный секрет.",
+      keyboard
+    );
 
     return NextResponse.json({ ok: true, result: r });
   } catch (e: any) {
