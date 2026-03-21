@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useToast } from "../toast";
+import { Btn, Card, Badge, Field, Textarea, Input, SectionHeading, Empty, Spinner, cn } from "../ui-kit";
 
 type Review = {
   id: number;
@@ -11,47 +13,34 @@ type Review = {
   isPublic: boolean;
   createdAt: string;
   source: string | null;
-
-  // ✅ ответы из админки
   replyText?: string | null;
   replyAuthor?: string | null;
   repliedAt?: string | null;
 };
 
-function cn(...xs: Array<string | false | null | undefined>) {
-  return xs.filter(Boolean).join(" ");
+function Stars({ n }: { n: number }) {
+  const clamped = Math.max(1, Math.min(5, Math.round(n)));
+  return (
+    <span className="text-amber-400 tracking-tighter" aria-label={`${clamped} из 5`}>
+      {"★".repeat(clamped)}{"☆".repeat(5 - clamped)}
+    </span>
+  );
 }
 
-function stars(rating: number | null) {
-  const n = typeof rating === "number" && Number.isFinite(rating) ? Math.max(1, Math.min(5, Math.round(rating))) : 5;
-  return "★".repeat(n);
-}
-
-function fmtDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString("ru-RU");
-  } catch {
-    return iso;
-  }
-}
-
-function toStr(v: any) {
-  const s = String(v ?? "").trim();
-  return s.length ? s : null;
+function fmt(s: string) {
+  return new Date(s).toLocaleDateString("ru-RU", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 export default function ReviewsClient() {
+  const toast = useToast();
   const [items, setItems] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "pending" | "public">("pending");
+  const [filter, setFilter] = useState<"pending" | "public" | "all">("pending");
 
-  // локальные черновики ответа (чтобы не перетирать items на каждую букву)
-  const [draftReplyText, setDraftReplyText] = useState<Record<number, string>>({});
-  const [draftReplyAuthor, setDraftReplyAuthor] = useState<Record<number, string>>({});
-  const [savingId, setSavingId] = useState<number | null>(null);
+  const [drafts, setDrafts] = useState<Record<number, { text: string; author: string }>>({});
+  const [saving, setSaving] = useState<Record<number, boolean>>({});
 
-  const pendingCount = useMemo(() => items.filter((x) => !x.isPublic).length, [items]);
+  const pending = useMemo(() => items.filter((x) => !x.isPublic).length, [items]);
 
   const filtered = useMemo(() => {
     if (filter === "pending") return items.filter((x) => !x.isPublic);
@@ -59,328 +48,182 @@ export default function ReviewsClient() {
     return items;
   }, [items, filter]);
 
-  function ensureDraft(id: number, r: Review) {
-    // если черновика ещё нет — подставим текущие значения из базы
-    setDraftReplyText((prev) => {
-      if (Object.prototype.hasOwnProperty.call(prev, id)) return prev;
-      return { ...prev, [id]: r.replyText ?? "" };
-    });
-    setDraftReplyAuthor((prev) => {
-      if (Object.prototype.hasOwnProperty.call(prev, id)) return prev;
-      return { ...prev, [id]: r.replyAuthor ?? "" };
-    });
-  }
-
   async function load() {
     setLoading(true);
-    setErr(null);
+    const res = await fetch("/api/admin/reviews", { cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
+    if (data?.ok) setItems(data.reviews || []);
+    setLoading(false);
+  }
+
+  function getDraft(r: Review) {
+    return drafts[r.id] ?? { text: r.replyText ?? "", author: r.replyAuthor ?? "" };
+  }
+
+  function setDraft(id: number, key: "text" | "author", val: string) {
+    setDrafts((p) => ({ ...p, [id]: { ...getDraft(items.find((x) => x.id === id)!), [key]: val } }));
+  }
+
+  async function patchReview(id: number, body: any) {
+    const res = await fetch(`/api/admin/reviews/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка");
+    return data.review;
+  }
+
+  async function publish(r: Review) {
+    setSaving((p) => ({ ...p, [r.id]: true }));
     try {
-      const res = await fetch("/api/admin/reviews", { cache: "no-store" });
-      const data = await res.json().catch(() => ({}));
-
-      if (res.status === 401 || data?.error === "UNAUTHORIZED" || data?.error === "unauthorized") {
-        throw new Error("Сессия админа истекла. Перезайдите в админку.");
-      }
-
-      if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка загрузки");
-
-      const reviews: Review[] = Array.isArray(data.reviews) ? data.reviews : [];
-      setItems(reviews);
-
-      // ✅ после загрузки заполним черновики тем, что в базе (но не перезатрём уже набранное)
-      for (const r of reviews) ensureDraft(r.id, r);
-    } catch (e: any) {
-      setErr(e?.message || "Ошибка");
-    } finally {
-      setLoading(false);
-    }
+      await patchReview(r.id, { isPublic: true });
+      setItems((p) => p.map((x) => x.id === r.id ? { ...x, isPublic: true } : x));
+      toast.success("Отзыв опубликован");
+    } catch (e: any) { toast.error("Ошибка", e?.message); }
+    setSaving((p) => ({ ...p, [r.id]: false }));
   }
 
-  async function setPublic(id: number, isPublic: boolean) {
-    setErr(null);
-    const ok = confirm(isPublic ? "Одобрить отзыв и показать на сайте?" : "Скрыть отзыв с сайта?");
-    if (!ok) return;
-
+  async function unpublish(r: Review) {
+    setSaving((p) => ({ ...p, [r.id]: true }));
     try {
-      const res = await fetch(`/api/admin/reviews/${id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ isPublic }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (res.status === 401 || data?.error === "UNAUTHORIZED" || data?.error === "unauthorized") {
-        throw new Error("Сессия админа истекла. Перезайдите в админку.");
-      }
-
-      if (!res.ok || !data.ok) throw new Error(data?.error || "Не удалось сохранить");
-
-      setItems((prev) => prev.map((x) => (x.id === id ? { ...x, isPublic } : x)));
-    } catch (e: any) {
-      setErr(e?.message || "Ошибка");
-    }
+      await patchReview(r.id, { isPublic: false });
+      setItems((p) => p.map((x) => x.id === r.id ? { ...x, isPublic: false } : x));
+      toast.success("Отзыв скрыт");
+    } catch (e: any) { toast.error("Ошибка", e?.message); }
+    setSaving((p) => ({ ...p, [r.id]: false }));
   }
 
-  async function remove(id: number) {
-    setErr(null);
-    if (!confirm("Удалить отзыв? Это действие нельзя отменить.")) return;
-
+  async function saveReply(r: Review) {
+    const d = getDraft(r);
+    setSaving((p) => ({ ...p, [r.id]: true }));
     try {
-      const res = await fetch(`/api/admin/reviews/${id}`, { method: "DELETE" });
-      const data = await res.json().catch(() => ({}));
-
-      if (res.status === 401 || data?.error === "UNAUTHORIZED" || data?.error === "unauthorized") {
-        throw new Error("Сессия админа истекла. Перезайдите в админку.");
-      }
-
-      if (!res.ok || !data.ok) throw new Error(data?.error || "Не удалось удалить");
-
-      setItems((prev) => prev.filter((x) => x.id !== id));
-
-      // подчистим черновики
-      setDraftReplyText((prev) => {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      });
-      setDraftReplyAuthor((prev) => {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      });
-    } catch (e: any) {
-      setErr(e?.message || "Ошибка");
-    }
+      const updated = await patchReview(r.id, { replyText: d.text || null, replyAuthor: d.author || null });
+      setItems((p) => p.map((x) => x.id === r.id ? { ...x, ...updated } : x));
+      toast.success("Ответ сохранён");
+    } catch (e: any) { toast.error("Ошибка", e?.message); }
+    setSaving((p) => ({ ...p, [r.id]: false }));
   }
 
-  async function saveReply(id: number) {
-    setErr(null);
-
-    const r = items.find((x) => x.id === id);
-    if (!r) return;
-
-    const replyText = toStr(draftReplyText[id] ?? "");
-    const replyAuthor = toStr(draftReplyAuthor[id] ?? "");
-
-    setSavingId(id);
+  async function deleteReview(r: Review) {
+    if (!window.confirm(`Удалить отзыв от ${r.name}?`)) return;
+    setSaving((p) => ({ ...p, [r.id]: true }));
     try {
-      const res = await fetch(`/api/admin/reviews/${id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          // если replyText пустой — твой route.ts сам очистит reply*
-          replyText,
-          replyAuthor,
-        }),
-      });
-
+      const res = await fetch(`/api/admin/reviews/${r.id}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
-
-      if (res.status === 401 || data?.error === "UNAUTHORIZED" || data?.error === "unauthorized") {
-        throw new Error("Сессия админа истекла. Перезайдите в админку.");
-      }
-
-      if (!res.ok || !data.ok) throw new Error(data?.error || "Не удалось сохранить ответ");
-
-      const updated = data.review as {
-        replyText: string | null;
-        replyAuthor: string | null;
-        repliedAt: string | Date | null;
-      };
-
-      // локально обновим карточку (без полной перезагрузки)
-      setItems((prev) =>
-        prev.map((x) =>
-          x.id === id
-            ? {
-                ...x,
-                replyText: updated?.replyText ?? null,
-                replyAuthor: updated?.replyAuthor ?? null,
-                repliedAt: updated?.repliedAt ? String(updated.repliedAt) : null,
-              }
-            : x
-        )
-      );
-
-      // и черновики синхронизируем с тем, что в базе
-      setDraftReplyText((prev) => ({ ...prev, [id]: updated?.replyText ?? "" }));
-      setDraftReplyAuthor((prev) => ({ ...prev, [id]: updated?.replyAuthor ?? "" }));
-    } catch (e: any) {
-      setErr(e?.message || "Ошибка");
-    } finally {
-      setSavingId(null);
-    }
+      if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка");
+      setItems((p) => p.filter((x) => x.id !== r.id));
+      toast.success("Отзыв удалён");
+    } catch (e: any) { toast.error("Ошибка", e?.message); }
+    setSaving((p) => ({ ...p, [r.id]: false }));
   }
 
-  function clearReplyDraft(id: number) {
-    if (!confirm("Очистить ответ? (Удалится после сохранения)")) return;
-    setDraftReplyText((prev) => ({ ...prev, [id]: "" }));
-    setDraftReplyAuthor((prev) => ({ ...prev, [id]: "" }));
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-2xl font-extrabold tracking-tight text-zinc-900">Отзывы</div>
-          <div className="mt-1 text-sm text-zinc-600">
-            На сайте показываются только одобренные. В ожидании: <b>{pendingCount}</b>
-          </div>
-        </div>
+    <div>
+      <SectionHeading
+        title="Отзывы"
+        subtitle={pending > 0 ? `${pending} ожидают модерации` : "Все отзывы проверены"}
+        action={
+          <Btn variant="ghost" size="sm" onClick={load} loading={loading}>
+            {loading ? <Spinner className="h-4 w-4" /> : "↻"} Обновить
+          </Btn>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as any)}
-            className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-800"
-            aria-label="Фильтр отзывов"
-          >
-            <option value="pending">На модерации</option>
-            <option value="public">Опубликованные</option>
-            <option value="all">Все</option>
-          </select>
-
-          <button
-            onClick={load}
-            className="h-10 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
-          >
-            Обновить
+      {/* Фильтр */}
+      <div className="mb-5 flex gap-2">
+        {([["pending", "На проверке"], ["public", "Опубликованные"], ["all", "Все"]] as const).map(([v, label]) => (
+          <button key={v} onClick={() => setFilter(v)}
+            className={cn(
+              "rounded-xl px-3 py-1.5 text-sm font-semibold transition",
+              filter === v
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
+                : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
+            )}>
+            {label}
+            {v === "pending" && pending > 0 && (
+              <span className="ml-1.5 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                {pending}
+              </span>
+            )}
           </button>
+        ))}
+      </div>
+
+      {loading && items.length === 0 ? (
+        <div className="flex items-center gap-2 py-12 text-sm text-zinc-500"><Spinner className="h-5 w-5" /> Загружаем…</div>
+      ) : filtered.length === 0 ? (
+        <Empty icon="⭐" text={filter === "pending" ? "Нет отзывов на модерации" : "Отзывов нет"} />
+      ) : (
+        <div className="grid gap-4">
+          {filtered.map((r) => {
+            const draft = getDraft(r);
+            const busy = !!saving[r.id];
+            return (
+              <Card key={r.id}>
+                {/* Шапка */}
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100">{r.name}</span>
+                      {r.city && <span className="text-xs text-zinc-400">{r.city}</span>}
+                      <Badge color={r.isPublic ? "emerald" : "amber"}>
+                        {r.isPublic ? "Опубликован" : "На модерации"}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      {r.rating != null && <Stars n={r.rating} />}
+                      <span className="text-xs text-zinc-400">{fmt(r.createdAt)}</span>
+                      {r.source && <span className="text-xs text-zinc-400">· {r.source}</span>}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {r.isPublic
+                      ? <Btn variant="warning" size="sm" disabled={busy} onClick={() => unpublish(r)}>Скрыть</Btn>
+                      : <Btn variant="success" size="sm" disabled={busy} onClick={() => publish(r)}>Опубликовать</Btn>
+                    }
+                    <Btn variant="danger" size="sm" disabled={busy} onClick={() => deleteReview(r)}>Удалить</Btn>
+                  </div>
+                </div>
+
+                {/* Текст */}
+                <div className="mb-4 rounded-xl border border-zinc-100 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-300">
+                  {r.text}
+                </div>
+
+                {/* Ответ */}
+                <div>
+                  <div className="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                    Ответ от администрации
+                    {r.repliedAt && <span className="ml-2 font-normal normal-case">· {fmt(r.repliedAt)}</span>}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-[1fr_200px]">
+                    <Textarea
+                      placeholder="Введите ответ (необязательно)…"
+                      rows={2}
+                      value={draft.text}
+                      onChange={(e) => setDraft(r.id, "text", e.target.value)}
+                    />
+                    <div className="grid gap-2">
+                      <Input
+                        placeholder="Автор ответа"
+                        value={draft.author}
+                        onChange={(e) => setDraft(r.id, "author", e.target.value)}
+                      />
+                      <Btn variant="primary" size="sm" disabled={busy} loading={busy} onClick={() => saveReply(r)}>
+                        Сохранить
+                      </Btn>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
         </div>
-      </div>
-
-      {loading ? <div className="mt-6 text-sm text-zinc-600">Загрузка…</div> : null}
-      {err ? (
-        <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">{err}</div>
-      ) : null}
-
-      <div className="mt-6 grid gap-3">
-        {filtered.map((r) => {
-          const drText = draftReplyText[r.id] ?? (r.replyText ?? "");
-          const drAuthor = draftReplyAuthor[r.id] ?? (r.replyAuthor ?? "");
-          const isChanged = (drText ?? "") !== (r.replyText ?? "") || (drAuthor ?? "") !== (r.replyAuthor ?? "");
-          const hasReply = Boolean((r.replyText ?? "").trim());
-          const busy = savingId === r.id;
-
-          return (
-            <div key={r.id} className="rounded-2xl border border-zinc-200 bg-white p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-bold text-zinc-900">{r.name}</div>
-                    {r.city ? <div className="text-sm text-zinc-500">• {r.city}</div> : null}
-                    <div className="text-xs text-zinc-400">• {fmtDate(r.createdAt)}</div>
-                  </div>
-
-                  <div className="mt-1 text-sm text-zinc-700">
-                    {stars(r.rating)}{" "}
-                    <span className="text-zinc-400">({typeof r.rating === "number" ? r.rating : "—"}/5)</span>
-                  </div>
-
-                  <div className="mt-2 whitespace-pre-wrap text-sm text-zinc-800">{r.text}</div>
-
-                  {/* ✅ Показ текущего ответа (как на сайте) */}
-                  {hasReply ? (
-                    <div className="mt-4 rounded-2xl border border-zinc-200 bg-slate-50 p-4">
-                      <div className="text-xs font-semibold text-zinc-700">
-                        Ответ {r.replyAuthor ? `— ${r.replyAuthor}` : "администрации"}
-                        {r.repliedAt ? <span className="text-zinc-400"> • {fmtDate(r.repliedAt)}</span> : null}
-                      </div>
-                      <div className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{r.replyText}</div>
-                    </div>
-                  ) : null}
-
-                  {/* ✅ Редактор ответа */}
-                  <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-4">
-                    <div className="text-sm font-extrabold text-zinc-900">Ответ на отзыв</div>
-                    <div className="mt-1 text-xs text-zinc-500">
-                      Оставь текст — появится на сайте под отзывом. Очистишь и сохранишь — ответ удалится.
-                    </div>
-
-                    <div className="mt-3 grid gap-2">
-                      <input
-                        value={drAuthor}
-                        onChange={(e) => setDraftReplyAuthor((prev) => ({ ...prev, [r.id]: e.target.value }))}
-                        placeholder="Автор ответа (необязательно), например: Вектор РФ"
-                        className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-100"
-                      />
-
-                      <textarea
-                        value={drText}
-                        onChange={(e) => setDraftReplyText((prev) => ({ ...prev, [r.id]: e.target.value }))}
-                        placeholder="Текст ответа…"
-                        className={cn(
-                          "min-h-[110px] w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none",
-                          "focus:border-sky-300 focus:ring-2 focus:ring-sky-100"
-                        )}
-                      />
-
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => saveReply(r.id)}
-                          disabled={busy || !isChanged}
-                          className={cn(
-                            "h-10 rounded-xl px-4 text-sm font-extrabold text-white",
-                            "bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:opacity-95",
-                            (busy || !isChanged) && "opacity-60 cursor-not-allowed"
-                          )}
-                        >
-                          {busy ? "Сохраняем…" : "Сохранить ответ"}
-                        </button>
-
-                        <button
-                          onClick={() => clearReplyDraft(r.id)}
-                          disabled={busy}
-                          className={cn(
-                            "h-10 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50",
-                            busy && "opacity-60 cursor-not-allowed"
-                          )}
-                        >
-                          Очистить
-                        </button>
-
-                        {isChanged ? <div className="self-center text-xs text-zinc-500">Есть несохранённые изменения</div> : null}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-none flex-col gap-2">
-                  {r.isPublic ? (
-                    <button
-                      onClick={() => setPublic(r.id, false)}
-                      className="h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
-                    >
-                      Скрыть
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setPublic(r.id, true)}
-                      className="h-9 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 px-3 text-sm font-extrabold text-white hover:opacity-95"
-                    >
-                      Одобрить
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => remove(r.id)}
-                    className="h-9 rounded-xl border border-rose-200 bg-rose-50 px-3 text-sm font-semibold text-rose-900 hover:bg-rose-100"
-                  >
-                    Удалить
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-3 text-xs text-zinc-400">
-                ID: {r.id} • source: {r.source || "—"} • public: {r.isPublic ? "yes" : "no"}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      )}
     </div>
   );
 }

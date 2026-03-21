@@ -52,7 +52,7 @@ export default function PersonalDataConsentPage() {
       <Script
         id="ld-personaldata-breadcrumbs"
         type="application/ld+json"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 

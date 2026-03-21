@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useToast } from "../../toast";
+import {
+  Btn, Badge, Card, Field, Input, Select, Spinner, Textarea, cn,
+} from "../../ui-kit";
+
+type LeadStatus = "new" | "in_progress" | "done" | "canceled";
 
 type Dispatcher = { id: number; name: string; email: string };
 
@@ -9,223 +15,352 @@ type Lead = {
   id: number;
   createdAt: string;
   updatedAt: string;
-
   name: string;
   phone: string;
-
   fromText: string;
   toText: string;
-
   pickupAddress: string | null;
   dropoffAddress: string | null;
   datetime: string | null;
-
   carClass: string;
   roundTrip: boolean;
   price: number | null;
-
   comment: string | null;
-
-  status: string;
-
+  status: LeadStatus;
   assignedToId: number | null;
   assignedTo: Dispatcher | null;
-
   isDuplicate: boolean;
   duplicateOfId: number | null;
-
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
 };
 
-export default function LeadClient() {
+const STATUS_LABEL: Record<LeadStatus, string> = {
+  new: "Новый",
+  in_progress: "В работе",
+  done: "Завершён",
+  canceled: "Отменён",
+};
+
+const STATUS_COLOR: Record<LeadStatus, "zinc" | "amber" | "emerald" | "rose"> = {
+  new: "zinc",
+  in_progress: "amber",
+  done: "emerald",
+  canceled: "rose",
+};
+
+function dt(s: string) {
+  return new Date(s).toLocaleString("ru-RU", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
+
+function digitsOnly(s: string) { return (s || "").replace(/\D/g, ""); }
+
+function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[140px_1fr] gap-3 py-2.5 border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+      <dt className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide self-start pt-0.5">
+        {label}
+      </dt>
+      <dd className="text-sm font-medium text-zinc-900 dark:text-zinc-100 break-words">{children}</dd>
+    </div>
+  );
+}
+
+export default function LeadDetailClient() {
   const params = useParams();
   const router = useRouter();
+  const toast = useToast();
   const id = Number(params?.id);
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [dispatchers, setDispatchers] = useState<Dispatcher[]>([]);
   const [loading, setLoading] = useState(true);
+  const [patching, setPatching] = useState(false);
+  const [dupId, setDupId] = useState("");
 
   async function load() {
     setLoading(true);
+    try {
+      const [lRes, dRes] = await Promise.all([
+        fetch(`/api/admin/leads/${id}/get`, { cache: "no-store" }),
+        fetch(`/api/admin/dispatchers`, { cache: "no-store" }),
+      ]);
+      const lData = await lRes.json().catch(() => ({}));
+      const dData = await dRes.json().catch(() => ({}));
+      if (lData?.ok) { setLead(lData.lead); setDupId(lData.lead.duplicateOfId?.toString() ?? ""); }
+      if (dData?.ok) setDispatchers(dData.users || []);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    const [lRes, dRes] = await Promise.all([
-      fetch(`/api/admin/leads/${id}/get`, { cache: "no-store" }),
-      fetch(`/api/admin/dispatchers`, { cache: "no-store" }),
-    ]);
-
-    const lData = await lRes.json().catch(() => ({}));
-    const dData = await dRes.json().catch(() => ({}));
-
-    if (lData?.ok) setLead(lData.lead);
-    if (dData?.ok) setDispatchers(dData.users || []);
-
-    setLoading(false);
+  async function patch(body: Partial<Lead>) {
+    if (!lead) return;
+    setPatching(true);
+    setLead((p) => p ? { ...p, ...body } : p);
+    try {
+      const res = await fetch(`/api/admin/leads/${lead.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data?.error || "Ошибка обновления");
+      setLead((p) => p ? { ...p, ...data.lead } : p);
+      toast.success("Сохранено");
+    } catch (e: any) {
+      toast.error("Не удалось сохранить", e?.message);
+      load();
+    } finally {
+      setPatching(false);
+    }
   }
 
   useEffect(() => {
-    if (!Number.isFinite(id)) return;
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (Number.isFinite(id)) load();
   }, [id]);
 
-  async function patch(body: any) {
-    if (!lead) return;
+  if (!Number.isFinite(id)) return <div className="p-6 text-sm text-rose-600">Некорректный ID</div>;
 
-    // оптимистично
-    setLead({ ...lead, ...body });
+  if (loading) return (
+    <div className="flex items-center justify-center gap-2 py-24 text-sm text-zinc-500">
+      <Spinner className="h-5 w-5" /> Загружаем лид…
+    </div>
+  );
 
-    const res = await fetch(`/api/admin/leads/${lead.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
+  if (!lead) return (
+    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-300">
+      Лид не найден
+    </div>
+  );
 
-    if (!res.ok || !data.ok) {
-      alert(data?.error || "Update failed");
-      load();
-      return;
-    }
-
-    setLead((prev) => (prev ? { ...prev, ...data.lead } : prev));
-    router.refresh();
-  }
-
-  if (!Number.isFinite(id)) return <div>Bad id</div>;
-  if (loading) return <div>Loading...</div>;
-  if (!lead) return <div>Not found</div>;
-
-  const dt = (s: string) => new Date(s).toLocaleString("ru-RU");
+  const phone = lead.phone;
+  const digits = digitsOnly(phone);
 
   return (
-    <div style={{ maxWidth: 900 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+    <div className="max-w-4xl">
+      {/* ── Заголовок ──────────────────────────────────────── */}
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 6 }}>
-            Lead #{lead.id} — {lead.name}
-          </h1>
-          <div style={{ opacity: 0.75 }}>
-            created: {dt(lead.createdAt)} • updated: {dt(lead.updatedAt)}
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="text-xs font-bold text-zinc-400">#{lead.id}</span>
+            <Badge color={STATUS_COLOR[lead.status]}>
+              {STATUS_LABEL[lead.status]}
+            </Badge>
+            {lead.isDuplicate && (
+              <Badge color="rose">Дубликат #{lead.duplicateOfId ?? "—"}</Badge>
+            )}
           </div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
+            {lead.name}
+          </h1>
+          <p className="mt-0.5 text-xs text-zinc-400">
+            Создан: {dt(lead.createdAt)} · Обновлён: {dt(lead.updatedAt)}
+          </p>
         </div>
-
-        <button
-          onClick={() => router.push("/admin/leads")}
-          style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", cursor: "pointer", height: 40 }}
-        >
-          ← Back to leads
-        </button>
+        <Btn variant="ghost" size="sm" onClick={() => router.push("/admin/leads")}>
+          ← К списку
+        </Btn>
       </div>
 
-      <div style={{ display: "grid", gap: 12 }}>
-        <Section title="Client">
-          <Row label="Name" value={lead.name} />
-          <Row label="Phone" value={lead.phone} />
-        </Section>
+      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+        {/* ── Левый блок: информация ─────────────────────── */}
+        <div className="grid gap-4">
+          {/* Клиент */}
+          <Card>
+            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Клиент
+            </h2>
+            <dl>
+              <InfoRow label="Имя">{lead.name}</InfoRow>
+              <InfoRow label="Телефон">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono">{phone}</span>
+                  <button
+                    onClick={() => navigator.clipboard?.writeText(phone).then(() => toast.success("Скопировано"))}
+                    className="rounded-lg border border-zinc-200 bg-white px-2 py-0.5 text-xs hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
+                  >
+                    Копировать
+                  </button>
+                  {digits && <>
+                    <a href={`tel:${phone}`} className="rounded-lg border border-zinc-200 bg-white px-2 py-0.5 text-xs hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
+                      Позвонить
+                    </a>
+                    <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer"
+                      className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800 hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+                      WhatsApp
+                    </a>
+                    <a href={`tg://resolve?phone=${digits}`} target="_blank" rel="noreferrer"
+                      className="rounded-lg border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs text-sky-800 hover:bg-sky-100 dark:border-sky-900/40 dark:bg-sky-950/30 dark:text-sky-200">
+                      Telegram
+                    </a>
+                  </>}
+                </div>
+              </InfoRow>
+            </dl>
+          </Card>
 
-        <Section title="Route">
-          <Row label="From → To" value={`${lead.fromText} → ${lead.toText}`} />
-          <Row label="Pickup address" value={lead.pickupAddress || "—"} />
-          <Row label="Dropoff address" value={lead.dropoffAddress || "—"} />
-          <Row label="Datetime" value={lead.datetime || "—"} />
-        </Section>
+          {/* Маршрут */}
+          <Card>
+            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Маршрут
+            </h2>
+            <dl>
+              <InfoRow label="Откуда → Куда">
+                <span className="font-semibold">{lead.fromText}</span>
+                <span className="mx-2 text-zinc-400">→</span>
+                <span className="font-semibold">{lead.toText}</span>
+              </InfoRow>
+              {lead.pickupAddress && <InfoRow label="Адрес подачи">{lead.pickupAddress}</InfoRow>}
+              {lead.dropoffAddress && <InfoRow label="Адрес прибытия">{lead.dropoffAddress}</InfoRow>}
+              <InfoRow label="Дата / время">{lead.datetime || "—"}</InfoRow>
+            </dl>
+          </Card>
 
-        <Section title="Order">
-          <Row label="Car class" value={lead.carClass} />
-          <Row label="Round trip" value={lead.roundTrip ? "Yes" : "No"} />
-          <Row label="Price" value={lead.price ?? "—"} />
-          <Row label="Comment" value={lead.comment || "—"} />
-        </Section>
+          {/* Заказ */}
+          <Card>
+            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Заказ
+            </h2>
+            <dl>
+              <InfoRow label="Класс авто">{lead.carClass}</InfoRow>
+              <InfoRow label="Туда-обратно">{lead.roundTrip ? "Да" : "Нет"}</InfoRow>
+              <InfoRow label="Цена">{lead.price != null ? `${lead.price} ₽` : "—"}</InfoRow>
+              <InfoRow label="Комментарий">{lead.comment || "—"}</InfoRow>
+            </dl>
+          </Card>
 
-        <Section title="Actions">
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <label style={{ display: "grid", gap: 6 }}>
-              <span>Status</span>
-              <select
-                value={lead.status}
-                onChange={(e) => patch({ status: e.target.value })}
-                style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
-              >
-                <option value="new">new</option>
-                <option value="in_progress">in_progress</option>
-                <option value="done">done</option>
-                <option value="canceled">canceled</option>
-              </select>
-            </label>
+          {/* UTM */}
+          {(lead.utmSource || lead.utmMedium || lead.utmCampaign) && (
+            <Card>
+              <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                UTM-метки
+              </h2>
+              <dl>
+                <InfoRow label="utm_source">{lead.utmSource || "—"}</InfoRow>
+                <InfoRow label="utm_medium">{lead.utmMedium || "—"}</InfoRow>
+                <InfoRow label="utm_campaign">{lead.utmCampaign || "—"}</InfoRow>
+              </dl>
+            </Card>
+          )}
+        </div>
 
-            <label style={{ display: "grid", gap: 6, minWidth: 280 }}>
-              <span>Assigned dispatcher</span>
-              <select
-                value={lead.assignedToId ?? ""}
-                onChange={(e) => patch({ assignedToId: e.target.value ? Number(e.target.value) : null })}
-                style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd" }}
-              >
-                <option value="">— unassigned —</option>
-                {dispatchers.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name} ({d.email})
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+        {/* ── Правый блок: действия ──────────────────────── */}
+        <div className="grid gap-4 lg:self-start lg:sticky lg:top-24">
+          <Card>
+            <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Действия
+            </h2>
 
-          <div style={{ marginTop: 12 }}>
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {patching && (
+              <div className="mb-3 flex items-center gap-2 text-xs text-zinc-400">
+                <Spinner className="h-3.5 w-3.5" /> Сохраняем…
+              </div>
+            )}
+
+            <div className="grid gap-3">
+              <Field label="Статус">
+                <Select
+                  value={lead.status}
+                  onChange={(e) => patch({ status: e.target.value as LeadStatus })}
+                  disabled={patching}
+                >
+                  <option value="new">Новый</option>
+                  <option value="in_progress">В работе</option>
+                  <option value="done">Завершён</option>
+                  <option value="canceled">Отменён</option>
+                </Select>
+              </Field>
+
+              <Field label="Диспетчер">
+                <Select
+                  value={lead.assignedToId ?? ""}
+                  onChange={(e) => patch({ assignedToId: e.target.value ? Number(e.target.value) : null })}
+                  disabled={patching}
+                >
+                  <option value="">— не назначен —</option>
+                  {dispatchers.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </Select>
+              </Field>
+
+              <Field label="Цена">
+                <Input
+                  type="number"
+                  placeholder="₽"
+                  defaultValue={lead.price ?? ""}
+                  onBlur={(e) => {
+                    const v = e.target.value.trim();
+                    patch({ price: v ? Number(v) : null });
+                  }}
+                />
+              </Field>
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <Btn variant="warning" size="sm" disabled={patching} onClick={() => patch({ status: "in_progress" })}>
+                В работу
+              </Btn>
+              <Btn variant="success" size="sm" disabled={patching} onClick={() => patch({ status: "done" })}>
+                Завершить
+              </Btn>
+              <Btn variant="danger" size="sm" disabled={patching} onClick={() => patch({ status: "canceled" })}>
+                Отменить
+              </Btn>
+            </div>
+          </Card>
+
+          {/* Дубликат */}
+          <Card>
+            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Дубликат
+            </h2>
+            <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
               <input
                 type="checkbox"
+                className="h-4 w-4 rounded"
                 checked={lead.isDuplicate}
                 onChange={(e) => patch({ isDuplicate: e.target.checked, duplicateOfId: e.target.checked ? lead.duplicateOfId : null })}
               />
-              Duplicate
+              Это дубликат
             </label>
 
             {lead.isDuplicate && (
-              <div style={{ marginTop: 8 }}>
-                <input
-                  placeholder="duplicateOfId"
-                  defaultValue={lead.duplicateOfId ?? ""}
-                  onBlur={(e) => {
-                    const v = e.target.value.trim();
-                    patch({ duplicateOfId: v ? Number(v) : null });
-                  }}
-                  style={{ padding: 10, borderRadius: 8, border: "1px solid #ddd", width: 220 }}
-                />
-                <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
-                  Впиши ID оригинала и выйди из поля
-                </div>
+              <div className="mt-3">
+                <Field label="ID оригинала" hint="Введите ID и нажмите Enter или уберите фокус">
+                  <Input
+                    placeholder="например, 42"
+                    value={dupId}
+                    onChange={(e) => setDupId(e.target.value)}
+                    onBlur={() => patch({ duplicateOfId: dupId.trim() ? Number(dupId.trim()) : null })}
+                    onKeyDown={(e) => e.key === "Enter" && patch({ duplicateOfId: dupId.trim() ? Number(dupId.trim()) : null })}
+                  />
+                </Field>
               </div>
             )}
-          </div>
-        </Section>
+          </Card>
 
-        <Section title="UTM">
-          <Row label="utm_source" value={lead.utmSource || "—"} />
-          <Row label="utm_medium" value={lead.utmMedium || "—"} />
-          <Row label="utm_campaign" value={lead.utmCampaign || "—"} />
-        </Section>
+          {/* Ссылка на сайт */}
+          <Card>
+            <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Навигация
+            </h2>
+            <div className="grid gap-2">
+              <Btn variant="ghost" size="sm" onClick={() => router.push("/admin/leads")}>
+                ← К списку лидов
+              </Btn>
+              <Btn variant="ghost" size="sm" onClick={() => router.push("/admin/dashboard")}>
+                Дашборд
+              </Btn>
+            </div>
+          </Card>
+        </div>
       </div>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ border: "1px solid #eee", borderRadius: 10, padding: 12 }}>
-      <div style={{ fontWeight: 800, marginBottom: 10 }}>{title}</div>
-      <div style={{ display: "grid", gap: 8 }}>{children}</div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: any }) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: 10 }}>
-      <div style={{ opacity: 0.7 }}>{label}</div>
-      <div style={{ fontWeight: 600 }}>{String(value)}</div>
     </div>
   );
 }

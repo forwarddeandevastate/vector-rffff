@@ -8,7 +8,7 @@ const PAGE_URL = `${SITE_URL}/about`;
 
 export const metadata: Metadata = {
   title: "О сервисе — трансферы и поездки по России",
-  description: "«Вектор РФ» — сервис заказа межгородских трансферов и такси по России. Работаем с 2024 года. ИП Нартов Алексей Алексеевич (ИНН 526320552640, ОГРН 326237500025657). Диспетчеры принимают заявки круглосуточно 24/7.",
+  description: "«Вектор РФ» — сервис межгородских трансферов и такси по России. Междугород, аэропорт, минивэн. Стоимость фиксируем до выезда, принимаем заявки 24/7.",
   alternates: { canonical: "/about" },
   robots: { index: true, follow: true },
   openGraph: { type: "website", url: PAGE_URL, title: "О компании Вектор РФ", description: "Сервис поездок и трансферов по России.", siteName: "Вектор РФ", locale: "ru_RU", images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "О компании Вектор РФ" }] },
@@ -27,6 +27,19 @@ export default function AboutPage() {
   return (
     <>
       <Script id="ld-about-breadcrumbs" type="application/ld+json" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Script id="ld-about-faq" type="application/ld+json" strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            { "@type": "Question", name: "Где находится Вектор РФ?",
+              acceptedAnswer: { "@type": "Answer", text: "Головной офис в Нижнем Новгороде. Работаем по всей России — принимаем заявки онлайн и по телефону." } },
+            { "@type": "Question", name: "Есть ли договор для организаций?",
+              acceptedAnswer: { "@type": "Answer", text: "Да, заключаем договор на транспортное обслуживание, выставляем счёт и предоставляем акт выполненных работ и счёт-фактуру." } },
+            { "@type": "Question", name: "Какие классы автомобилей доступны?",
+              acceptedAnswer: { "@type": "Answer", text: "Стандарт, комфорт, бизнес и минивэн на 6–7 мест. Класс выбирается при оформлении заявки." } },
+          ],
+        }) }} />
       <PageShell>
         <main className="mx-auto max-w-4xl px-4 py-10 md:py-14">
           <Breadcrumb items={[{ name: "Главная", href: "/" }, { name: "О сервисе — трансферы и поездки по России", href: "/about" }]} />
@@ -109,9 +122,11 @@ export default function AboutPage() {
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/services" className="btn-primary inline-flex items-center rounded-xl px-5 py-3 text-sm">Все услуги</Link>
+              <Link href="/taxi-mezhgorod" className="btn-primary inline-flex items-center rounded-xl px-5 py-3 text-sm">Такси межгород</Link>
+              <Link href="/transfer-v-aeroport" className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm">Трансфер в аэропорт</Link>
+              <Link href="/services" className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm">Все услуги</Link>
+              <Link href="/prices" className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm">Цены</Link>
               <Link href="/contacts" className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm">Контакты</Link>
-              <Link href="/" className="btn-ghost inline-flex items-center rounded-xl px-5 py-3 text-sm">Оставить заявку</Link>
             </div>
           </GlassPanel>
         
@@ -131,6 +146,25 @@ export default function AboutPage() {
                   </summary>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{item.a}</p>
                 </details>
+              ))}
+            </div>
+          </div>
+          {/* Ссылки на полезные материалы */}
+          <div className="mt-6 rounded-3xl border border-blue-100/60 bg-white/70 p-5 shadow-sm backdrop-blur">
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-3">Полезные разделы</div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { href: "/taxi-mezhgorod", label: "Такси межгород" },
+                { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
+                { href: "/prices", label: "Цены" },
+                { href: "/blog", label: "Блог о поездках" },
+                { href: "/reviews", label: "Отзывы" },
+                { href: "/faq", label: "FAQ" },
+              ].map((l) => (
+                <Link key={l.href} href={l.href}
+                  className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                  {l.label}
+                </Link>
               ))}
             </div>
           </div>

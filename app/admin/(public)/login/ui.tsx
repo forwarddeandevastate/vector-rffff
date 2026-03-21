@@ -24,10 +24,12 @@ export default function LoginClient({ reason }: { reason?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     const res = await fetch("/api/admin/login", {
       method: "POST",
@@ -39,7 +41,7 @@ export default function LoginClient({ reason }: { reason?: string }) {
     setLoading(false);
 
     if (!res.ok || !data.ok) {
-      alert(data?.error || "Не удалось войти");
+      setError(data?.error || "Неверный email или пароль");
       return;
     }
 
@@ -88,6 +90,12 @@ export default function LoginClient({ reason }: { reason?: string }) {
                 placeholder="••••••••"
               />
             </div>
+
+            {error && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-800 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200">
+                {error}
+              </div>
+            )}
 
             <button
               disabled={loading}

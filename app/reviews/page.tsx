@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import Script from "next/script";
+import Link from "next/link";
 import ReviewsClient from "./reviews-client";
 import ReviewsListClient from "./reviews-list-client";
 import { PageBackground, Header, Footer, GlassPanel, Tag, PHONE_TEL, PHONE_DISPLAY, TELEGRAM, IconPhone, IconTelegram } from "@/app/ui/shared";
+import { BLOG_COMMERCIAL_LINKS, CORE_SERVICE_LINKS } from "@/lib/internal-links";
 
 export const runtime = "nodejs";
 // Перегенерируем страницу раз в 60 секунд (ISR) — новые отзывы появятся с небольшой задержкой
@@ -282,6 +284,55 @@ export default async function ReviewsPage() {
                   </summary>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{item.a}</p>
                 </details>
+              ))}
+            </div>
+          </div>
+
+          {/* Быстрые коммерческие ссылки */}
+          <div className="mt-6 rounded-3xl border border-blue-100/60 bg-white/70 p-5 shadow-sm backdrop-blur">
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-3">Заказать поездку</div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/taxi-mezhgorod"
+                className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors">
+                Такси межгород
+              </Link>
+              <Link href="/transfer-v-aeroport"
+                className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                Трансфер в аэропорт
+              </Link>
+              <Link href="/blog"
+                className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                Блог о поездках
+              </Link>
+            </div>
+          </div>
+
+          {/* Блог — привязка к коммерческим страницам */}
+          <div className="mt-6 rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
+            <div className="text-base font-extrabold text-slate-900 mb-1">Полезно перед заказом</div>
+            <p className="text-xs text-slate-400 mb-4">Статьи о том, как выбрать формат поездки и что учесть</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {BLOG_COMMERCIAL_LINKS.map((b) => (
+                <Link key={b.href} href={b.href}
+                  className="group rounded-2xl border border-blue-100/60 bg-white p-4 shadow-sm hover:border-blue-200 hover:shadow-md transition-all">
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-2 block">Блог</span>
+                  <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-700 transition-colors leading-snug">
+                    {b.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Услуги */}
+          <div className="mt-4 rounded-3xl border border-blue-100/60 bg-white/70 p-5 shadow-sm backdrop-blur">
+            <div className="text-sm font-extrabold text-slate-900 mb-3">Заказать поездку</div>
+            <div className="flex flex-wrap gap-2">
+              {CORE_SERVICE_LINKS.filter(l => l.href !== "/reviews").slice(0, 6).map((item) => (
+                <Link key={item.href} href={item.href}
+                  className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm hover:bg-blue-50/50 transition-colors">
+                  {item.label}
+                </Link>
               ))}
             </div>
           </div>

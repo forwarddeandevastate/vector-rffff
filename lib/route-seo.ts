@@ -2,6 +2,7 @@ import type { FAQItem } from "@/lib/city-faq";
 import { CITY_CONTENT } from "@/lib/city-content";
 import { CITY_REGION_BY_SLUG } from "@/lib/city-landings";
 import { isPriorityRoute } from "@/lib/priority-routes";
+import { getPriorityRouteContent } from "@/lib/priority-route-content";
 
 function hashRoute(input: string) {
   let h = 0;
@@ -309,17 +310,27 @@ export function buildRouteSeoData({
     `Планирование маршрута: ${metrics.planningLabel}`,
     `Формат маршрута: ${routeModel}`,
     pick(VARIANT_FACTS[variantKey] ?? VARIANT_FACTS.main, hash, 8),
-    ...(priorityRoute
-      ? [
-          `Приоритетное направление: один из ключевых маршрутов для ${fromName} и ${toName}`,
-          `Для топ-маршрута ${fromName} — ${toName} заранее согласуем подачу, багаж и формат поездки`,
-        ]
-      : []),
+    // Уникальные факты для топ-маршрутов — конкретные сведения о дороге
+    ...(priorityContent?.facts
+      ? priorityContent.facts.slice(0, 3)
+      : priorityRoute
+        ? [
+            `Приоритетное направление: один из ключевых маршрутов для ${fromName} и ${toName}`,
+            `Для топ-маршрута ${fromName} — ${toName} заранее согласуем подачу, багаж и формат поездки`,
+          ]
+        : []),
   ];
 
   const variantLead = pick(VARIANT_INTRO_LEADS[variantKey] ?? VARIANT_INTRO_LEADS.main, hash, 12);
+
+  // Уникальный контент для топ-маршрутов — подставляем вместо шаблонного intro
+  const priorityContent = getPriorityRouteContent(fromSlug, toSlug);
+
   const contentParagraphs = [
-  `${variantLead} ${cityBase} Направление ${fromName} — ${toName} мы оформляем как ${routeModel}. Такой формат поездки выбирают, когда нужна прямая дорога между городами без пересадок, ожиданий и сложной логистики. Для этого направления важны понятные условия поездки, подача ко времени и согласование деталей заранее.`,
+  // Первый параграф: уникальный для топ-маршрута или шаблонный
+  priorityContent
+    ? priorityContent.intro
+    : `${variantLead} ${cityBase} Направление ${fromName} — ${toName} мы оформляем как ${routeModel}. Такой формат поездки выбирают, когда нужна прямая дорога между городами без пересадок, ожиданий и сложной логистики. Для этого направления важны понятные условия поездки, подача ко времени и согласование деталей заранее.`,
 
   `${regionalTone} Поездку ${fromName} — ${toName} часто выбирают ${audience}. Междугородняя дорога проходит по ${metrics.roadType}, поэтому пассажирам важно заранее согласовать подачу автомобиля, формат багажа и точное время отправления. ${pricing}`,
 
@@ -345,19 +356,19 @@ export function buildRouteSeoData({
   const faq: FAQItem[] = [
     {
       question: applyTemplate(VARIANT_FAQ_QUESTION[variantKey] ?? VARIANT_FAQ_QUESTION.main, { from: fromName, to: toName }),
-      answer: `${pricing} Точная сумма зависит от расстояния, времени выезда, класса авто и дополнительных условий поездки.`,
+      answer: `${pricing} Цену называем до выезда — в дороге она не меняется. Включены все расходы: топливо, платные участки, парковка у адреса.`,
     },
     {
-      question: `Можно ли заказать междугороднее такси ${fromName} — ${toName} заранее?`,
-      answer: `${pick(FAQ_OPENERS, hash, 7)} После заявки подтверждаем время подачи и уточняем детали маршрута ${fromName} — ${toName}.`,
+      question: `Откуда подаётся автомобиль для маршрута ${fromName} — ${toName}?`,
+      answer: `К вашему адресу в ${fromName}: дом, офис, гостиница, вокзал. Точно в согласованное время. Укажите адрес и нужное время — остальное берём на себя.`,
     },
     {
-      question: `Какой автомобиль можно выбрать на маршрут ${fromName} — ${toName}?`,
-      answer: `${comfort} Итоговый вариант подбираем под количество пассажиров, багаж и формат поездки.`,
+      question: `Какой класс авто выбрать для маршрута ${fromName} — ${toName}?`,
+      answer: `${comfort} Стандарт — хороший выбор для коротких маршрутов. Для длинных поездок (4+ часа) рекомендуем комфорт или бизнес. Минивэн — если едут 4+ человека или много багажа.`,
     },
     {
-      question: `Сколько ехать по маршруту ${fromName} — ${toName}?`,
-      answer: `Точное время в пути зависит от адресов подачи и прибытия, трафика, дорожной обстановки, сезона и количества остановок по пути. При подтверждении заявки уточняем детали маршрута ${fromName} — ${toName}.`,
+      question: `Делаете ли остановки по дороге из ${fromName} в ${toName}?`,
+      answer: `На маршрутах длиннее 4–5 часов предусмотрена одна остановка. Место согласовываем при бронировании. Дополнительные остановки — по договорённости.`,
     },
     {
       question: `Можно ли совместить маршрут ${fromName} — ${toName} с трансфером в аэропорт?`,
@@ -369,6 +380,8 @@ export function buildRouteSeoData({
           answer: `Для ключевых направлений лучше заранее указать адрес подачи, желаемое время выезда, количество пассажиров, багаж и дополнительные пожелания вроде детского кресла, минивэна или поездки к рейсу. Так проще подтвердить подходящий формат поездки без спешки.`,
         }]
       : []),
+    // Уникальный вопрос о дороге/трассе для топ-маршрутов
+    ...(priorityContent?.extraFaq ? [priorityContent.extraFaq] : []),
   ];
 
   const descriptionVariants = pickMany(

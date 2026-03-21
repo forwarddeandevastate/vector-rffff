@@ -7,8 +7,10 @@ import Link from "next/link";
 
 
 export const metadata: Metadata = {
-  title: "Спасибо за заявку",
+  title: "Заявка принята — Вектор РФ",
+  description: "Ваша заявка принята. Оператор свяжется с вами в течение 15 минут для подтверждения маршрута и стоимости.",
   robots: { index: false, follow: false },
+  alternates: { canonical: "/thanks" },
 };
 
 const PHONE_DISPLAY = "8 (800) 222-56-50";
