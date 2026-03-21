@@ -3,6 +3,7 @@ import Script from "next/script";
 import Link from "next/link";
 import { PageBackground, Header, Footer, Tag } from "@/app/ui/shared";
 import HomePageInteractive from "./home-page-client";
+import HomePageStaticForm from "./home-page-static-form";
 import {
   CORE_SERVICE_LINKS,
   POPULAR_ROUTE_LINKS,
@@ -442,8 +443,22 @@ export default function Page() {
       <div className="animate-page">
         {/* HERO: статика сервера + интерактив клиента в одной секции */}
         <section className="mx-auto max-w-6xl px-4 pt-8 pb-10 md:pt-12 md:pb-14">
-          <HeroStatic />
-          <HomePageInteractive />
+          {/* Hero grid: левый текст + правая форма */}
+          <div className="grid gap-8 lg:grid-cols-[1fr_420px] lg:gap-10 lg:items-start">
+            {/* Левая колонка: H1, описание, шаги — SSR */}
+            <HeroStatic />
+
+            {/* Правая колонка: форма
+                HomePageStaticForm — SSR-скелет виден боту и до JS
+                HomePageInteractive накладывается поверх после гидрации */}
+            <div className="relative">
+              {/* Статичный HTML для бота и LCP */}
+              <HomePageStaticForm />
+              {/* Интерактивная оболочка — скрыта до гидрации через CSS,
+                  затем берёт управление */}
+              <HomePageInteractive />
+            </div>
+          </div>
         </section>
 
         <TrustSection />

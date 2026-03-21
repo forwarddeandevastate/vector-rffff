@@ -1,9 +1,10 @@
 /**
  * seo-route-client.tsx — Server Component.
- * Рендерит форму заявки для страниц маршрутов.
+ * SSR-обёртка формы для страниц маршрутов.
  */
-import { GlassPanel, IconPhone, IconTelegram, PHONE_TEL, TELEGRAM } from "@/app/ui/shared";
-import RouteFormIsland from "./route-form-island";
+import { GlassPanel, IconPhone, IconTelegram, PHONE_TEL, PHONE_DISPLAY, TELEGRAM } from "@/app/ui/shared";
+import StaticFormFields from "./static-form-fields";
+import RouteFormIslandWrapper from "./route-form-island-wrapper";
 
 export default function SeoRouteFormClient({
   fromName,
@@ -21,7 +22,8 @@ export default function SeoRouteFormClient({
               href={`tel:${PHONE_TEL}`}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white/80 px-3 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-50 transition-colors"
             >
-              <IconPhone className="h-4 w-4 text-blue-500" />Позвонить
+              <IconPhone className="h-4 w-4 text-blue-500" aria-hidden />
+              {PHONE_DISPLAY}
             </a>
             <a
               href={TELEGRAM}
@@ -29,15 +31,18 @@ export default function SeoRouteFormClient({
               rel="noreferrer"
               className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm"
             >
-              <IconTelegram className="h-4 w-4" />Telegram
+              <IconTelegram className="h-4 w-4" aria-hidden />
+              Telegram
             </a>
           </div>
           <p className="mt-3 text-sm font-bold text-slate-800">
             {fromName} — {toName}
           </p>
         </div>
-        <div className="p-3">
-          <RouteFormIsland fromName={fromName} toName={toName} />
+
+        <div className="p-3 relative">
+          <StaticFormFields fromValue={fromName} toValue={toName} />
+          <RouteFormIslandWrapper fromName={fromName} toName={toName} />
         </div>
       </GlassPanel>
     </div>
