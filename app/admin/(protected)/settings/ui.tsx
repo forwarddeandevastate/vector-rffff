@@ -206,24 +206,37 @@ export default function SettingsClient() {
               <Badge color={webhookOk ? "emerald" : "rose"}>
                 {webhookOk ? "✓ установлен" : "✗ не установлен"}
               </Badge>
+              {/* Проверяем что текущий webhook URL совпадает с ожидаемым */}
+              {webhookOk && tg?.webhookUrlExpected && tg?.webhookInfo?.url &&
+                tg.webhookInfo.url !== tg.webhookUrlExpected && (
+                <Badge color="amber">⚠ URL не совпадает</Badge>
+              )}
             </div>
 
             <div className="grid gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-              {tg?.webhookInfo?.url && (
-                <div className="font-mono truncate">{tg.webhookInfo.url}</div>
+              {tg?.webhookInfo?.url ? (
+                <div>
+                  <span className="font-medium">Текущий: </span>
+                  <span className="font-mono break-all">{tg.webhookInfo.url}</span>
+                </div>
+              ) : (
+                <div className="text-rose-500">Webhook не установлен — кнопки в боте не работают</div>
               )}
               {tg?.webhookUrlExpected && (
-                <div>Ожидаемый: <span className="font-mono">{tg.webhookUrlExpected}</span></div>
+                <div>
+                  <span className="font-medium">Должен быть: </span>
+                  <span className="font-mono break-all">{tg.webhookUrlExpected}</span>
+                </div>
               )}
               {typeof tg?.webhookInfo?.pending_update_count === "number" && (
                 <div>Очередь: {tg.webhookInfo.pending_update_count} событий</div>
               )}
               {typeof tg?.secretExpected === "boolean" && (
-                <div>Secret-token: {tg.secretExpected ? "включён" : "выключен"}</div>
+                <div>Secret-token: {tg.secretExpected ? "✓ включён" : "✗ не задан (TELEGRAM_WEBHOOK_SECRET)"}</div>
               )}
               {lastErr && (
-                <div className="text-rose-500 dark:text-rose-400">
-                  Последняя ошибка: {lastErr}
+                <div className="rounded-lg border border-rose-200 bg-rose-50 p-2 text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400">
+                  ⚠ Ошибка: {lastErr}
                 </div>
               )}
             </div>
