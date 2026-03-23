@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Script from "next/script";
 import ServicePage from "../ui/service-page";
-import { BLOG_COMMERCIAL_LINKS, POPULAR_ROUTE_LINKS } from "@/lib/internal-links";
 
 const SITE_URL = "https://vector-rf.ru";
 const SITE_NAME = "Вектор РФ";
@@ -185,7 +183,7 @@ export default function Page() {
         </div>
       </section>
       {/* CTA секция */}
-      <section className="mx-auto max-w-6xl px-4 pb-8" id="order">
+      <section className="mx-auto max-w-6xl px-4 pb-12" id="order">
         <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur md:p-8">
           <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-2">Заказать минивэн</h2>
           <p className="text-sm text-slate-500 mb-5">Укажите маршрут и количество пассажиров — рассчитаем стоимость и подтвердим заявку</p>
@@ -195,41 +193,6 @@ export default function Page() {
           >
             Рассчитать стоимость
           </a>
-        </div>
-      </section>
-
-      {/* Популярные маршруты */}
-      <section className="mx-auto max-w-6xl px-4 pb-8">
-        <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
-          <h2 className="text-lg font-extrabold text-slate-900 mb-2">Популярные маршруты на минивэне</h2>
-          <p className="text-xs text-slate-400 mb-4">Выберите направление, чтобы узнать подробности и стоимость</p>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {POPULAR_ROUTE_LINKS.slice(0, 6).map((r) => (
-              <Link key={r.href} href={r.href}
-                className="rounded-2xl border border-blue-100/60 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:border-blue-200 hover:bg-blue-50/50 transition-colors">
-                {r.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Блог */}
-      <section className="mx-auto max-w-6xl px-4 pb-12">
-        <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-6 shadow-sm backdrop-blur">
-          <h2 className="text-base font-extrabold text-slate-900 mb-1">Читайте перед поездкой</h2>
-          <p className="text-xs text-slate-400 mb-4">Статьи о выборе формата и планировании маршрута</p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {BLOG_COMMERCIAL_LINKS.map((b) => (
-              <Link key={b.href} href={b.href}
-                className="group rounded-2xl border border-blue-100/60 bg-white p-4 shadow-sm hover:border-blue-200 hover:shadow-md transition-all">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-2 block">Блог</span>
-                <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-700 transition-colors leading-snug">
-                  {b.label}
-                </span>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
     </>

@@ -448,28 +448,6 @@ export default function CorporatePage() {
             </div>
           </aside>
         </div>
-
-        {/* Перелинковка */}
-        <div className="mt-8 mx-auto max-w-6xl px-4">
-          <div className="rounded-3xl border border-blue-100/60 bg-white/70 p-5 shadow-sm backdrop-blur">
-            <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-3">Смотрите также</div>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { href: "/taxi-mezhgorod", label: "Такси межгород" },
-                { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
-                { href: "/minivan-transfer", label: "Минивэн для группы" },
-                { href: "/prices", label: "Цены и классы" },
-                { href: "/blog", label: "Блог" },
-                { href: "/contacts", label: "Контакты" },
-              ].map((l: { href: string; label: string }) => (
-                <a key={l.href} href={l.href}
-                  className="inline-flex items-center rounded-full border border-blue-100/60 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
-                  {l.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
       </main>
 
       <footer className="border-t border-blue-100/60 bg-white/65 backdrop-blur">

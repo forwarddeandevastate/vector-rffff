@@ -4,8 +4,8 @@ export const CORE_SERVICE_LINKS = [
   { href: "/city-transfer", label: "Поездки по городу" },
   { href: "/minivan-transfer", label: "Минивэн / групповые поездки" },
   { href: "/corporate", label: "Корпоративные перевозки" },
-  { href: "/prices", label: "Цены на поездки" },
   { href: "/reviews", label: "Отзывы клиентов" },
+  { href: "/faq", label: "Вопросы и ответы" },
   { href: "/contacts", label: "Контакты" },
 ];
 
@@ -15,13 +15,13 @@ export const POPULAR_ROUTE_LINKS = [
   { href: "/moskva/kazan", label: "Москва — Казань" },
   { href: "/kazan/moskva", label: "Казань — Москва" },
   { href: "/moskva/sankt-peterburg", label: "Москва — Санкт-Петербург" },
+  { href: "/sankt-peterburg/moskva", label: "Санкт-Петербург — Москва" },
   { href: "/moskva/tula", label: "Москва — Тула" },
   { href: "/moskva/yaroslavl", label: "Москва — Ярославль" },
   { href: "/moskva/ryazan", label: "Москва — Рязань" },
   { href: "/krasnodar/sochi", label: "Краснодар — Сочи" },
   { href: "/krasnodar/rostov-na-donu", label: "Краснодар — Ростов-на-Дону" },
   { href: "/yekaterinburg/tyumen", label: "Екатеринбург — Тюмень" },
-  { href: "/nizhniy-novgorod/kazan", label: "Нижний Новгород — Казань" },
 ];
 
 export const REGIONAL_ROUTE_GROUPS = [
@@ -80,13 +80,12 @@ export const TRUST_METRICS = [
   { value: "РФ", label: "маршруты по России" },
 ];
 
-/** Уникальные ссылки на keyword-лендинги — только индексируемые страницы */
+
 export const KEYWORD_PAGE_LINKS = [
   { href: "/taxi-mezhgorod", label: "Такси межгород" },
-  { href: "/taksi-mezhgorod", label: "Заказать такси межгород" },
+  { href: "/taxi-mezhgorod", label: "Междугороднее такси" },
   { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт" },
   { href: "/transfer-iz-aeroporta", label: "Трансфер из аэропорта" },
-  { href: "/taxi-v-aeroport", label: "Такси в аэропорт" },
 ];
 
 export const BLOG_LINKS = [
@@ -96,17 +95,6 @@ export const BLOG_LINKS = [
   { href: "/blog/taksi-iz-moskvy-v-regiony", label: "Такси из Москвы в регионы" },
   { href: "/blog/taksi-v-novye-regiony-rf", label: "Трансферы в новые регионы РФ" },
   { href: "/blog", label: "Все статьи блога" },
-];
-
-/**
- * Блог-статьи с коммерческой привязкой — для вставки в коммерческие страницы.
- * Показывают, что читают клиенты перед заказом.
- */
-export const BLOG_COMMERCIAL_LINKS = [
-  { href: "/blog/kak-zakazat-mezhdugorodnee-taksi", label: "Как заказать такси межгород", service: "intercity" },
-  { href: "/blog/transfer-v-aeroport-chto-nuzhno-znat", label: "Что взять с собой в трансфер", service: "airport" },
-  { href: "/blog/mezhdugorodnee-taksi-ili-poezd", label: "Такси или поезд — сравниваем", service: "intercity" },
-  { href: "/blog/taksi-iz-moskvy-v-regiony", label: "Маршруты из Москвы в регионы", service: "intercity" },
 ];
 
 export const SOUTH_ROUTE_LINKS = [

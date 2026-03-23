@@ -4,35 +4,8 @@ import Script from "next/script";
 import { notFound } from "next/navigation";
 import { PageShell } from "@/app/ui/shared";
 import { BLOG_BY_SLUG, BLOG_POSTS } from "@/lib/blog";
-import { CORE_SERVICE_LINKS } from "@/lib/internal-links";
 
 const SITE_URL = "https://vector-rf.ru";
-
-// Карта: категория статьи → релевантные коммерческие ссылки
-const CATEGORY_COMMERCIAL: Record<string, Array<{ href: string; label: string; desc: string }>> = {
-  sovety: [
-    { href: "/taxi-mezhgorod", label: "Такси межгород", desc: "Заказать поездку между городами" },
-    { href: "/prices", label: "Цены на поездки", desc: "Примерная стоимость по маршрутам" },
-    { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт", desc: "Подача ко времени вылета" },
-  ],
-  sravneniya: [
-    { href: "/taxi-mezhgorod", label: "Такси межгород", desc: "Прямые поездки без пересадок" },
-    { href: "/prices", label: "Цены и классы авто", desc: "Стандарт, комфорт, бизнес, минивэн" },
-    { href: "/services", label: "Все услуги", desc: "Полный список форматов поездок" },
-  ],
-  marshruty: [
-    { href: "/taxi-mezhgorod", label: "Заказать такси межгород", desc: "По вашему маршруту 24/7" },
-    { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт", desc: "Подача к рейсу вовремя" },
-    { href: "/city-transfer", label: "Поездки по городу", desc: "Городские маршруты" },
-  ],
-};
-
-const DEFAULT_COMMERCIAL = [
-  { href: "/taxi-mezhgorod", label: "Такси межгород", desc: "Заказать поездку между городами" },
-  { href: "/transfer-v-aeroport", label: "Трансфер в аэропорт", desc: "Подача к рейсу" },
-  { href: "/prices", label: "Цены", desc: "Примерная стоимость" },
-];
-
 
 export function generateStaticParams() {
   return BLOG_POSTS.map((p) => ({ slug: p.slug }));
@@ -157,7 +130,7 @@ export default async function BlogPostPage({
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Главная", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Блог", item: `${SITE_URL}/blog` },
-      { "@type": "ListItem", position: 3, name: post.title.length > 60 ? post.title.slice(0, 57) + "…" : post.title, item: `${SITE_URL}/blog/${post.slug}` },
+      { "@type": "ListItem", position: 3, name: post.title, item: `${SITE_URL}/blog/${post.slug}` },
     ],
   };
 
@@ -235,28 +208,6 @@ export default async function BlogPostPage({
               </Link>
             </div>
           </div>
-
-          {/* Коммерческие ссылки — привязка блога к услугам */}
-          {(() => {
-            const commercialLinks = CATEGORY_COMMERCIAL[post.categorySlug] ?? DEFAULT_COMMERCIAL;
-            return (
-              <div className="mt-6 rounded-3xl border border-blue-100/60 bg-white/82 backdrop-blur-md shadow-sm p-6">
-                <div className="text-sm font-bold text-slate-800 mb-1">Наши услуги по теме</div>
-                <p className="text-xs text-slate-400 mb-4">Оформите заявку онлайн — стоимость согласовываем заранее</p>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {commercialLinks.map((c) => (
-                    <Link key={c.href} href={c.href}
-                      className="group rounded-2xl border border-blue-100/60 bg-white p-4 shadow-sm hover:border-blue-300 hover:shadow-md transition-all">
-                      <div className="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors mb-1">
-                        {c.label}
-                      </div>
-                      <div className="text-xs text-slate-500">{c.desc}</div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
 
           {/* Related routes */}
           {post.relatedRoutes && post.relatedRoutes.length > 0 && (

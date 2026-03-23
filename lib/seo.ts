@@ -22,10 +22,9 @@ export function buildCityMetadata({
   fromGenitive: string;
 }): Metadata {
   const path = `/${slug}`;
-  // Вариативность title под город — не одна шаблонная строка для всех
-  const title = `Такси из ${fromGenitive} — межгород, аэропорт, трансфер`;
-  const description = `Прямые поездки из ${fromGenitive} по России: без пересадок, стоимость до выезда. Стандарт, комфорт, бизнес, минивэн. Заявки 24/7.`;
-  const ogAlt = `Вектор РФ — такси и трансфер из ${cityName}`;
+  const title = `Междугороднее такси из ${fromGenitive} — трансфер 24/7`;
+  const description = `Заказать такси межгород из ${fromGenitive}: комфорт, бизнес, минивэн. Прямые поездки без пересадок, стоимость подтверждаем заранее. Подача по времени 24/7.`;
+  const ogAlt = `Вектор РФ — трансфер из ${cityName}`;
 
   return {
     title,
@@ -72,10 +71,10 @@ export function buildRouteMetadata({
   indexable?: boolean;
 }): Metadata {
   const path = canonicalPath ?? `/${fromSlug}/${toSlug}`;
-  const finalTitle = title ?? `Такси ${fromName} — ${toName}: заказать межгород`;
+  const finalTitle = title ?? `Такси ${fromName} — ${toName} | Межгород и трансфер 24/7`;
   const finalDescription =
     description ??
-    `Такси ${fromName} — ${toName}: прямая поездка без пересадок, подача к адресу, стоимость до выезда. Стандарт, комфорт, бизнес, минивэн.`;
+    `Заказать такси ${fromName} — ${toName}: междугороднее такси, трансфер между городами, комфорт, бизнес и минивэн. Стоимость согласуем заранее, заявка 24/7.`;
   const finalKeywords =
     keywords ?? [
       `такси ${fromName} ${toName}`,

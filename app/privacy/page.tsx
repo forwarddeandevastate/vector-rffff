@@ -53,7 +53,7 @@ export default function PrivacyPage() {
       <Script
         id="ld-privacy-breadcrumbs"
         type="application/ld+json"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 

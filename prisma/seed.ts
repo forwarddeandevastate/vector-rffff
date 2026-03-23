@@ -9,8 +9,7 @@ if (!connectionString) throw new Error("Missing DATABASE_URL in .env");
 
 // adapter-pg как в приложении
 const pool = new Pool({ connectionString });
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const adapter = new PrismaPg(pool as any);
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {

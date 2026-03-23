@@ -85,13 +85,13 @@ export default function AgreementPage() {
       <Script
         id="ld-agreement-breadcrumbs"
         type="application/ld+json"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Script
         id="ld-agreement-page"
         type="application/ld+json"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
       />
 
